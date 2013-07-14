@@ -13,8 +13,8 @@ class Manager(object):
         current request.
     """
 
-    def __init__(self, name=None):
-        self.name = name
+    def __init__(self, **kwargs):
+        self.name = kwargs.get('name')
         self.environ = None
 
     def __get__(self, handler, handler_class):
@@ -42,8 +42,8 @@ class Headers(Manager):
     """
     # TODO implement dict-like access
 
-    def __init__(self, name=None, response_headers=None):
-        super(Headers, self).__init__(name=name)
+    def __init__(self, *response_headers, **kwargs):
+        super(Headers, self).__init__(**kwargs)
         self.response_headers = collections.defaultdict(list)
         for header, value in response_headers or ():
             self.add(header, value)
