@@ -35,18 +35,23 @@ class Headers(Manager):
     Only `get` method alone used to access request headers,
     all other methods used to operate with the response headers.
 
-    Iterating over the Headers is actually iterating over the response headers.
-
-    Attributes:
-        response_headers: dict collection of response headers
+    Once iteration over itself has been completed there is no more opportunity
+    to modify list of response headers, so DO NOT iterate it until you set all
+    necessary headers.
     """
     # TODO implement dict-like access
 
     def __init__(self, *response_headers, **kwargs):
         super(Headers, self).__init__(**kwargs)
-        self.response_headers = collections.defaultdict(list)
+        self._headers_sent = False
+        self._response_headers = collections.defaultdict(list)
         for header, value in response_headers or ():
             self.add(header, value)
+
+    @property
+    def response_headers(self):
+        assert not self._headers_sent, "headers been already sent"
+        return self._response_headers
 
     def add(self, response_header, value):
         self.response_headers[response_header].append(value)
@@ -61,12 +66,19 @@ class Headers(Manager):
         del self.response_headers[response_header]
 
     def __iter__(self):
-        # TODO disable headers modifying after calling this method
-        return (
+        self._next = (
             (header, value)
-            for header, values in self.response_headers.viewitems()
+            for header, values in self._response_headers.viewitems()
             for value in values
-        )
+        ).next
+        return self
+
+    def next(self):
+        try:
+            return self._next()
+        except StopIteration:
+            self._headers_sent = True
+            raise
 
 
 class Cookies(Manager):
