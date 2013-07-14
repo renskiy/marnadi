@@ -3,14 +3,6 @@ import functools
 from marnadi.http import errors
 
 
-class Status:
-    # TODO finish implementation
-
-    HTTP_200_OK = '200 OK'
-
-    HTTP_405_METHOD_NOT_ALLOWED = '405 Method Not Allowed'
-
-
 class Environ(object):
     # TODO finish implementation
 
@@ -87,9 +79,8 @@ class App(object):
             while header:
                 headers.append(header)
                 header = next(response_flow)
-        except errors.HttpError as http_error:
-            status, headers = http_error.status, http_error.headers
-            response_flow = http_error
+        except errors.HttpError as response_flow:
+            status, headers = response_flow.status, response_flow.headers
 
         start_response(status, headers)
 

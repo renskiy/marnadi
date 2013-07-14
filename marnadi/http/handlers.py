@@ -1,4 +1,4 @@
-from marnadi.http import errors, managers, Status
+from marnadi.http import errors, managers
 
 
 class HandlerProcessor(type):
@@ -19,6 +19,7 @@ class HandlerProcessor(type):
 
     def get_request_method(cls, environ):
         # TODO get request method from environ
+        # TODO raise 501 if request method not recognized
         return 'POST'
 
     def __call__(cls, environ, *args, **kwargs):
@@ -61,7 +62,7 @@ class Handler(object):
 
     __metaclass__ = HandlerProcessor
 
-    status = Status.HTTP_200_OK
+    status = errors.HTTP_200_OK
 
     headers = managers.Headers()
 

@@ -41,8 +41,8 @@ class Headers(Manager):
     """
     # TODO implement dict-like access
 
-    def __init__(self, response_headers=None, *args, **kwargs):
-        super(Headers, self).__init__(*args, **kwargs)
+    def __init__(self, name=None, response_headers=None):
+        super(Headers, self).__init__(name=name)
         self.response_headers = collections.defaultdict(list)
         for header, value in response_headers or ():
             self.add(header, value)
@@ -73,8 +73,8 @@ class Cookies(Manager):
     # TODO finish implementation
     # TODO implement dict-like access
 
-    def __init__(self, *args, **kwargs):
-        super(Cookies, self).__init__(*args, **kwargs)
+    def __init__(self, name=None):
+        super(Cookies, self).__init__(name=name)
         self.headers = None
 
     def __get__(self, handler, handler_class):
