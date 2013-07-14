@@ -17,21 +17,15 @@ class HandlerProcessor(type):
         if isinstance(manager, managers.Manager):
             manager.name = manager.name or name
 
-    def get_request_method(cls, environ):
-        # TODO get request method from environ
-        # TODO raise 501 if request method not recognized
-        return 'POST'
-
     def __call__(cls, environ, *args, **kwargs):
         try:
             handler = super(HandlerProcessor, cls).__call__(environ)
-            request_method = cls.get_request_method(environ)
+            request_method = environ.request_method
             try:
                 method = getattr(handler, request_method.lower())
             except AttributeError:
-                # TODO raise HTTP 405 error
-                # TODO 405 error should return list of allowed methods
-                raise errors.HttpError
+                # TODO should include list of allowed methods
+                raise errors.HttpError(errors.HTTP_405_METHOD_NOT_ALLOWED)
             result = method(*args, **kwargs)
             result_iterator = ()
             if not isinstance(result, basestring):
@@ -42,8 +36,7 @@ class HandlerProcessor(type):
                     pass
             result = str(handler.transform_result(result))
             if not result_iterator:
-                # TODO set Content-Length (handler.headers.set())
-                pass
+                handler.headers.set('Content-Length', len(result))
             yield str(handler.status)
             for header, value in handler.headers:
                 yield str(header), str(value)
@@ -54,11 +47,11 @@ class HandlerProcessor(type):
         except errors.HttpError:
             raise
         except:
-            # TODO raise HTTP 500 error (unhandled exception)
-            raise
+            raise errors.HttpError
 
 
 class Handler(object):
+    # TODO implement way how to instantiate Handler (e.g. for testing purpose)
 
     __metaclass__ = HandlerProcessor
 
@@ -92,6 +85,3 @@ class Handler(object):
         already sent.
         """
         return chunk
-
-
-# TODO how to instantiate class Handler? (e.g for testing purpose)

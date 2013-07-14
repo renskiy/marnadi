@@ -51,8 +51,7 @@ class Headers(Manager):
         self.response_headers[response_header].append(value)
 
     def get(self, request_header, default=None):
-        # TODO check environ headers format
-        return self.environ.get(request_header, default)
+        getattr(self.environ, 'http_%s' % request_header.lower(), default)
 
     def set(self, response_header, value):
         self.response_headers[response_header] = [value]
@@ -62,7 +61,7 @@ class Headers(Manager):
 
     def __iter__(self):
         # TODO disable headers modifying after calling this method
-        return iter(
+        return (
             (header, value)
             for header, values in self.response_headers.viewitems()
             for value in values

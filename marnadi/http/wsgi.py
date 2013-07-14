@@ -4,10 +4,26 @@ from marnadi.http import errors
 
 
 class Environ(object):
-    # TODO finish implementation
 
     def __init__(self, environ):
         self.environ = environ
+
+    @property
+    def http_content_type(self):
+        return self.__getattr__('CONTENT_TYPE')
+
+    @property
+    def http_content_length(self):
+        return self.__getattr__('CONTENT_LENGTH')
+
+    def __getattr__(self, name):
+        try:
+            return self.environ[name.upper()]
+        except KeyError:
+            raise AttributeError
+
+    def __iter__(self):
+        return self.environ.viewitems()
 
 
 class App(object):
