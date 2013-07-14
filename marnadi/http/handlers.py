@@ -76,12 +76,12 @@ class Handler(object):
         return self.transform_chunk(result)
 
     def transform_chunk(self, chunk):
-
         """Transforms result chunk before sending it to the response stream.
 
         First chunk is transformed by `transform_result`.
 
-        This method doesn't allow headers modifying due to that they were
+        This method doesn't allow headers modifying due to fact that they were
         already sent.
         """
+
         return chunk

@@ -32,9 +32,10 @@ class Manager(object):
 class Headers(Manager):
     """Request/response headers manager.
 
-    Only one method `get` used to assign request headers,
+    Only `get` method alone used to access request headers,
     all other methods used to operate with the response headers.
-    Iterating over the manager is actually iterating over the response headers.
+
+    Iterating over the Headers is actually iterating over the response headers.
 
     Attributes:
         response_headers: dict collection of response headers
