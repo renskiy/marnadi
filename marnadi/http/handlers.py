@@ -80,7 +80,7 @@ class Handler(object):
         Unlike to `transform_chunk` this method still allows headers modifying.
         """
 
-        self.transform_chunk(result)
+        return self.transform_chunk(result)
 
     def transform_chunk(self, chunk):
 
