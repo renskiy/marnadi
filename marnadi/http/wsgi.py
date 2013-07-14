@@ -77,7 +77,7 @@ class App(object):
                 )
             if not path:
                 return functools.partial(handler, *args, **kwargs)
-        # TODO raise HTTP 404 error
+        raise errors.HttpError(errors.HTTP_404_NOT_FOUND)
 
     def __call__(self, environ, start_response):
         try:
