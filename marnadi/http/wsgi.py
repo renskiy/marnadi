@@ -18,8 +18,9 @@ class Environ(object):
 
     def __getattr__(self, name):
         try:
+            assert name == name.lower()
             return self.environ[name.upper()]
-        except KeyError:
+        except (KeyError, AssertionError):
             raise AttributeError
 
     def __iter__(self):
