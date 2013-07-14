@@ -44,9 +44,8 @@ class HandlerProcessor(type):
                 # TODO set Content-Length (handler.headers.set())
                 pass
             yield str(handler.status)
-            for header, values in handler.headers:
-                for value in values:
-                    yield str(header), str(value)
+            for header, value in handler.headers:
+                yield str(header), str(value)
             yield ''  # separator between headers and body
             yield result
             for chunk in result_iterator:

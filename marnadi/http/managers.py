@@ -62,7 +62,11 @@ class Headers(Manager):
 
     def __iter__(self):
         # TODO disable headers modifying after calling this method
-        return iter(self.response_headers.viewitems())
+        return iter(
+            (header, value)
+            for header, values in self.response_headers.viewitems()
+            for value in values
+        )
 
 
 class Cookies(Manager):
