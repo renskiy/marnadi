@@ -25,4 +25,4 @@ class HttpError(Exception):
         yield self.status
 
     def __iter__(self):
-        return iter(self.body)
+        return self.body
