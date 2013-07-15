@@ -40,7 +40,7 @@ class HandlerProcessor(type):
             yield str(handler.status)
             for header, value in handler.headers:
                 yield str(header), str(value)
-            yield ''  # separator between headers and body
+            yield  # separator between headers and body
             yield result
             for chunk in result_iterator:
                 yield str(handler.transform_chunk(chunk))
