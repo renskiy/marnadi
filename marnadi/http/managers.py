@@ -32,8 +32,8 @@ class Manager(object):
 class Headers(Manager):
     """Request/response headers manager.
 
-    Only `get` method alone used to access request headers,
-    all other methods used to operate with the response headers.
+    Only `get` method alone is used to access request headers,
+    all other methods are used to operate with the response headers.
 
     Once iteration over itself has been completed there is no more opportunity
     to modify list of response headers, so DO NOT iterate it until you set all
