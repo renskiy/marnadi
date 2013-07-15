@@ -85,8 +85,8 @@ class Cookies(Manager):
     # TODO finish implementation
     # TODO implement dict-like access
 
-    def __init__(self, name=None):
-        super(Cookies, self).__init__(name=name)
+    def __init__(self, **kwargs):
+        super(Cookies, self).__init__(**kwargs)
         self.headers = None
 
     def __get__(self, handler, handler_class):
