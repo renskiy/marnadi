@@ -101,4 +101,4 @@ class App(object):
 
         start_response(status, headers)
 
-        return response_flow  # return rest flow as response body
+        return response_flow  # return rest of the flow as response body
