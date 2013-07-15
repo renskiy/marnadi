@@ -10,11 +10,11 @@ class Environ(object):
 
     @property
     def http_content_type(self):
-        return self.__getattr__('CONTENT_TYPE')
+        return self.content_type
 
     @property
     def http_content_length(self):
-        return self.__getattr__('CONTENT_LENGTH')
+        return self.content_length
 
     def __getattr__(self, name):
         try:
