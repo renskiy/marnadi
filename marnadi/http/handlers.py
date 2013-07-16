@@ -32,6 +32,7 @@ class HandlerProcessor(type):
                 try:
                     result_iterator = iter(result)
                 except TypeError:
+                    # assume result is an object with a string representation
                     pass
                 else:
                     result = next(result_iterator)
