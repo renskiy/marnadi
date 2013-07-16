@@ -32,14 +32,13 @@ class Manager(object):
 class Headers(Manager):
     """Request/response headers manager.
 
-    Only `get` method alone is used to access request headers,
-    all other methods are used to operate with the response headers.
+    All read-access methods (except of `__iter__`) are used to access request
+    headers, all other methods are used to modify the response headers.
 
-    Once iteration over itself has been completed there is no more opportunity
+    Once iteration over itself has started there is no more opportunity
     to modify list of response headers, so DO NOT iterate it until you set all
     necessary headers.
     """
-    # TODO implement dict-like access
 
     def __init__(self, *response_headers, **kwargs):
         super(Headers, self).__init__(**kwargs)
@@ -47,6 +46,24 @@ class Headers(Manager):
         self._response_headers = collections.defaultdict(list)
         for header, value in response_headers or ():
             self.add(header, value)
+
+    def __getitem__(self, request_header):
+        result = self.get(request_header)
+        if result is None:
+            raise KeyError
+        return result
+
+    def __iter__(self):
+        self._next = (
+            (header, value)
+            for header, values in self._response_headers.viewitems()
+            for value in values
+        ).next
+        return self
+
+    def next(self):
+        self._headers_sent = True
+        return self._next()
 
     @property
     def response_headers(self):
@@ -64,21 +81,6 @@ class Headers(Manager):
 
     def remove(self, response_header):
         del self.response_headers[response_header]
-
-    def __iter__(self):
-        self._next = (
-            (header, value)
-            for header, values in self._response_headers.viewitems()
-            for value in values
-        ).next
-        return self
-
-    def next(self):
-        try:
-            return self._next()
-        except StopIteration:
-            self._headers_sent = True
-            raise
 
 
 class Cookies(Manager):
