@@ -31,9 +31,10 @@ class HandlerProcessor(type):
             if not isinstance(result, basestring):
                 try:
                     result_iterator = iter(result)
-                    result = next(result_iterator)
                 except TypeError:
                     pass
+                else:
+                    result = next(result_iterator)
             result = str(handler.transform_result(result))
             if not result_iterator:
                 handler.headers.set('Content-Length', len(result))
