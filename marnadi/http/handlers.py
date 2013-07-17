@@ -21,9 +21,10 @@ class HandlerProcessor(type):
                 assert request_method in handler.SUPPORTED_HTTP_METHODS
             except AssertionError:
                 handler.status = errors.HTTP_501_NOT_IMPLEMENTED
-                method = handler.options
+                method = handler.http_options
             else:
-                method = getattr(handler, request_method.lower())
+                handler_method_name = 'http_%s' % request_method.lower()
+                method = getattr(handler, handler_method_name)
             result = method(*args, **kwargs)
             result_iterator = ()
             if not isinstance(result, basestring):
@@ -112,17 +113,17 @@ class Handler(object):
 
         return chunk
 
-    def options(self, *args, **kwargs):
+    def http_options(self, *args, **kwargs):
         self.headers.set('Allow', ', '.join(self.ALLOWED_HTTP_METHODS))
 
-    get = NotImplemented
+    http_get = NotImplemented
 
-    head = NotImplemented
+    http_head = NotImplemented
 
-    post = NotImplemented
+    http_post = NotImplemented
 
-    put = NotImplemented
+    http_put = NotImplemented
 
-    patch = NotImplemented
+    http_patch = NotImplemented
 
-    delete = NotImplemented
+    http_delete = NotImplemented
