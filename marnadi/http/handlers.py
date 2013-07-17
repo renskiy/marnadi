@@ -18,7 +18,7 @@ class HandlerProcessor(type):
             handler = super(HandlerProcessor, cls).__call__(environ)
             request_method = environ.request_method
             try:
-                assert request_method in cls.SUPPORTED_HTTP_METHODS
+                assert request_method in handler.SUPPORTED_HTTP_METHODS
             except AssertionError:
                 handler.status = errors.HTTP_501_NOT_IMPLEMENTED
                 method = handler.options
