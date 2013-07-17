@@ -19,7 +19,8 @@ class HttpError(Exception):
 
     def __init__(self, status=None, headers=None):
         self.status = status or self.status
-        self.headers.extend(headers or (), replace=True)
+        if headers:
+            self.headers.extend(headers, replace=True)
 
     @property
     def body(self):
