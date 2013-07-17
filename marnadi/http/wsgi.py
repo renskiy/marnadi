@@ -8,14 +8,6 @@ class Environ(object):
     def __init__(self, environ):
         self.environ = environ
 
-    @property
-    def http_content_type(self):
-        return self.content_type
-
-    @property
-    def http_content_length(self):
-        return self.content_length
-
     def __getattr__(self, name):
         try:
             assert name == name.lower()
@@ -25,6 +17,14 @@ class Environ(object):
 
     def __iter__(self):
         return self.environ.viewitems()
+
+    @property
+    def http_content_type(self):
+        return self.content_type
+
+    @property
+    def http_content_length(self):
+        return self.content_length
 
 
 class App(object):
