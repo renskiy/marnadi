@@ -17,8 +17,9 @@ class HttpError(Exception):
         ('Content-Type', 'text/plain')
     )
 
-    def __init__(self, status=None):
+    def __init__(self, status=None, headers=None):
         self.status = status or self.status
+        self.headers.extend(headers or (), replace=True)
 
     @property
     def body(self):
