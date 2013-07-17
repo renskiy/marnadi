@@ -73,6 +73,13 @@ class Headers(Manager):
     def add(self, response_header, value):
         self.response_headers[response_header].append(value)
 
+    def extend(self, response_headers, replace=False):
+        for response_header in response_headers:
+            if replace:
+                self.set(*response_header)
+            else:
+                self.add(*response_header)
+
     def get(self, request_header, default=None):
         getattr(self.environ, 'http_%s' % request_header.lower(), default)
 
