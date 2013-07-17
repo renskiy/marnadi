@@ -18,10 +18,13 @@ class HandlerProcessor(type):
             handler = super(HandlerProcessor, cls).__call__(environ)
             request_method = environ.request_method
             try:
+                assert request_method in cls.SUPPORTED_HTTP_METHODS
                 method = getattr(handler, request_method.lower())
             except AttributeError:
                 # TODO should include list of allowed methods
                 raise errors.HttpError(errors.HTTP_405_METHOD_NOT_ALLOWED)
+            except AssertionError:
+                raise errors.HttpError(errors.HTTP_501_NOT_IMPLEMENTED)
             result = method(*args, **kwargs)
             result_iterator = ()
             if not isinstance(result, basestring):
@@ -57,6 +60,10 @@ class Handler(object):
 
     __metaclass__ = HandlerProcessor
 
+    SUPPORTED_HTTP_METHODS = (
+        'GET', 'OPTIONS', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',
+    )
+
     status = errors.HTTP_200_OK
 
     headers = managers.Headers()
@@ -87,3 +94,24 @@ class Handler(object):
         """
 
         return chunk
+
+    def get(self, *args, **kwargs):
+        raise AttributeError
+
+    def options(self, *args, **kwargs):
+        raise AttributeError
+
+    def head(self, *args, **kwargs):
+        raise AttributeError
+
+    def post(self, *args, **kwargs):
+        raise AttributeError
+
+    def put(self, *args, **kwargs):
+        raise AttributeError
+
+    def patch(self, *args, **kwargs):
+        raise AttributeError
+
+    def delete(self, *args, **kwargs):
+        raise AttributeError
