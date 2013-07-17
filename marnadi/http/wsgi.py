@@ -32,6 +32,29 @@ class App(object):
     def __init__(self, routes):
         self.routes = routes
 
+    def __call__(self, environ, start_response):
+        try:
+            path = self.get_path(environ)
+            handler = self.get_handler(path)
+            response = handler.func(
+                environ,
+                *handler.args,
+                **handler.keywords or {}
+            )
+            response_flow = iter(response)
+            headers = []
+            status = next(response_flow)
+            header = next(response_flow)
+            while header:
+                headers.append(header)
+                header = next(response_flow)
+        except errors.HttpError as response_flow:
+            status, headers = response_flow.status, response_flow.headers
+
+        start_response(status, headers)
+
+        return response_flow  # return rest of the flow as response body
+
     @staticmethod
     def get_path(environ):
         # TODO finish implementation
@@ -79,26 +102,3 @@ class App(object):
             if not path:
                 return functools.partial(handler, *args, **kwargs)
         raise errors.HttpError(errors.HTTP_404_NOT_FOUND)
-
-    def __call__(self, environ, start_response):
-        try:
-            path = self.get_path(environ)
-            handler = self.get_handler(path)
-            response = handler.func(
-                environ,
-                *handler.args,
-                **handler.keywords or {}
-            )
-            response_flow = iter(response)
-            headers = []
-            status = next(response_flow)
-            header = next(response_flow)
-            while header:
-                headers.append(header)
-                header = next(response_flow)
-        except errors.HttpError as response_flow:
-            status, headers = response_flow.status, response_flow.headers
-
-        start_response(status, headers)
-
-        return response_flow  # return rest of the flow as response body

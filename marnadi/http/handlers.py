@@ -13,10 +13,6 @@ class HandlerProcessor(type):
         super(HandlerProcessor, cls).__setattr__(attr_name, attr_value)
         cls.update_manager_name(attr_value, attr_name)
 
-    def update_manager_name(cls, manager, name):
-        if isinstance(manager, managers.Manager):
-            manager.name = manager.name or name
-
     def __call__(cls, environ, *args, **kwargs):
         try:
             handler = super(HandlerProcessor, cls).__call__(environ)
@@ -50,6 +46,10 @@ class HandlerProcessor(type):
             raise
         except:
             raise errors.HttpError
+
+    def update_manager_name(cls, manager, name):
+        if isinstance(manager, managers.Manager):
+            manager.name = manager.name or name
 
 
 class Handler(object):
