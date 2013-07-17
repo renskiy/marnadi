@@ -74,11 +74,12 @@ class Headers(Manager):
         self.response_headers[response_header].append(value)
 
     def extend(self, response_headers, replace=False):
-        for response_header in response_headers:
-            if replace:
-                self.set(*response_header)
-            else:
-                self.add(*response_header)
+        replaced_headers = []
+        for response_header, value in response_headers:
+            if replace and response_header not in replaced_headers:
+                replaced_headers.append(response_header)
+                self.remove(response_header)
+            self.add(response_header, value)
 
     def get(self, request_header, default=None):
         getattr(self.environ, 'http_%s' % request_header.lower(), default)
