@@ -19,12 +19,11 @@ class HandlerProcessor(type):
             request_method = environ.request_method
             try:
                 assert request_method in cls.SUPPORTED_HTTP_METHODS
-                method = getattr(handler, request_method.lower())
-            except AttributeError:
-                # TODO should include list of allowed methods
-                raise errors.HttpError(errors.HTTP_405_METHOD_NOT_ALLOWED)
             except AssertionError:
-                raise errors.HttpError(errors.HTTP_501_NOT_IMPLEMENTED)
+                handler.status = errors.HTTP_501_NOT_IMPLEMENTED
+                method = handler.options
+            else:
+                method = getattr(handler, request_method.lower())
             result = method(*args, **kwargs)
             result_iterator = ()
             if not isinstance(result, basestring):
@@ -35,7 +34,7 @@ class HandlerProcessor(type):
                     pass
                 else:
                     result = next(result_iterator)
-            result = str(handler.transform_result(result))
+            result = str(handler.transform_result(result) or '')
             if not result_iterator:
                 handler.headers.set('Content-Length', len(result))
             yield str(handler.status)
@@ -44,7 +43,7 @@ class HandlerProcessor(type):
             yield  # separator between headers and body
             yield result
             for chunk in result_iterator:
-                yield str(handler.transform_chunk(chunk))
+                yield str(handler.transform_chunk(chunk) or '')
         except errors.HttpError:
             raise
         except:
@@ -61,8 +60,15 @@ class Handler(object):
     __metaclass__ = HandlerProcessor
 
     SUPPORTED_HTTP_METHODS = (
-        'GET', 'OPTIONS', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',
+        'OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',
     )
+
+    @property
+    def ALLOWED_HTTP_METHODS(self):
+        for method in self.SUPPORTED_HTTP_METHODS:
+            allowed_method = getattr(self, method.lower(), None)
+            if callable(allowed_method):
+                yield method
 
     status = errors.HTTP_200_OK
 
@@ -72,6 +78,17 @@ class Handler(object):
 
     def __init__(self, environ):
         self.environ = environ
+
+    def __getattribute__(self, name):
+        attr = super(Handler, self).__getattribute__(name)
+        if (
+            attr is NotImplemented
+                and
+            attr.upper() in self.SUPPORTED_HTTP_METHODS
+        ):
+            self.status = errors.HTTP_405_METHOD_NOT_ALLOWED
+            return self.options
+        return attr
 
     def transform_result(self, result):
         """Transforms result before sending it to the response stream.
@@ -95,23 +112,17 @@ class Handler(object):
 
         return chunk
 
-    def get(self, *args, **kwargs):
-        raise AttributeError
-
     def options(self, *args, **kwargs):
-        raise AttributeError
+        self.headers.set('Allow', ', '.join(self.ALLOWED_HTTP_METHODS))
 
-    def head(self, *args, **kwargs):
-        raise AttributeError
+    get = NotImplemented
 
-    def post(self, *args, **kwargs):
-        raise AttributeError
+    head = NotImplemented
 
-    def put(self, *args, **kwargs):
-        raise AttributeError
+    post = NotImplemented
 
-    def patch(self, *args, **kwargs):
-        raise AttributeError
+    put = NotImplemented
 
-    def delete(self, *args, **kwargs):
-        raise AttributeError
+    patch = NotImplemented
+
+    delete = NotImplemented
