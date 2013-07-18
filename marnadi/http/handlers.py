@@ -57,9 +57,10 @@ class Handler(object):
     @property
     def ALLOWED_HTTP_METHODS(self):
         for method in self.SUPPORTED_HTTP_METHODS:
-            allowed_method = getattr(self, method.lower(), None)
-            if callable(allowed_method):
-                yield method
+            allowed_method = getattr(self, method.lower(), NotImplemented)
+            if allowed_method is NotImplemented:
+                continue
+            yield method
 
     status = errors.HTTP_200_OK
 
