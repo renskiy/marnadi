@@ -1,17 +1,13 @@
 from marnadi.http import errors, managers
 
 
-class HandlerProcessor(type):
+class HandlerProcessor(managers.ManagerProcessor):
 
     def __new__(mcs, name, bases, attributes):
         cls = super(HandlerProcessor, mcs).__new__(mcs, name, bases, attributes)
         for attr_name, attr_value in attributes.iteritems():
-            cls.update_manager_name(attr_value, attr_name)
+            cls.set_manager_name(attr_value, attr_name)
         return cls
-
-    def __setattr__(cls, attr_name, attr_value):
-        super(HandlerProcessor, cls).__setattr__(attr_name, attr_value)
-        cls.update_manager_name(attr_value, attr_name)
 
     def __call__(cls, environ, *args, **kwargs):
         try:
@@ -49,10 +45,6 @@ class HandlerProcessor(type):
             raise
         except:
             raise errors.HttpError
-
-    def update_manager_name(cls, manager, name):
-        if isinstance(manager, managers.Manager):
-            manager.name = manager.name or name
 
 
 class Handler(object):

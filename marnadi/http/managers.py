@@ -2,6 +2,20 @@ import collections
 import copy
 
 
+class ManagerProcessor(type):
+
+    def __setattr__(cls, attr_name, attr_value):
+        super(ManagerProcessor, cls).__setattr__(attr_name, attr_value)
+        cls.set_manager_name(attr_value, attr_name)
+
+    def set_manager_name(cls, manager, name):
+        if isinstance(manager, Manager):
+            manager.name = manager.name or name
+            for attr_name, attr_value \
+                    in manager.__class__.__dict__.itervalues():
+                cls.set_manager_name(attr_value, attr_name)
+
+
 class Manager(object):
     """Base class for all handler's managers.
 
@@ -13,14 +27,16 @@ class Manager(object):
         current request.
     """
 
+    __metaclass__ = ManagerProcessor
+
     def __init__(self, **kwargs):
         self.name = kwargs.get('name')
         self.environ = None
 
-    def __get__(self, handler, handler_class):
-        clone = self.clone(environ=handler.environ)
+    def __get__(self, owner, owner_class):
+        clone = self.clone(environ=owner.environ)
         if self.name:
-            setattr(handler, self.name, clone)
+            setattr(owner, self.name, clone)
         return clone
 
     def clone(self, **kwargs):
