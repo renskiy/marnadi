@@ -4,6 +4,12 @@ import copy
 
 class ManagerProcessor(type):
 
+    def __new__(mcs, name, bases, attributes):
+        cls = super(ManagerProcessor, mcs).__new__(mcs, name, bases, attributes)
+        for attr_name, attr_value in attributes.iteritems():
+            cls.set_manager_name(attr_value, attr_name)
+        return cls
+
     def __setattr__(cls, attr_name, attr_value):
         super(ManagerProcessor, cls).__setattr__(attr_name, attr_value)
         cls.set_manager_name(attr_value, attr_name)
@@ -35,8 +41,8 @@ class Manager(object):
 
     def __get__(self, owner, owner_class):
         clone = self.clone(environ=owner.environ)
-        if self.name:
-            setattr(owner, self.name, clone)
+        assert self.name, "manager can't be without 'name'"
+        setattr(owner, self.name, clone)
         return clone
 
     def clone(self, **kwargs):

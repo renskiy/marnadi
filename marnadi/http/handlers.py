@@ -3,12 +3,6 @@ from marnadi.http import errors, managers
 
 class HandlerProcessor(managers.ManagerProcessor):
 
-    def __new__(mcs, name, bases, attributes):
-        cls = super(HandlerProcessor, mcs).__new__(mcs, name, bases, attributes)
-        for attr_name, attr_value in attributes.iteritems():
-            cls.set_manager_name(attr_value, attr_name)
-        return cls
-
     def __call__(cls, environ, *args, **kwargs):
         try:
             handler = super(HandlerProcessor, cls).__call__(environ)
