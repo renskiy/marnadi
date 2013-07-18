@@ -13,7 +13,7 @@ class HttpError(Exception):
 
     status = HTTP_500_INTERNAL_SERVER_ERROR
 
-    headers = managers.Headers(
+    headers = managers.ResponseHeaders(
         ('Content-Type', 'text/plain')
     )
 

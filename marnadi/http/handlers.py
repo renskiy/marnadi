@@ -64,7 +64,7 @@ class Handler(object):
 
     status = errors.HTTP_200_OK
 
-    headers = managers.Headers()
+    headers = managers.ResponseHeaders()
 
     cookies = managers.Cookies()
 
