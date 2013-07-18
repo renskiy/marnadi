@@ -107,6 +107,25 @@ class Headers(Manager):
         del self.response_headers[response_header]
 
 
+class Query(Manager):
+    # TODO finish implementation
+
+    pass
+
+
+class Body(Manager):
+    # TODO finish implementation
+
+    pass
+
+
+class Request(Manager):
+
+    query = Query()
+
+    body = Body()
+
+
 class Cookies(Manager):
     # TODO finish implementation
     # TODO implement dict-like access

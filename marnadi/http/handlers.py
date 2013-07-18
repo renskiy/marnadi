@@ -69,6 +69,8 @@ class Handler(object):
 
     cookies = managers.Cookies()
 
+    request = managers.Request()
+
     def __init__(self, environ):
         self.environ = environ
 
