@@ -17,14 +17,15 @@ class HandlerProcessor(type):
         try:
             handler = super(HandlerProcessor, cls).__call__(environ)
             request_method = environ.request_method
-            try:
-                assert request_method in handler.SUPPORTED_HTTP_METHODS
-            except AssertionError:
+            if request_method not in handler.SUPPORTED_HTTP_METHODS:
                 handler.status = errors.HTTP_501_NOT_IMPLEMENTED
-                method = handler.options
+                callback = handler.options
             else:
-                method = getattr(handler, request_method.lower())
-            result = method(*args, **kwargs)
+                callback = getattr(handler, request_method.lower())
+                if callback is NotImplemented:
+                    handler.status = errors.HTTP_405_METHOD_NOT_ALLOWED
+                    callback = handler.options
+            result = callback(*args, **kwargs)
             result_iterator = ()
             if not isinstance(result, basestring):
                 try:
@@ -78,17 +79,6 @@ class Handler(object):
 
     def __init__(self, environ):
         self.environ = environ
-
-    def __getattribute__(self, name):
-        attr = super(Handler, self).__getattribute__(name)
-        if (
-            attr is NotImplemented
-                and
-            attr.upper() in self.SUPPORTED_HTTP_METHODS
-        ):
-            self.status = errors.HTTP_405_METHOD_NOT_ALLOWED
-            return self.options
-        return attr
 
     def transform_result(self, result):
         """Transforms result before sending it to the response stream.
