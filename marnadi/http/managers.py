@@ -15,14 +15,20 @@ class ManagerProcessor(type):
         cls.set_manager_name(attr_value, attr_name)
 
     def set_manager_name(cls, manager, name):
-        if isinstance(manager, Manager):
+        if isinstance(manager, AbstractManager):
             manager.name = manager.name or name
             for attr_name, attr_value \
-                    in manager.__class__.__dict__.itervalues():
+                    in manager.__class__.__dict__.iteritems():
                 cls.set_manager_name(attr_value, attr_name)
 
 
-class Manager(object):
+class AbstractManager(object):
+
+    def __init__(self, **kwargs):
+        self.name = kwargs.get('name')
+
+
+class Manager(AbstractManager):
     """Base class for all handler's managers.
 
     Custom managers should inherit this functionality.
@@ -36,7 +42,7 @@ class Manager(object):
     __metaclass__ = ManagerProcessor
 
     def __init__(self, **kwargs):
-        self.name = kwargs.get('name')
+        super(Manager, self).__init__(**kwargs)
         self.environ = None
 
     def __get__(self, owner, owner_class):
