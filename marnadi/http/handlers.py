@@ -11,7 +11,11 @@ class HandlerProcessor(managers.ManagerProcessor):
                 handler.status = errors.HTTP_501_NOT_IMPLEMENTED
                 callback = handler.options
             else:
-                callback = getattr(handler, request_method.lower())
+                callback = getattr(
+                    handler,
+                    request_method.lower(),
+                    NotImplemented
+                )
                 if callback is NotImplemented:
                     handler.status = errors.HTTP_405_METHOD_NOT_ALLOWED
                     callback = handler.options
