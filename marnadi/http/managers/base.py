@@ -40,14 +40,9 @@ class AbstractManager(object):
 
 
 class Manager(AbstractManager):
-    """Base class for all handler's managers.
+    """Base class for managers.
 
-    Custom managers should inherit this functionality.
-
-    Attributes:
-        name: attribute name of owner class to which this manager assigned.
-        environ: Environ class object containing environment variables of
-        current request.
+    All custom managers should be inherited from this class.
     """
 
     __metaclass__ = ManagerProcessor
