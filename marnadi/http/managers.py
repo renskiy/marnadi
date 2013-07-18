@@ -104,8 +104,16 @@ class Cookies(Manager):
         instance.headers = handler.headers
         return instance
 
-    def set(self, response_cookie, value):
-        # TODO add rest cookie params to argument list
+    def set(
+        self,
+        response_cookie,
+        value,
+        expires=None,
+        domain=None,
+        path=None,
+        secure=False,
+        http_only=True,
+    ):
         pass
 
     def get(self, request_cookie):
