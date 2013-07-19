@@ -52,12 +52,16 @@ class Headers(Manager):
     def add(self, response_header, value):
         self.response_headers[response_header].append(value)
 
-    def extend(self, response_headers, replace=False):
+    def extend(self, response_headers):
+        for response_header, value in response_headers:
+            self.add(response_header, value)
+
+    def update(self, response_headers):
         replaced_headers = []
         for response_header, value in response_headers:
-            if replace and response_header not in replaced_headers:
-                replaced_headers.append(response_header)
+            if response_header not in replaced_headers:
                 self.remove(response_header)
+                replaced_headers.append(response_header)
             self.add(response_header, value)
 
     def set(self, response_header, value):

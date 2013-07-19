@@ -13,14 +13,14 @@ class HttpError(Exception):
 
     status = HTTP_500_INTERNAL_SERVER_ERROR
 
-    headers = managers.ResponseHeaders(
+    headers = managers.Headers(
         ('Content-Type', 'text/plain')
     )
 
     def __init__(self, status=None, headers=None):
         self.status = status or self.status
         if headers:
-            self.headers.extend(headers, replace=True)
+            self.headers.update(headers)
 
     @property
     def body(self):
