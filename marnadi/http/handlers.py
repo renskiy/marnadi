@@ -82,6 +82,10 @@ class Handler(object):
 
     cookies = descriptors.Cookies()
 
+    query = descriptors.Query()
+
+    body = descriptors.Body()
+
     def __init__(self, environ):
         self.environ = environ
 
