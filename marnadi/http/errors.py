@@ -1,4 +1,4 @@
-from marnadi.http import managers
+from marnadi.http import descriptors
 
 HTTP_200_OK = '200 OK'
 
@@ -13,7 +13,7 @@ class HttpError(Exception):
 
     status = HTTP_500_INTERNAL_SERVER_ERROR
 
-    headers = managers.Headers(
+    headers = descriptors.Headers(
         ('Content-Type', 'text/plain')
     )
 

@@ -1,7 +1,7 @@
-from marnadi.http.managers import Manager
+from marnadi.http.descriptors import Descriptor
 
 
-class Cookies(Manager):
+class Cookies(Descriptor):
     # TODO finish implementation
     # TODO implement dict-like access
 

@@ -1,7 +1,7 @@
 import copy
 
 
-class Manager(object):
+class Descriptor(object):
     """Base class for managers.
 
     All custom managers should be inherited from this class.

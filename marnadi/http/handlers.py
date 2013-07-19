@@ -1,4 +1,4 @@
-from marnadi.http import errors, managers
+from marnadi.http import errors, descriptors
 
 
 class HandlerProcessor(type):
@@ -55,7 +55,7 @@ class HandlerProcessor(type):
             raise errors.HttpError
 
     def set_manager_name(cls, manager, name):
-        if isinstance(manager, managers.Manager):
+        if isinstance(manager, descriptors.Descriptor):
             manager.name = manager.name or name
 
 
@@ -78,9 +78,9 @@ class Handler(object):
 
     status = errors.HTTP_200_OK
 
-    headers = managers.Headers()
+    headers = descriptors.Headers()
 
-    cookies = managers.Cookies()
+    cookies = descriptors.Cookies()
 
     def __init__(self, environ):
         self.environ = environ

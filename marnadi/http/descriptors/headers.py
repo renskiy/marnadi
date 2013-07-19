@@ -1,9 +1,9 @@
 import collections
 
-from marnadi.http.managers import Manager
+from marnadi.http.descriptors import Descriptor
 
 
-class Headers(Manager):
+class Headers(Descriptor):
     """Request/response headers manager.
 
     Note that request handler iterates over the response headers when it's
