@@ -1,7 +1,17 @@
 from marnadi.http import errors, managers
 
 
-class HandlerProcessor(managers.ManagerProcessor):
+class HandlerProcessor(type):
+
+    def __new__(mcs, name, bases, attributes):
+        cls = super(HandlerProcessor, mcs).__new__(mcs, name, bases, attributes)
+        for attr_name, attr_value in attributes.iteritems():
+            cls.set_manager_name(attr_value, attr_name)
+        return cls
+
+    def __setattr__(cls, attr_name, attr_value):
+        super(HandlerProcessor, cls).__setattr__(attr_name, attr_value)
+        cls.set_manager_name(attr_value, attr_name)
 
     def __call__(cls, environ, *args, **kwargs):
         try:
@@ -44,6 +54,10 @@ class HandlerProcessor(managers.ManagerProcessor):
         except:
             raise errors.HttpError
 
+    def set_manager_name(cls, manager, name):
+        if isinstance(manager, managers.Manager):
+            manager.name = manager.name or name
+
 
 class Handler(object):
     # TODO implement way how to instantiate Handler (e.g. for testing purpose)
@@ -64,11 +78,9 @@ class Handler(object):
 
     status = errors.HTTP_200_OK
 
-    headers = managers.ResponseHeaders()
+    headers = managers.Headers()
 
     cookies = managers.Cookies()
-
-    request = managers.Request()
 
     def __init__(self, environ):
         self.environ = environ

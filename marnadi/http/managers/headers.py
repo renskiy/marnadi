@@ -3,8 +3,8 @@ import collections
 from marnadi.http.managers import Manager
 
 
-class ResponseHeaders(Manager):
-    """Response headers manager.
+class Headers(Manager):
+    """Request/response headers manager.
 
     Note that request handler iterates over the response headers when it's
     ready to generate the response, after that there is no more ability to
@@ -13,11 +13,24 @@ class ResponseHeaders(Manager):
     """
 
     def __init__(self, *response_headers, **kwargs):
-        super(ResponseHeaders, self).__init__(**kwargs)
+        super(Headers, self).__init__(**kwargs)
         self._headers_sent = False
         self._response_headers = collections.defaultdict(list)
         for header, value in response_headers or ():
             self.add(header, value)
+
+    ### request headers ###
+
+    def __getitem__(self, request_header):
+        result = self.get(request_header)
+        if result is None:
+            raise KeyError
+        return result
+
+    def get(self, request_header, default=None):
+        getattr(self.environ, 'http_%s' % request_header.lower(), default)
+
+    ### response headers ###
 
     def __iter__(self):
         self._next = (
@@ -52,15 +65,3 @@ class ResponseHeaders(Manager):
 
     def remove(self, response_header):
         del self.response_headers[response_header]
-
-
-class RequestHeaders(Manager):
-
-    def __getitem__(self, request_header):
-        result = self.get(request_header)
-        if result is None:
-            raise KeyError
-        return result
-
-    def get(self, request_header, default=None):
-        getattr(self.environ, 'http_%s' % request_header.lower(), default)
