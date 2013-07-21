@@ -77,7 +77,7 @@ class App(object):
                 match_args = tuple(match_args)
         return match_args, match_kwargs
 
-    def get_handler(self, path=None, routes=None, *args, **kwargs):
+    def get_handler(self, path, routes=None, *args, **kwargs):
         if routes is None:
             routes = self.routes
         for route_path, handler in routes:
@@ -94,11 +94,12 @@ class App(object):
             else:
                 continue
             if not callable(handler):
+                routes = iter(handler)
                 return self.get_handler(
-                    path=rest_path,
-                    routes=handler,
+                    rest_path,
+                    routes=routes,
                     *args, **kwargs
                 )
-            if not path:
+            if not rest_path:
                 return functools.partial(handler, *args, **kwargs)
         raise errors.HttpError(errors.HTTP_404_NOT_FOUND)
