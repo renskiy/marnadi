@@ -6,12 +6,12 @@ class HandlerProcessor(type):
     def __new__(mcs, name, bases, attributes):
         cls = super(HandlerProcessor, mcs).__new__(mcs, name, bases, attributes)
         for attr_name, attr_value in attributes.iteritems():
-            cls.set_manager_name(attr_value, attr_name)
+            cls.set_descriptor_name(attr_value, attr_name)
         return cls
 
     def __setattr__(cls, attr_name, attr_value):
         super(HandlerProcessor, cls).__setattr__(attr_name, attr_value)
-        cls.set_manager_name(attr_value, attr_name)
+        cls.set_descriptor_name(attr_value, attr_name)
 
     def __call__(cls, environ, *args, **kwargs):
         try:
@@ -54,9 +54,9 @@ class HandlerProcessor(type):
         except:
             raise errors.HttpError
 
-    def set_manager_name(cls, manager, name):
-        if isinstance(manager, descriptors.Descriptor):
-            manager.name = manager.name or name
+    def set_descriptor_name(cls, descriptor, name):
+        if isinstance(descriptor, descriptors.Descriptor):
+            descriptor.name = descriptor.name or name
 
 
 class Handler(object):
