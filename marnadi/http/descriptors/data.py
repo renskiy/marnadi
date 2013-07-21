@@ -1,7 +1,7 @@
 from marnadi.http.descriptors import Descriptor
 
 
-class Body(Descriptor):
+class Data(Descriptor):
     # TODO finish implementation
 
     pass

@@ -84,7 +84,7 @@ class Handler(object):
 
     query = descriptors.Query()
 
-    body = descriptors.Body()
+    data = descriptors.Data()
 
     def __init__(self, environ):
         self.environ = environ
