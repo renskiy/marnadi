@@ -12,7 +12,7 @@ class Descriptor(object):
         self.environ = None
 
     def __get__(self, owner_instance, owner_class):
-        assert self.name, "manager can't be without 'name'"
+        assert self.name, "descriptor must have 'name' property"
         clone = self.clone(environ=owner_instance.environ)
         setattr(owner_instance, self.name, clone)
         return clone
