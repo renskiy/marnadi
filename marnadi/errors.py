@@ -9,24 +9,23 @@ HTTP_501_NOT_IMPLEMENTED = '501 Not Implemented'
 
 class HttpError(Exception):
 
-    default_headers = (
-        ('Content-Type', 'text/plain'),
-    )
+    @property
+    def default_headers(self):
+        return (
+            ('Content-Type', 'text/plain'),
+            ('Content-Length', len(self.data)),
+        )
 
     @property
     def headers(self):
-        headers_sent = []
+        headers_sent = set()
         for header, value in self._headers:
             header, value = str(header).title(), str(value)
-            headers_sent.append(header)
+            headers_sent.add(header)
             yield header, value
         for header, value in self.default_headers:
-            header = str(header).title()
             if header not in headers_sent:
-                headers_sent.append(header)
-                yield header, value
-        if 'Content-Length' not in headers_sent:
-            yield 'Content-Length', len(self.data)
+                yield header.title(), value
 
     @property
     def data(self):
