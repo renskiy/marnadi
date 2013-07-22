@@ -40,7 +40,7 @@ class HandlerProcessor(type):
                 else:
                     result = next(result_iterator)
             result = str(handler.transform_result(result) or '')
-            if not result_iterator:
+            if not result_iterator and 'Content-Length' not in handler.headers:
                 handler.headers.set('Content-Length', len(result))
             yield str(handler.status)
             for header, value in handler.headers:
