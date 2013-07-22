@@ -26,11 +26,21 @@ class HttpError(Exception):
         for header in default_headers.iteritems():
             yield header
 
+    @property
+    def data(self):
+        if self._prepared_data is None:
+            self._prepared_data = self.prepare_data(self._data)
+        return self._prepared_data
+
     def __init__(self, status=HTTP_500_INTERNAL_SERVER_ERROR,
                  data=None, headers=None):
         self.status = status
         self._headers = headers or ()
-        self.data = data or status
+        self._data = data
+        self._prepared_data = None
 
     def __iter__(self):
         yield self.data
+
+    def prepare_data(self, data):
+        return self.status if data is None else str(data)
