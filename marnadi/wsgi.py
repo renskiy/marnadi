@@ -58,8 +58,7 @@ class App(object):
 
     @staticmethod
     def get_path(environ):
-        # TODO finish implementation
-        return '/'
+        return environ.path_info
 
     @staticmethod
     def get_match_subgroups(match_object):
