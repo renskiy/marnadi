@@ -78,7 +78,9 @@ class Handler(object):
 
     status = errors.HTTP_200_OK
 
-    headers = descriptors.Headers()
+    headers = descriptors.Headers(
+        ('Content-Type', 'text/plain'),
+    )
 
     cookies = descriptors.Cookies()
 
