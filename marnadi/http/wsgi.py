@@ -34,6 +34,7 @@ class App(object):
 
     def __call__(self, environ, start_response):
         try:
+            environ = Environ(environ)
             path = self.get_path(environ)
             handler = self.get_handler(path)
             response = handler.func(
