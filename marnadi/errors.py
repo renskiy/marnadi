@@ -20,13 +20,14 @@ class HttpError(Exception):
             header, value = str(header).title(), str(value)
             headers_sent.add(header)
             yield header, value
+        content_length_set = 'Content-Length' in headers_sent
         for header, value in self.default_headers:
             header = header.title()
             if header not in headers_sent:
-                headers_sent.add(header)
+                content_length_set |= header == 'Content-Length'
                 yield header, value
-        if 'Content-Length' not in headers_sent:
-            yield 'Content-Length', str(self.data)
+        if not content_length_set:
+            yield 'Content-Length', len(self.data)
 
     @property
     def data(self):
