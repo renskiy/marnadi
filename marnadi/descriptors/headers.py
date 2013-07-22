@@ -1,6 +1,6 @@
 import collections
 
-from marnadi.http.descriptors import Descriptor
+from marnadi.descriptors import Descriptor
 
 
 class Headers(Descriptor):

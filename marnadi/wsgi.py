@@ -1,6 +1,6 @@
 import functools
 
-from marnadi.http import errors
+from marnadi import errors
 
 
 class Environ(object):

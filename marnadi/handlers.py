@@ -1,4 +1,5 @@
-from marnadi.http import errors, descriptors
+from marnadi import errors
+from marnadi import descriptors
 
 
 class HandlerProcessor(type):
