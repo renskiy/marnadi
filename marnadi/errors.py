@@ -21,6 +21,7 @@ class HttpError(Exception):
             headers_sent.append(header)
             yield header, value
         for header, value in self.default_headers:
+            header = str(header).title()
             if header not in headers_sent:
                 headers_sent.append(header)
                 yield header, value
