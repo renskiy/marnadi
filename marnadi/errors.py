@@ -11,22 +11,21 @@ class HttpError(Exception):
 
     default_headers = (
         ('Content-Type', 'text/plain'),
-        ('Content-Length', 0),
     )
 
     @property
     def headers(self):
-        default_headers = dict(self.default_headers)
+        headers_sent = []
         for header, value in self._headers:
             header, value = str(header).title(), str(value)
-            if header in default_headers:
-                default_headers[header] = value
-            else:
+            headers_sent.append(header)
+            yield header, value
+        for header, value in self.default_headers:
+            if header not in headers_sent:
+                headers_sent.append(header)
                 yield header, value
-        default_headers['Content-Length'] = default_headers['Content-Length'] \
-            or len(self.data)
-        for header in default_headers.iteritems():
-            yield header
+        if 'Content-Length' not in headers_sent:
+            yield 'Content-Length', len(self.data)
 
     @property
     def data(self):
