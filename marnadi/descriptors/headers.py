@@ -40,6 +40,9 @@ class Headers(Descriptor):
         ).next
         return self
 
+    def __contains__(self, response_header):
+        return response_header in self.response_headers
+
     def next(self):
         self._headers_sent = True
         return self._next()
