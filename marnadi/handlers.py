@@ -16,25 +16,15 @@ class HandlerProcessor(type):
     def __call__(cls, environ, *args, **kwargs):
         try:
             handler = super(HandlerProcessor, cls).__call__(environ)
-            result, result_iterator = handler(*args, **kwargs), ()
-            if not isinstance(result, basestring):
-                try:
-                    result_iterator = iter(result)
-                except TypeError:
-                    # assume result is an object with a string representation
-                    pass
-                else:
-                    result = next(result_iterator)
-            result = str(handler.transform_result(result) or '')
-            if not result_iterator and 'Content-Length' not in handler.headers:
-                handler.headers.set('Content-Length', len(result))
+            result_flow = handler(*args, **kwargs)
+            first_chunk = next(result_flow)
             yield str(handler.status)
             for header, value in handler.headers:
                 yield str(header), str(value)
             yield  # separator between headers and body
-            yield result
-            for chunk in result_iterator:
-                yield str(handler.transform_chunk(chunk) or '')
+            yield first_chunk
+            for chunk in result_flow:
+                yield chunk
         except errors.HttpError:
             raise
         except:
@@ -64,9 +54,7 @@ class Handler(object):
 
     status = errors.HTTP_200_OK
 
-    headers = descriptors.Headers(
-        ('Content-Type', 'text/plain'),
-    )
+    headers = descriptors.Headers()
 
     cookies = descriptors.Cookies()
 
@@ -78,32 +66,62 @@ class Handler(object):
         self.environ = environ
 
     def __call__(self, *args, **kwargs):
+        """Generates result flow."""
+
+        callback = self.delegate()
+        result, result_iterator = callback(*args, **kwargs), ()
+        if not isinstance(result, basestring):
+            try:
+                result_iterator = iter(result)
+            except TypeError:
+                pass
+            else:
+                result = next(result_iterator)
+        result = str(self.prepare_result(result) or '')
+        if not result_iterator and 'Content-Length' not in self.headers:
+            self.headers.set('Content-Length', len(result))
+        yield result
+        for chunk in result_iterator:
+            yield str(self.prepare_chunk(chunk) or '')
+
+    def delegate(self):
+        """Returns callback to which request should be delegated
+        (such methods as `get`, `post` and so on).
+
+        This method is good place to implement common logic for
+        all HTTP methods.
+        """
+
         request_method = self.environ.request_method
         if request_method not in self.SUPPORTED_HTTP_METHODS:
-            self.status = errors.HTTP_501_NOT_IMPLEMENTED
-            callback = self.options
+            raise errors.HttpError(
+                errors.HTTP_501_NOT_IMPLEMENTED,
+                headers=(('Allow', ', '.join(self.ALLOWED_HTTP_METHODS)), )
+            )
         else:
             callback = getattr(self, request_method.lower(), NotImplemented)
             if callback is NotImplemented:
-                self.status = errors.HTTP_405_METHOD_NOT_ALLOWED
-                callback = self.options
-        return callback(*args, **kwargs)
+                raise errors.HttpError(
+                    errors.HTTP_405_METHOD_NOT_ALLOWED,
+                    headers=(('Allow', ', '.join(self.ALLOWED_HTTP_METHODS)), )
+                )
+        return callback
 
-    def transform_result(self, result):
-        """Transforms result before sending it to the response stream.
+    def prepare_result(self, result):
+        """Prepares result before sending it to the response stream.
 
-        If result splitted to chunks then only first chunk will be transformed
-        by this method, all others will be proceeded by `transform_chunk`.
+        If result splitted into chunks then only first chunk will be prepared
+        by this method, all others will be proceeded by `prepare_chunk`.
 
-        Unlike to `transform_chunk` this method still allows headers modifying.
+        Unlike to `prepare_chunk` this method still allows headers modifying.
         """
 
-        return self.transform_chunk(result)
+        return self.prepare_chunk(result)
 
-    def transform_chunk(self, chunk):
-        """Transforms result chunk before sending it to the response stream.
+    def prepare_chunk(self, chunk):
+        """Prepares chunk of result before sending it to the response stream.
 
-        First chunk is transformed by `transform_result`.
+        First chunk is prepared by `prepare_result`.
 
         This method doesn't allow headers modifying due to fact that they were
         already sent.
