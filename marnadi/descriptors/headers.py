@@ -55,11 +55,11 @@ class Headers(Descriptor):
     def add(self, response_header, value):
         self.response_headers[response_header].append(value)
 
-    def extend(self, response_headers):
+    def extend(self, *response_headers):
         for response_header, value in response_headers:
             self.add(response_header, value)
 
-    def update(self, response_headers):
+    def update(self, *response_headers):
         replaced_headers = set()
         for response_header, value in response_headers:
             if response_header not in replaced_headers:
