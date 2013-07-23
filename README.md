@@ -13,9 +13,9 @@ Example
 
     routes = (
         ('/', handlers.Handler),
-        (re.compile(r'^/hello/(?P<dude>\w+)'), (
+        (re.compile(r'/hello/(?P<dude>\w+)'), (
             ('', handlers.Handler),
-            (re.compile(r'^/from/(?P<friend>\w+)$'), MyHandler),
+            (re.compile(r'/from/(?P<friend>\w+)$'), MyHandler),
         )),
         ('/myproject', myproject.routes),
     )
