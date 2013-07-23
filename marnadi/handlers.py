@@ -24,12 +24,11 @@ class HandlerProcessor(type):
                     pass
                 else:
                     result = next(result_stream)
-            result = str(result or '')
             yield str(handler.status)
             for header, value in handler.headers:
                 yield str(header), str(value)
             yield  # separator between headers and body
-            yield result
+            yield str(result or '')
             for chunk in result_stream:
                 yield str(chunk or '')
         except errors.HttpError:
