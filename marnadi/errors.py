@@ -9,9 +9,7 @@ HTTP_501_NOT_IMPLEMENTED = '501 Not Implemented'
 
 class HttpError(Exception):
 
-    default_headers = (
-        ('Content-Type', 'text/plain'),
-    )
+    default_headers = ()
 
     @property
     def headers(self):
@@ -46,4 +44,4 @@ class HttpError(Exception):
         yield self.data
 
     def prepare_data(self, data):
-        return self.status if data is None else str(data)
+        return data and str(data) or ''
