@@ -5,36 +5,24 @@ Asynchronous web server based on gevent
 
 Example
 -------
+    # this file can be attached to any WSGI-compatible server (e.g. uwsgi)
+    # or even executed from command line (require 'gevent')
+
     import re
-    import gevent.pywsgi
     from marnadi import handlers, wsgi
-
-    import myproject
-
-    routes = (
-        ('/', handlers.Handler),
-        (re.compile(r'/hello/(?P<dude>\w+)'), (
-            ('', handlers.Handler),
-            (re.compile(r'/from/(?P<friend>\w+)$'), MyHandler),
-        )),
-        ('/myproject', myproject.routes),
-    )
 
 
     class MyHandler(handlers.Handler):
 
-        def get(self, **kwargs):
-            result = '%(dude)s got hello from %(friend)s' % kwargs
-            self.headers.extend(
-                ('Content-Type', 'text/plain'),
-                ('Content-Length', len(result)),
-            )
-            yield result
+        def get(self):
+            return 'Hello World'
 
 
-    def main():
-        application = wsgi.App(routes)
-        gevent.pywsgi.WSGIServer(('', 8000), application).serve_forever()
+    application = wsgi.App(
+        ('/', MyHandler),
+    )
+
 
     if __name__ == '__main__':
-        main()
+        import gevent.pywsgi
+        gevent.pywsgi.WSGIServer(('', 8000), application).serve_forever()
