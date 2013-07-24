@@ -24,11 +24,14 @@ class HandlerProcessor(type):
                     pass
                 else:
                     result = next(result_stream)
+            result = str(result or '')
+            if not result_stream and 'Content-Length' not in handler.headers:
+                handler.headers.set('Content-Length', len(result))
             yield str(handler.status)
             for header, value in handler.headers:
                 yield str(header), str(value)
             yield  # separator between headers and body
-            yield str(result or '')
+            yield result
             for chunk in result_stream:
                 yield str(chunk or '')
         except errors.HttpError:
