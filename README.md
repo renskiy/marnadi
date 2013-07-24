@@ -17,7 +17,6 @@ Example
         def get(self):
             return 'Hello World'
 
-
     application = wsgi.App(
         ('/', MyHandler),
     )
