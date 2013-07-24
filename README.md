@@ -22,7 +22,6 @@ Example
         ('/', MyHandler),
     )
 
-
     if __name__ == '__main__':
         import gevent.pywsgi
         gevent.pywsgi.WSGIServer(('', 8000), application).serve_forever()
