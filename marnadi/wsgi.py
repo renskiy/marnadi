@@ -3,20 +3,14 @@ import functools
 from marnadi import errors
 
 
-class Environ(object):
-
-    def __init__(self, environ):
-        self.environ = environ
+class Environ(dict):
 
     def __getattr__(self, name):
         try:
-            assert name == name.lower()
-            return self.environ[name.upper()]
-        except (KeyError, AssertionError):
+            attr = self.get(name)
+            return attr is None and self[name.upper()] or attr
+        except KeyError:
             raise AttributeError
-
-    def __iter__(self):
-        return self.environ.viewitems()
 
     @property
     def http_content_type(self):
