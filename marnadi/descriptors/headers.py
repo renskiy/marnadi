@@ -4,20 +4,22 @@ from marnadi.descriptors import Descriptor
 
 
 class Headers(Descriptor):
-    """Request/response headers manager.
+    """Request/response headers.
 
-    Note that request handler iterates over the response headers when it's
-    ready to generate the response, after that there is no more ability to
-    modify list of response headers. So be sure you set all necessary headers
-    before you going to iterate over the response headers for some reason.
+    Request headers can be accessed ONLY by key or `get` method. All other
+    ways lead to response headers.
+
+    Note:
+        Request handler uses iteration over the response headers when
+        it's ready to generate response, so there is no more ability to modify
+        response headers once iteration has been started.
     """
 
     def __init__(self, *response_headers, **kwargs):
         super(Headers, self).__init__(**kwargs)
         self._headers_sent = False
         self._response_headers = collections.defaultdict(list)
-        for header, value in response_headers or ():
-            self.add(header, value)
+        self.extend(*response_headers)
 
     ### request headers ###
 
@@ -26,6 +28,14 @@ class Headers(Descriptor):
         if result is None:
             raise KeyError
         return result
+
+    def __delitem__(self, response_header):
+        raise TypeError("Request headers are read only, "
+                        "use clear() if you wish delete response header")
+
+    def __setitem__(self, response_header, value):
+        raise TypeError("Request headers are read only, use set() or append() "
+                        "if you wish set or append new response header")
 
     def get(self, request_header, default=None):
         getattr(self.environ, 'http_%s' % request_header.lower(), default)
@@ -40,9 +50,6 @@ class Headers(Descriptor):
         ).next
         return self
 
-    def __contains__(self, response_header):
-        return response_header in self.response_headers
-
     def next(self):
         self._headers_sent = True
         return self._next()
@@ -52,23 +59,19 @@ class Headers(Descriptor):
         assert not self._headers_sent, "headers been already sent"
         return self._response_headers
 
-    def add(self, response_header, value):
-        self.response_headers[response_header].append(value)
+    def append(self, response_header, value):
+        self.response_headers[response_header.title()].append(value)
 
     def extend(self, *response_headers):
-        for response_header, value in response_headers:
-            self.add(response_header, value)
-
-    def update(self, *response_headers):
-        replaced_headers = set()
-        for response_header, value in response_headers:
-            if response_header not in replaced_headers:
-                self.remove(response_header)
-                replaced_headers.add(response_header)
-            self.add(response_header, value)
+        for header in response_headers:
+            self.append(*header)
 
     def set(self, response_header, value):
-        self.response_headers[response_header] = [value]
+        self.response_headers[response_header.title()] = [value]
 
-    def remove(self, response_header):
-        del self.response_headers[response_header]
+    def clear(self, *response_headers):
+        if response_headers:
+            for response_header in response_headers:
+                del self.response_headers[response_header.title()]
+        else:
+            self.response_headers.clear()
