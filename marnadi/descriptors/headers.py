@@ -38,7 +38,11 @@ class Headers(Descriptor):
                         "if you wish set or append new response header")
 
     def get(self, request_header, default=None):
-        getattr(self.environ, 'http_%s' % request_header.lower(), default)
+        return getattr(
+            self.environ,
+            'http_%s' % request_header.lower(),
+            default
+        )
 
     ### response headers ###
 
