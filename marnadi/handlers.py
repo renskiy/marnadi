@@ -25,7 +25,7 @@ class HandlerProcessor(type):
                 else:
                     result = next(result_stream)
             result = str(result or '')
-            if not result_stream and 'Content-Length' not in handler.headers:
+            if not result_stream:
                 handler.headers.set('Content-Length', len(result))
             yield str(handler.status)
             for header, value in handler.headers:
