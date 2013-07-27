@@ -15,18 +15,16 @@ class Cookies(Descriptor):
     def __init__(self, **kwargs):
         super(Cookies, self).__init__(**kwargs)
         self.headers = None
-        self._request_cookies = None
-
-    def __setitem__(self, *args, **kwargs):
-        raise TypeError("Cookie modifying allowed only using set() method")
+        self._cookies = None
 
     def clone(self, owner_instance):
         instance = super(Cookies, self).clone(owner_instance)
         instance.headers = owner_instance.headers
-        instance._request_cookies = None
+        instance._cookies = None
         return instance
 
-    ### request cookies ###
+    def __setitem__(self, *args, **kwargs):
+        raise TypeError("Cookie modifying allowed only using set() method")
 
     def __delitem__(self, cookie):
         self.remove(cookie)
@@ -40,35 +38,33 @@ class Cookies(Descriptor):
             path=path
         )
 
-    def __getitem__(self, request_cookie):
-        result = self.get(request_cookie)
+    def __getitem__(self, cookie):
+        result = self.get(cookie)
         if result is None:
             raise KeyError
         return result
 
     @property
-    def request_cookies(self):
-        if self._request_cookies is None:
-            self._request_cookies = dict(
+    def cookies(self):
+        if self._cookies is None:
+            self._cookies = dict(
                 cookie.split('=', 1)
                 for cookie in self.headers.get('Cookie', '').split('; ')
                 if cookie
             )
-        return self._request_cookies
+        return self._cookies
 
-    def get(self, request_cookie, default=None, url_decode=False):
-        cookie = self.request_cookies.get(request_cookie, default)
+    def get(self, cookie, default=None, url_decode=False):
+        cookie = self.cookies.get(cookie, default)
         if url_decode:
             return urllib.unquote(cookie)
         return cookie
 
-    ### response cookies ###
-
-    def set(self, response_cookie, value, expires=None, domain=None, path=None,
+    def set(self, cookie, value, expires=None, domain=None, path=None,
             secure=False, http_only=True, url_encode=False):
         if url_encode:
             value = urllib.quote(value)
-        cookie_params = ['%s=%s' % (response_cookie, value)]
+        cookie_params = ['%s=%s' % (cookie, value)]
         if domain:
             cookie_params.append("Domain=%s" % domain)
         if path:
