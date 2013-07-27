@@ -1,4 +1,5 @@
 import collections
+import copy
 
 from marnadi.descriptors import Descriptor
 
@@ -20,6 +21,12 @@ class Headers(Descriptor):
         self._headers_sent = False
         self._response_headers = collections.defaultdict(list)
         self.extend(*response_headers)
+
+    def clone(self, owner_instance):
+        instance = super(Headers, self).clone(owner_instance)
+        instance._headers_sent = False
+        instance._response_headers = copy.copy(self._response_headers)
+        return instance
 
     ### request headers ###
 
