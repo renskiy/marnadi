@@ -11,28 +11,6 @@ class HttpError(Exception):
 
     default_headers = ()
 
-    @property
-    def headers(self):
-        headers_sent = set()
-        for header, value in self._headers:
-            header, value = str(header).title(), str(value)
-            headers_sent.add(header)
-            yield header, value
-        content_length_set = 'Content-Length' in headers_sent
-        for header, value in self.default_headers:
-            header = header.title()
-            if header not in headers_sent:
-                content_length_set |= header == 'Content-Length'
-                yield header, value
-        if not content_length_set:
-            yield 'Content-Length', len(self.data)
-
-    @property
-    def data(self):
-        if self._prepared_data is None:
-            self._prepared_data = self.prepare_data(self._data)
-        return self._prepared_data
-
     def __init__(self, status=HTTP_500_INTERNAL_SERVER_ERROR,
                  data=None, headers=None):
         self.status = status
@@ -40,8 +18,29 @@ class HttpError(Exception):
         self._data = data
         self._prepared_data = None
 
-    def __iter__(self):
-        yield self.data
+    def __len__(self):
+        return len(self.data)
+
+    def __str__(self):
+        return self.data
+
+    @property
+    def headers(self):
+        headers_sent = set()
+        for header, value in self._headers:
+            header, value = str(header).title(), str(value)
+            headers_sent.add(header)
+            yield header, value
+        for header, value in self.default_headers:
+            header = header.title()
+            if header not in headers_sent:
+                yield header, value
+
+    @property
+    def data(self):
+        if self._prepared_data is None:
+            self._prepared_data = self.prepare_data(self._data)
+        return self._prepared_data
 
     def prepare_data(self, data):
         return data and str(data) or ''
