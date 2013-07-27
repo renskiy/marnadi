@@ -1,4 +1,5 @@
-import copy
+class Empty(object):
+    pass
 
 
 class Descriptor(object):
@@ -13,11 +14,12 @@ class Descriptor(object):
 
     def __get__(self, owner_instance, owner_class):
         assert self.name, "descriptor must have 'name' property"
-        clone = self.clone(environ=owner_instance.environ)
+        clone = self.clone(owner_instance)
         setattr(owner_instance, self.name, clone)
         return clone
 
-    def clone(self, **kwargs):
-        clone = copy.deepcopy(self)
-        clone.__dict__.update(kwargs)
+    def clone(self, owner_instance):
+        clone = Empty()
+        clone.__class__ = self.__class__
+        clone.environ = owner_instance.environ
         return clone
