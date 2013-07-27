@@ -40,7 +40,7 @@ class Headers(Descriptor):
     def get(self, request_header, default=None):
         return getattr(
             self.environ,
-            'http_%s' % request_header.lower(),
+            'http_%s' % request_header.lower().replace('-', '_'),
             default
         )
 
