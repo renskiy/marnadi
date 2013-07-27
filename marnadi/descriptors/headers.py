@@ -29,11 +29,11 @@ class Headers(Descriptor):
             raise KeyError
         return result
 
-    def __delitem__(self, response_header):
+    def __delitem__(self, *args, **kwargs):
         raise TypeError("Request headers are read only, "
                         "use clear() if you wish delete response header")
 
-    def __setitem__(self, response_header, value):
+    def __setitem__(self, *args, **kwargs):
         raise TypeError("Request headers are read only, use set() or append() "
                         "if you wish set or append new response header")
 
