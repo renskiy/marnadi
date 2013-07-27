@@ -20,14 +20,16 @@ class Cookies(Descriptor):
     def __setitem__(self, *args, **kwargs):
         raise TypeError("Cookie modifying allowed only using set() method")
 
-    def __delitem__(self, cookie):
-        self.remove(cookie)
-
     def clone(self, owner_instance):
         instance = super(Cookies, self).clone(owner_instance)
         instance.headers = owner_instance.headers
         instance._request_cookies = None
         return instance
+
+    ### request cookies ###
+
+    def __delitem__(self, cookie):
+        self.remove(cookie)
 
     def remove(self, cookie, domain=None, path=None):
         self.set(
@@ -37,8 +39,6 @@ class Cookies(Descriptor):
             domain=domain,
             path=path
         )
-
-    ### request cookies ###
 
     def __getitem__(self, request_cookie):
         result = self.get(request_cookie)
