@@ -56,16 +56,16 @@ class Cookies(Descriptor):
                 self._cookies = {}
         return self._cookies
 
-    def get(self, cookie, default=None, url_decode=False):
-        cookie = self.cookies.get(cookie, default)
-        if url_decode:
-            return urllib.unquote(cookie)
-        return cookie
+    def get(self, cookie, default=None, decode=False):
+        value = self.cookies.get(cookie, default)
+        if decode:
+            return self.decode(value)
+        return value
 
     def set(self, cookie, value, expires=None, domain=None, path=None,
-            secure=False, http_only=True, url_encode=False):
-        if url_encode:
-            value = urllib.quote(value)
+            secure=False, http_only=True, encode=False):
+        if encode:
+            value = self.encode(value)
         cookie_params = ['%s=%s' % (cookie, value)]
         if domain:
             cookie_params.append("Domain=%s" % domain)
@@ -81,3 +81,9 @@ class Cookies(Descriptor):
         if http_only:
             cookie_params.append("HttpOnly")
         self.headers.append('Set-Cookie', '; '.join(cookie_params))
+
+    def encode(self, value):
+        return urllib.quote(value)
+
+    def decode(self, value):
+        return urllib.unquote(value)
