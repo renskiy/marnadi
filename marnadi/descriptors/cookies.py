@@ -47,11 +47,13 @@ class Cookies(Descriptor):
     @property
     def cookies(self):
         if self._cookies is None:
-            self._cookies = dict(
-                cookie.split('=', 1)
-                for cookie in self.headers.get('Cookie', '').split('; ')
-                if cookie
-            )
+            try:
+                self._cookies = dict(
+                    cookie.strip().split('=', 1)
+                    for cookie in self.headers['Cookie'].split(';')
+                )
+            except KeyError:
+                self._cookies = {}
         return self._cookies
 
     def get(self, cookie, default=None, url_decode=False):
