@@ -15,14 +15,13 @@ class HttpError(Exception):
                  data=None, headers=None):
         self.status = status
         self._headers = headers or ()
-        self._data = data
-        self._prepared_data = None
+        self.data = data
 
     def __len__(self):
         return 1
 
     def __iter__(self):
-        yield self.data
+        yield self.data and str(self.data) or ''
 
     @property
     def headers(self):
@@ -35,12 +34,3 @@ class HttpError(Exception):
             header = header.title()
             if header not in headers_sent:
                 yield header, value
-
-    @property
-    def data(self):
-        if self._prepared_data is None:
-            self._prepared_data = self.prepare_data(self._data)
-        return self._prepared_data
-
-    def prepare_data(self, data):
-        return data and str(data) or ''
