@@ -19,10 +19,10 @@ class HttpError(Exception):
         self._prepared_data = None
 
     def __len__(self):
-        return len(self.data)
+        return 1
 
-    def __str__(self):
-        return self.data
+    def __iter__(self):
+        yield self.data
 
     @property
     def headers(self):
