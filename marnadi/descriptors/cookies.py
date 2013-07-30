@@ -1,6 +1,6 @@
 import datetime
+import time
 import urllib
-import pytz
 
 from marnadi.descriptors import Descriptor
 
@@ -17,32 +17,23 @@ class Cookies(Descriptor):
         self.headers = None
         self._cookies = None
 
-    def clone(self, owner_instance):
-        instance = super(Cookies, self).clone(owner_instance)
-        instance.headers = owner_instance.headers
-        instance._cookies = None
-        return instance
-
     def __setitem__(self, *args, **kwargs):
         raise TypeError("Cookie modifying allowed only using set() method")
 
     def __delitem__(self, cookie):
         self.remove(cookie)
 
-    def remove(self, cookie, domain=None, path=None):
-        self.set(
-            cookie,
-            '',
-            expires=datetime.datetime(1970, 1, 1),
-            domain=domain,
-            path=path
-        )
-
     def __getitem__(self, cookie):
         result = self.get(cookie)
         if result is None:
             raise KeyError
         return result
+
+    def clone(self, owner_instance):
+        instance = super(Cookies, self).clone(owner_instance)
+        instance.headers = owner_instance.headers
+        instance._cookies = None
+        return instance
 
     @property
     def cookies(self):
@@ -55,6 +46,15 @@ class Cookies(Descriptor):
             except KeyError:
                 self._cookies = {}
         return self._cookies
+
+    def remove(self, cookie, domain=None, path=None):
+        self.set(
+            cookie,
+            '',
+            expires=datetime.datetime(1980, 1, 1),
+            domain=domain,
+            path=path
+        )
 
     def get(self, cookie, default=None, decode=False):
         value = self.cookies.get(cookie, default)
@@ -72,10 +72,15 @@ class Cookies(Descriptor):
         if path:
             cookie_params.append("Path=%s" % path)
         if isinstance(expires, datetime.datetime):
-            if expires.tzinfo is None:
-                expires = expires.replace(tzinfo=pytz.timezone('GMT'))
+            struct_time = (
+                time.gmtime(time.mktime(expires.timetuple()))
+                if expires.tzinfo is None else
+                time.localtime(time.mktime(expires.utctimetuple()))
+            )
             cookie_params.append(
-                "Expires=%s" % expires.strftime("%a, %d %b %Y %H:%M:%S %Z"))
+                "Expires=%s" %
+                time.strftime("%a, %d %b %Y %H:%M:%S GMT", struct_time)
+            )
         if secure:
             cookie_params.append("Secure")
         if http_only:
