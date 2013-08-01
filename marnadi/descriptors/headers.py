@@ -56,7 +56,7 @@ class Headers(Descriptor):
     def __iter__(self):
         self._next = (
             (header, value)
-            for header, values in self._response_headers.viewitems()
+            for header, values in self._response_headers.iteritems()
             for value in values
         ).next
         return self
