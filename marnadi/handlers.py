@@ -61,7 +61,12 @@ class Handler(object):
 
     query = descriptors.Query()
 
-    data = descriptors.Data()
+    data = descriptors.Data(
+        ('multipart/form-data', 'marnadi.mime.multipart.form_data'),
+        ('application/json', 'marnadi.mime.application.json'),
+        ('application/x-www-form-urlencoded',
+            'marnadi.mime.application.x_www_form_urlencoded'),
+    )
 
     def __init__(self, environ):
         self.environ = environ

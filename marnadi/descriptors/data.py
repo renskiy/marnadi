@@ -2,15 +2,18 @@ from marnadi.descriptors import Descriptor
 
 
 class Data(Descriptor):
-    # TODO finish implementation
-
-    content_decoders = {
-        'multipart/form-data': 'marnadi.mime.multipart.form_data',
-        'application/json': 'marnadi.mime.application.json',
-        'application/x-www-form-urlencoded':
-            'marnadi.mime.application.x_www_form_urlencoded',
-    }
 
     def __init__(self, *content_decoders, **kwargs):
         super(Data, self).__init__(**kwargs)
-        self.content_decoders.update(content_decoders)
+        # TODO may contain strings or modules
+        # TODO replace strings by modules once they have been loaded
+        self._decoders = dict(content_decoders)
+
+    def clone(self, owner_instance):
+        instance = super(Data, self).clone(owner_instance)
+        instance._decoders = self._decoders
+        return instance
+
+    @property
+    def content_decoders(self):
+        return tuple(self._decoders.items())
