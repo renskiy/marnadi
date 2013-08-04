@@ -64,6 +64,7 @@ class Headers(Descriptor):
         )
 
     ### response headers ###
+    # TODO add ability to set params for complex response headers
 
     def __iter__(self):
         self._next = (
