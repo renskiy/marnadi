@@ -51,6 +51,18 @@ class Headers(Descriptor):
             default
         )
 
+    def get_splitted(self, request_header):
+        """Returns value and params of complex request header"""
+
+        raw_value = self.get(request_header, default='')
+        parts = iter(raw_value.split(';'))
+        value = parts.next()
+        return value, dict(
+            (key, value.strip('"'))
+            for param in parts
+            for key, value in param.strip().split('=', 1)
+        )
+
     ### response headers ###
 
     def __iter__(self):
