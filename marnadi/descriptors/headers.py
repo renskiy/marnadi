@@ -58,9 +58,8 @@ class Headers(Descriptor):
         parts = iter(raw_value.split(';'))
         value = parts.next()
         return value, dict(
-            (key, value.strip('"'))
+            (lambda p, v: (p, v.strip('"')))(*param.strip().split('=', 1))
             for param in parts
-            for key, value in param.strip().split('=', 1)
         )
 
     ### response headers ###
