@@ -1,14 +1,10 @@
 marnadi
 =======
 
-Asynchronous web server based on gevent
+Web-framework with Black Jack and some thing you will like
 
 Example
 -------
-    # this file can be attached to any WSGI-compatible server (e.g. uwsgi)
-    # or even executed from command line (require 'gevent')
-
-    import re
     from marnadi import handlers, wsgi
 
 
@@ -22,5 +18,5 @@ Example
     )
 
     if __name__ == '__main__':
-        import gevent.pywsgi
-        gevent.pywsgi.WSGIServer(('', 8000), application).serve_forever()
+        from wsgiref.simple_server import make_server
+        make_server('', 8000, application).serve_forever()
