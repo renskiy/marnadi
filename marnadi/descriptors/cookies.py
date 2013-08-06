@@ -17,6 +17,9 @@ class Cookies(Descriptor):
         self.headers = None
         self._cookies = None
 
+    def __contains__(self, cookie):
+        return cookie in self.cookies
+
     def __setitem__(self, *args, **kwargs):
         raise TypeError("Cookie modifying allowed only using set() method")
 
