@@ -66,6 +66,7 @@ class Handler(object):
         ('application/json', 'marnadi.mime.application.json.Decoder'),
         ('application/x-www-form-urlencoded',
             'marnadi.mime.application.x_www_form_urlencoded.Decoder'),
+        methods=('POST', 'PUT', 'PATCH'),
     )
 
     def __init__(self, environ):
