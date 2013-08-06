@@ -1,4 +1,4 @@
-from marnadi import errors
+from marnadi import mime
 from marnadi.descriptors import Descriptor
 
 
@@ -6,48 +6,50 @@ class Data(Descriptor):
 
     def __init__(self, *content_decoders, **kwargs):
         super(Data, self).__init__(**kwargs)
-        # TODO may contain strings or modules
-        # TODO replace strings by modules once they have been loaded
         self.content_decoders = dict(content_decoders)
         self.headers = None
-        self._decoded_data = None
-
-    def __str__(self):
-        return self.data
+        self._body = None
 
     def clone(self, owner_instance):
         instance = super(Data, self).clone(owner_instance)
         instance.content_decoders = self.content_decoders
         instance.headers = owner_instance.headers
-        instance._decoded_data = None
+        instance._body = None
         return instance
 
-    @property
-    def data(self):
-        if self._decoded_data is None:
-            self._decoded_data = self.decode_request_data()
-        return self._decoded_data
+    def __str__(self):
+        return str(self.body)
 
-    def decode_request_data(self):
-        try:
-            content_length = int(self.headers['Content-Length'])
-        except TypeError:
-            raise errors.HttpError(errors.HTTP_400_BAD_REQUEST)
-        except KeyError:
-            if self.environ.request_method in ('POST', 'PUT'):
-                raise errors.HttpError(errors.HTTP_411_LENGTH_REQUIRED)
-            content_length = 0
-        if content_length == 0:
-            return ''
+    def __len__(self):
+        return len(self.body)
+
+    def __iter__(self):
+        return iter(self.body)
+
+    def __contains__(self, name):
+        return name in self.body
+
+    def __getitem__(self, key):
+        return self.body[key]
+
+    @property
+    def body(self):
+        if self._body is None:
+            self._body = self.decode()
+        return self._body
+
+    def get(self, name, default=None):
+        if isinstance(self.body, dict):
+            return self.body.get(name, default)
+        return default
+
+    def decode(self):
         content_type, content_params = self.headers.get_splitted('Content-Type')
         decode = self.get_decoder(content_type)
-        content = self.environ['wsgi.input'].read(content_length)
-        return decode(content, **content_params)
-
-    @staticmethod
-    def plain_text_decoder(content, **kwargs):
-        return content
+        return decode(self.environ['wsgi.input'], self.headers, content_params)
 
     def get_decoder(self, content_type):
         if content_type not in self.content_decoders:
-            return self.plain_text_decoder
+            return mime.Decoder
+        # TODO load requested decoder
+        # TODO replace string by callable once it has been loaded
