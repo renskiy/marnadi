@@ -10,8 +10,6 @@ class DataPreparer(type):
             raise errors.HttpError(errors.HTTP_400_BAD_REQUEST)
         except KeyError:
             raise errors.HttpError(errors.HTTP_411_LENGTH_REQUIRED)
-        if content_length == 0:
-            return ''
         decoder = super(DataPreparer, cls).__call__()
         data = stream.read(content_length)
         return decoder(data, headers, content_params)
