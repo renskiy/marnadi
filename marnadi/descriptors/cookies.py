@@ -17,6 +17,12 @@ class Cookies(Descriptor):
         self.headers = None
         self._cookies = None
 
+    def clone(self, owner_instance):
+        instance = super(Cookies, self).clone(owner_instance)
+        instance.headers = owner_instance.headers
+        instance._cookies = None
+        return instance
+
     def __contains__(self, cookie):
         return cookie in self.cookies
 
@@ -31,12 +37,6 @@ class Cookies(Descriptor):
         if result is None:
             raise KeyError
         return result
-
-    def clone(self, owner_instance):
-        instance = super(Cookies, self).clone(owner_instance)
-        instance.headers = owner_instance.headers
-        instance._cookies = None
-        return instance
 
     @property
     def cookies(self):

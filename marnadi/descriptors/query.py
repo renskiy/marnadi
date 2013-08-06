@@ -9,6 +9,11 @@ class Query(Descriptor):
         super(Query, self).__init__(**kwargs)
         self._query = None
 
+    def clone(self, owner_instance):
+        instance = super(Query, self).clone(owner_instance)
+        instance._query = None
+        return instance
+
     def __getitem__(self, query_param):
         value = self.get(query_param)
         if value is None:
@@ -24,11 +29,6 @@ class Query(Descriptor):
             except AttributeError:
                 self._query = {}
         return self._query
-
-    def clone(self, owner_instance):
-        instance = super(Query, self).clone(owner_instance)
-        instance._query = None
-        return instance
 
     def get(self, query_param, default=None):
         return self.query.get(query_param, default)
