@@ -14,7 +14,7 @@ Example
             return 'Hello World'
 
     application = wsgi.App(
-        ('/', MyHandler),
+        routes=('/', MyHandler),
     )
 
     if __name__ == '__main__':
