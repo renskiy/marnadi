@@ -12,16 +12,16 @@ class Cookies(Descriptor):
     or using `get` method.
     """
 
-    def __init__(self, **kwargs):
-        super(Cookies, self).__init__(**kwargs)
+    def __init__(self, name=None):
+        super(Cookies, self).__init__(name)
         self.headers = None
         self._cookies = None
 
     def clone(self, owner_instance):
-        instance = super(Cookies, self).clone(owner_instance)
-        instance.headers = owner_instance.headers
-        instance._cookies = None
-        return instance
+        clone = super(Cookies, self).clone(owner_instance)
+        clone.headers = owner_instance.headers
+        clone._cookies = None
+        return clone
 
     def __contains__(self, cookie):
         return cookie in self.cookies

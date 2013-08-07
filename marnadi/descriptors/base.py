@@ -8,8 +8,8 @@ class Descriptor(object):
     All custom managers should be inherited from this class.
     """
 
-    def __init__(self, **kwargs):
-        self.name = kwargs.get('name')
+    def __init__(self, name=None):
+        self.name = name
         self.environ = None
 
     def __get__(self, owner_instance, owner_class):

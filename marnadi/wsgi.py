@@ -23,8 +23,8 @@ class Environ(dict):
 
 class App(object):
 
-    def __init__(self, *routes):
-        self.routes = routes
+    def __init__(self, routes=None):
+        self.routes = routes or ()
 
     def __call__(self, environ, start_response):
         try:

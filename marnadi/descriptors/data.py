@@ -4,23 +4,22 @@ from marnadi.descriptors import Descriptor
 
 class Data(Descriptor):
 
-    def __init__(self, *content_decoders, **kwargs):
-        methods = kwargs.pop('methods')
-        super(Data, self).__init__(**kwargs)
-        self.content_decoders = dict(content_decoders)
+    def __init__(self, name=None, content_decoders=None, methods=None):
+        super(Data, self).__init__(name)
+        self.content_decoders = dict(content_decoders or ())
         self.headers = None
         self._body = None
-        self.methods = methods
+        self.methods = methods or ()
 
     def clone(self, owner_instance):
-        instance = super(Data, self).clone(owner_instance)
-        assert instance.environ.request_method in self.methods, \
+        clone = super(Data, self).clone(owner_instance)
+        assert clone.environ.request_method in self.methods, \
             'Data descriptor is not allowed for requested HTTP method, ' \
             'use `methods` keyword argument to set list of allowed methods'
-        instance.content_decoders = self.content_decoders
-        instance.headers = owner_instance.headers
-        instance._body = None
-        return instance
+        clone.content_decoders = self.content_decoders
+        clone.headers = owner_instance.headers
+        clone._body = None
+        return clone
 
     def __str__(self):
         return str(self.body)

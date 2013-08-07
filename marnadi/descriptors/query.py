@@ -5,14 +5,14 @@ from marnadi.descriptors import Descriptor
 
 class Query(Descriptor):
 
-    def __init__(self, **kwargs):
-        super(Query, self).__init__(**kwargs)
+    def __init__(self, name=None):
+        super(Query, self).__init__(name)
         self._query = None
 
     def clone(self, owner_instance):
-        instance = super(Query, self).clone(owner_instance)
-        instance._query = None
-        return instance
+        clone = super(Query, self).clone(owner_instance)
+        clone._query = None
+        return clone
 
     def __getitem__(self, query_param):
         value = self.get(query_param)
