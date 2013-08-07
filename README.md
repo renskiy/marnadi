@@ -1,7 +1,7 @@
 marnadi
 =======
 
-Web-framework with Black Jack and some thing you will like
+Yet another Web Framework with Blackjack and something you will really like
 
 Example
 -------
