@@ -14,11 +14,11 @@ class Query(Descriptor):
         clone._query = None
         return clone
 
-    def __getitem__(self, query_param):
-        value = self.get(query_param)
-        if value is None:
-            raise KeyError
-        return value
+    def __contains__(self, name):
+        return name in self.query
+
+    def __getitem__(self, key):
+        return self.query[key]
 
     @property
     def query(self):

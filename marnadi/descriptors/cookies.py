@@ -33,10 +33,7 @@ class Cookies(Descriptor):
         self.remove(cookie)
 
     def __getitem__(self, cookie):
-        result = self.get(cookie)
-        if result is None:
-            raise KeyError
-        return result
+        return self.cookies[cookie]
 
     @property
     def cookies(self):
