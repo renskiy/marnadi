@@ -1,3 +1,5 @@
+import importlib
+
 from marnadi import mime
 from marnadi.descriptors import Descriptor
 
@@ -54,6 +56,11 @@ class Data(Descriptor):
 
     def get_decoder(self, content_type):
         if content_type not in self.content_decoders:
-            return mime.Decoder
-        # TODO load requested decoder
-        # TODO replace string by callable once it has been loaded
+            return mime.Decoder  # default mime decoder
+        decoder = self.content_decoders[content_type]
+        if not callable(decoder):
+            module_name, decoder_name = str(decoder).rsplit('.', 1)
+            decoder_module = importlib.import_module(module_name)
+            decoder = getattr(decoder_module, decoder_name)
+            self.content_decoders[content_type] = decoder
+        return decoder
