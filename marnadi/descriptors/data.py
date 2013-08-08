@@ -23,15 +23,6 @@ class Data(Descriptor):
         clone._body = None
         return clone
 
-    def __str__(self):
-        return str(self.body)
-
-    def __len__(self):
-        return len(self.body)
-
-    def __iter__(self):
-        return iter(self.body)
-
     def __contains__(self, name):
         return name in self.body
 
