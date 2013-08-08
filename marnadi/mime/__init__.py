@@ -11,13 +11,13 @@ class DataPreparer(type):
         except KeyError:
             raise errors.HttpError(errors.HTTP_411_LENGTH_REQUIRED)
         decoder = super(DataPreparer, cls).__call__()
-        data = stream.read(content_length)
-        return decoder(data, headers, content_params)
+        content = stream.read(content_length)
+        return decoder(content, headers, content_params)
 
 
 class Decoder(object):
 
     __metaclass__ = DataPreparer
 
-    def __call__(self, data, headers, content_params):
-        return data
+    def __call__(self, content, headers, content_params):
+        return content
