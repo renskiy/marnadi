@@ -68,7 +68,7 @@ class Handler(object):
             ('application/x-www-form-urlencoded',
                 'marnadi.mime.application.x_www_form_urlencoded.Decoder'),
         ),
-        methods=('POST', 'PUT', 'PATCH'),
+        allowed_methods=('POST', 'PUT', 'PATCH'),
     )
 
     def __init__(self, environ):
