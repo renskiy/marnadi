@@ -63,7 +63,6 @@ class Headers(Descriptor):
         )
 
     ### response headers ###
-    # TODO add ability to set params for complex response headers
 
     def __iter__(self):
         self._next = (
@@ -82,14 +81,16 @@ class Headers(Descriptor):
         assert not self._headers_sent, "headers been already sent"
         return self._response_headers
 
-    def append(self, response_header, value):
+    def append(self, response_header, value, **attributes):
+        value = self.make_header_value(value, **attributes)
         self.response_headers[response_header.title()].append(value)
 
     def extend(self, *response_headers):
         for header in response_headers:
             self.append(*header)
 
-    def set(self, response_header, value):
+    def set(self, response_header, value, **attributes):
+        value = self.make_header_value(value, **attributes)
         self.response_headers[response_header.title()] = [value]
 
     def clear(self, *response_headers):
@@ -98,3 +99,15 @@ class Headers(Descriptor):
                 del self.response_headers[response_header.title()]
         else:
             self.response_headers.clear()
+
+    ### helpers ###
+
+    def make_header_value(self, value, **attributes):
+        if not attributes:
+            return value
+        return "%s; %s" % (
+            value, '; '.join(
+                attr_name + ('' if attr_value is None else '=%s' % attr_value)
+                for attr_name, attr_value in attributes.iteritems()
+            )
+        )
