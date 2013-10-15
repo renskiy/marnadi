@@ -18,8 +18,9 @@ class Descriptor(object):
         setattr(owner_instance, self.attr_name, clone)
         return clone
 
-    def clone(self, owner_instance):
+    @classmethod
+    def clone(cls, owner_instance):
         clone = Empty()
-        clone.__class__ = self.__class__
+        clone.__class__ = cls
         clone.environ = owner_instance.environ
         return clone
