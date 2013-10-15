@@ -1,5 +1,3 @@
-import functools
-
 from marnadi import errors
 
 
@@ -31,11 +29,7 @@ class App(object):
             environ = Environ(environ)
             path = self.get_path(environ)
             handler = self.get_handler(path)
-            response = handler.func(
-                environ,
-                *handler.args,
-                **handler.keywords or {}
-            )
+            response = handler(environ)
             response_flow = iter(response)
             headers = []
             status = next(response_flow)
@@ -95,5 +89,5 @@ class App(object):
                     *args, **kwargs
                 )
             if not rest_path:
-                return functools.partial(handler, *args, **kwargs)
+                return lambda environ: handler(environ, *args, **kwargs)
         raise errors.HttpError(errors.HTTP_404_NOT_FOUND)
