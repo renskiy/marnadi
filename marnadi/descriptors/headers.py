@@ -16,11 +16,11 @@ class Headers(Descriptor):
         response headers once iteration has been started.
     """
 
-    def __init__(self, name=None, default_headers=None):
-        super(Headers, self).__init__(name)
+    def __init__(self, *default_headers):
+        super(Headers, self).__init__()
         self._headers_sent = False
         self._response_headers = collections.defaultdict(list)
-        self.extend(*default_headers or ())
+        self.extend(*default_headers)
 
     def clone(self, owner_instance):
         clone = super(Headers, self).clone(owner_instance)

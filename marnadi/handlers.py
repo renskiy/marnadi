@@ -39,9 +39,9 @@ class HandlerProcessor(type):
         except:
             raise errors.HttpError
 
-    def set_descriptor_name(cls, descriptor, name):
+    def set_descriptor_name(cls, descriptor, attr_name):
         if isinstance(descriptor, descriptors.Descriptor):
-            descriptor.name = descriptor.name or name
+            descriptor.attr_name = attr_name
 
 
 class Handler(object):
@@ -62,13 +62,10 @@ class Handler(object):
     query = descriptors.Query()
 
     data = descriptors.Data(
-        content_decoders=(
-            ('multipart/form-data', 'marnadi.mime.multipart.form_data.Decoder'),
-            ('application/json', 'marnadi.mime.application.json.Decoder'),
-            ('application/x-www-form-urlencoded',
-                'marnadi.mime.application.x_www_form_urlencoded.Decoder'),
-        ),
-        allowed_methods=('POST', 'PUT', 'PATCH'),
+        ('multipart/form-data', 'marnadi.mime.multipart.form_data.Decoder'),
+        ('application/json', 'marnadi.mime.application.json.Decoder'),
+        ('application/x-www-form-urlencoded',
+            'marnadi.mime.application.x_www_form_urlencoded.Decoder'),
     )
 
     def __init__(self, environ):

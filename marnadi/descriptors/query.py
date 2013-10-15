@@ -5,8 +5,8 @@ from marnadi.descriptors import Descriptor
 
 class Query(Descriptor):
 
-    def __init__(self, name=None):
-        super(Query, self).__init__(name)
+    def __init__(self):
+        super(Query, self).__init__()
         self._query = None
 
     def clone(self, owner_instance):

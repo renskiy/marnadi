@@ -8,14 +8,14 @@ class Descriptor(object):
     All custom managers should be inherited from this class.
     """
 
-    def __init__(self, name=None):
-        self.name = name
+    def __init__(self):
+        self.attr_name = None
         self.environ = None
 
     def __get__(self, owner_instance, owner_class):
-        assert self.name, "descriptor must have 'name' property"
+        assert self.attr_name, "Descriptor need not empty `attr_name`"
         clone = self.clone(owner_instance)
-        setattr(owner_instance, self.name, clone)
+        setattr(owner_instance, self.attr_name, clone)
         return clone
 
     def clone(self, owner_instance):

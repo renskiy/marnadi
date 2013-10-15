@@ -12,8 +12,8 @@ class Cookies(Descriptor):
     or using `get` method.
     """
 
-    def __init__(self, name=None):
-        super(Cookies, self).__init__(name)
+    def __init__(self):
+        super(Cookies, self).__init__()
         self.headers = None
         self._cookies = None
 
