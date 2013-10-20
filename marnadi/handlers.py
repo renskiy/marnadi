@@ -1,4 +1,8 @@
+import logging
+
 from marnadi import errors, descriptors
+
+logger = logging.getLogger('marnadi')
 
 
 class HandlerProcessor(type):
@@ -36,7 +40,8 @@ class HandlerProcessor(type):
                 yield str(chunk or '')
         except errors.HttpError:
             raise
-        except:
+        except Exception as error:
+            logger.exception('%s', error)
             raise errors.HttpError
 
     def set_descriptor_name(cls, descriptor, attr_name):
