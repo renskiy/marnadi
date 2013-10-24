@@ -22,8 +22,8 @@ class Headers(Descriptor):
         self._response_headers = collections.defaultdict(list)
         self.extend(*default_headers)
 
-    def clone(self, owner_instance):
-        clone = super(Headers, self).clone(owner_instance)
+    def clone(self, handler):
+        clone = super(Headers, self).clone(handler)
         clone._headers_sent = False
         clone._response_headers = copy.copy(self._response_headers)
         return clone

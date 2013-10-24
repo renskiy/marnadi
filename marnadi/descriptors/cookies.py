@@ -17,9 +17,9 @@ class Cookies(Descriptor):
         self.headers = None
         self._cookies = None
 
-    def clone(self, owner_instance):
-        clone = super(Cookies, self).clone(owner_instance)
-        clone.headers = owner_instance.headers
+    def clone(self, handler):
+        clone = super(Cookies, self).clone(handler)
+        clone.headers = handler.headers
         clone._cookies = None
         return clone
 

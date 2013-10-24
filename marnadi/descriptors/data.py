@@ -10,10 +10,10 @@ class Data(Descriptor):
         super(Data, self).__init__()
         self.content_decoders = dict(content_decoders)
 
-    def clone(self, owner_instance):
+    def clone(self, handler):
         return self.decode(
-            owner_instance.environ['wsgi.input'],
-            owner_instance.headers,
+            handler.environ['wsgi.input'],
+            handler.headers,
         )
 
     def decode(self, stream, headers):

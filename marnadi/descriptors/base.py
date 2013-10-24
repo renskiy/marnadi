@@ -12,15 +12,15 @@ class Descriptor(object):
         self.attr_name = None
         self.environ = None
 
-    def __get__(self, owner_instance, owner_class):
+    def __get__(self, handler, handler_class):
         assert self.attr_name, "Descriptor need not empty `attr_name`"
-        clone = self.clone(owner_instance)
-        setattr(owner_instance, self.attr_name, clone)
+        clone = self.clone(handler)
+        setattr(handler, self.attr_name, clone)
         return clone
 
     @classmethod
-    def clone(cls, owner_instance):
+    def clone(cls, handler):
         clone = Empty()
         clone.__class__ = cls
-        clone.environ = owner_instance.environ
+        clone.environ = handler.environ
         return clone

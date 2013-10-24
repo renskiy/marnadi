@@ -9,8 +9,8 @@ class Query(Descriptor):
         super(Query, self).__init__()
         self._query = None
 
-    def clone(self, owner_instance):
-        clone = super(Query, self).clone(owner_instance)
+    def clone(self, handler):
+        clone = super(Query, self).clone(handler)
         clone._query = None
         return clone
 
