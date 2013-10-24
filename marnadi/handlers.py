@@ -90,7 +90,7 @@ class Handler(object):
                     errors.HTTP_405_METHOD_NOT_ALLOWED,
                     headers=(('Allow', ', '.join(self.allowed_http_methods)), )
                 )
-        return callback(*args, **kwargs)
+            return callback(*args, **kwargs)
 
     @property
     def allowed_http_methods(self):
