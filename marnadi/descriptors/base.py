@@ -13,6 +13,7 @@ class Descriptor(object):
         self.environ = None
 
     def __get__(self, handler, handler_class):
+        assert handler is not None, "Access allowed from instance only"
         assert self.attr_name, "Descriptor need not empty `attr_name`"
         value = self.get_value(handler)
         setattr(handler, self.attr_name, value)
