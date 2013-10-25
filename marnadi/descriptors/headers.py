@@ -1,5 +1,4 @@
 import collections
-import copy
 
 from marnadi.descriptors import Descriptor
 
@@ -25,7 +24,7 @@ class Headers(Descriptor):
     def get_value(self, handler):
         value = super(Headers, self).get_value(handler)
         value._headers_sent = False
-        value._response_headers = copy.copy(self._response_headers)
+        value._response_headers = self._response_headers.copy()
         return value
 
     ### request headers ###
