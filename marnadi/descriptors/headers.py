@@ -22,11 +22,11 @@ class Headers(Descriptor):
         self._response_headers = collections.defaultdict(list)
         self.extend(*default_headers)
 
-    def clone(self, handler):
-        clone = super(Headers, self).clone(handler)
-        clone._headers_sent = False
-        clone._response_headers = copy.copy(self._response_headers)
-        return clone
+    def get_value(self, handler):
+        value = super(Headers, self).get_value(handler)
+        value._headers_sent = False
+        value._response_headers = copy.copy(self._response_headers)
+        return value
 
     ### request headers ###
 

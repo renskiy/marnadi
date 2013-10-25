@@ -17,11 +17,11 @@ class Cookies(Descriptor):
         self.headers = None
         self._cookies = None
 
-    def clone(self, handler):
-        clone = super(Cookies, self).clone(handler)
-        clone.headers = handler.headers
-        clone._cookies = None
-        return clone
+    def get_value(self, handler):
+        value = super(Cookies, self).get_value(handler)
+        value.headers = handler.headers
+        value._cookies = None
+        return value
 
     def __contains__(self, cookie):
         return cookie in self.cookies

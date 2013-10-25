@@ -10,7 +10,7 @@ class Data(Descriptor):
         super(Data, self).__init__()
         self.content_decoders = dict(content_decoders)
 
-    def clone(self, handler):
+    def get_value(self, handler):
         return self.decode(
             handler.environ['wsgi.input'],
             handler.headers,

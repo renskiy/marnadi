@@ -5,7 +5,7 @@ from marnadi.descriptors import Descriptor
 
 class Query(Descriptor):
 
-    def clone(self, handler):
+    def get_value(self, handler):
         return self.decode(handler.environ)
 
     @staticmethod
