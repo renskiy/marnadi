@@ -11,7 +11,7 @@ class Query(Descriptor):
     @staticmethod
     def decode(environ):
         try:
-            return urlparse.parse_qs(
+            return urlparse.parse_qsl(
                 environ.query_string,
                 keep_blank_values=True,
             )
