@@ -50,7 +50,6 @@ class HandlerProcessor(type):
 
 
 class Handler(object):
-    # TODO implement way how to instantiate Handler (e.g. for testing purpose)
 
     __metaclass__ = HandlerProcessor
 
