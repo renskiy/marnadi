@@ -5,19 +5,29 @@ Yet another Web Framework with Blackjack and something you will really like
 
 Example
 -------
+    import json
+    import re
     from marnadi import handlers, wsgi
 
 
-    class MyHandler(handlers.Handler):
+    class JsonHandler(handlers.Handler):
 
-        def get(self):
-            return 'Hello World'
+        def __call__(self, *args, **kwargs):
+            result = super(JsonHandler, self).__call__(*args, **kwargs)
+            return json.dumps(result)
 
-    application = wsgi.App(
-        routes=(
-            ('/', MyHandler),
-        )
+        def get(self, receiver, sender=None):
+            return {'Hello':  receiver, 'from': sender}
+
+    routes=(
+        ('/', handlers.Handler),  # HTTP 405 Method Not Allowed
+        (re.compile(r'/hello/(?P<to>\w+'), (
+            ('', JsonHandler),
+            (re.compile(r'/from/(?P<from>\w+)$'), JsonHandler),
+        )),
     )
+
+    application = wsgi.App(routes=routes)
 
     if __name__ == '__main__':
         from wsgiref.simple_server import make_server
