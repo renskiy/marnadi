@@ -21,9 +21,9 @@ Example
 
     routes=(
         ('/', handlers.Handler),  # HTTP 405 Method Not Allowed
-        (re.compile(r'/hello/(?P<to>\w+'), (
+        (re.compile(r'/hello/(?P<receiver>\w+'), (
             ('', JsonHandler),
-            (re.compile(r'/from/(?P<from>\w+)$'), JsonHandler),
+            (re.compile(r'/from/(?P<sender>\w+)$'), JsonHandler),
         )),
     )
 
