@@ -1,7 +1,7 @@
 marnadi
 =======
 
-Yet another WSGI Web Server, the simplest from ever written
+Yet another WSGI Web Server, the simplest and fastest ever written
 
 Example
 -------
