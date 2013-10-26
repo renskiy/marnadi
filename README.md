@@ -1,7 +1,7 @@
 marnadi
 =======
 
-Yet another Web Framework with Blackjack and something you will really like
+Yet another WSGI Web Server, the simplest from ever written
 
 Example
 -------
