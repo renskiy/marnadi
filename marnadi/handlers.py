@@ -5,6 +5,10 @@ from marnadi import errors, descriptors
 logger = logging.getLogger('marnadi')
 
 
+def byte_str(obj):
+    return str(bytearray(unicode(obj or ''), 'utf-8'))
+
+
 class HandlerProcessor(type):
 
     def __new__(mcs, name, bases, attributes):
@@ -28,16 +32,16 @@ class HandlerProcessor(type):
                     pass
                 else:
                     result = next(result_stream)
-            result = str(result or '')
+            result = byte_str(result or '')
             if not result_stream:
                 handler.headers.set('Content-Length', len(result))
-            yield str(handler.status)
+            yield byte_str(handler.status)
             for header, value in handler.headers:
-                yield str(header), str(value)
+                yield byte_str(header), byte_str(value)
             yield  # separator between headers and body
             yield result
             for chunk in result_stream:
-                yield str(chunk or '')
+                yield byte_str(chunk or '')
         except errors.HttpError:
             raise
         except Exception as error:
