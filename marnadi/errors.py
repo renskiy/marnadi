@@ -19,7 +19,7 @@ class HttpError(Exception):
 
     def __init__(self, status=HTTP_500_INTERNAL_SERVER_ERROR,
                  data=None, headers=None):
-        self._status = byte_str(status)
+        self._status = status
         self._headers = headers or ()
         self._data = data
 
