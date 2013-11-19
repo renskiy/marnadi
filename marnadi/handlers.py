@@ -25,23 +25,24 @@ class HandlerProcessor(type):
         try:
             handler = super(HandlerProcessor, cls).__call__(environ)
             result, result_stream = handler(*args, **kwargs), ()
-            if not isinstance(result, basestring):
-                try:
-                    result_stream = iter(result)
-                except TypeError:
-                    pass
-                else:
-                    result = next(result_stream)
-            result = byte_str(result or '')
-            if not result_stream:
+            try:
+                assert not isinstance(result, basestring)
+                result_stream = iter(result)
+            except (TypeError, AssertionError):
+                first_chunk = result = byte_str(result)
+            else:
+                first_chunk = byte_str(next(result_stream))
+            try:
                 handler.headers.set('Content-Length', len(result))
+            except TypeError:
+                pass
             yield byte_str(handler.status)
             for header, value in handler.headers:
                 yield byte_str(header), byte_str(value)
             yield  # separator between headers and body
-            yield result
-            for chunk in result_stream:
-                yield byte_str(chunk or '')
+            yield first_chunk
+            for next_chunk in result_stream:
+                yield byte_str(next_chunk)
         except errors.HttpError:
             raise
         except Exception as error:
