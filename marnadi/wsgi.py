@@ -32,7 +32,7 @@ class App(object):
             response = handler(environ)
             response_flow = iter(response)
             headers = []
-            status = next(response_flow).encode('utf-8')
+            status = next(response_flow)
             next_header = next(response_flow)
             while next_header:
                 next_header = (
