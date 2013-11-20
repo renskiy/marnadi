@@ -12,6 +12,10 @@ Example
 
     class JsonHandler(handlers.Handler):
 
+        headers = descriptors.Headers(
+            ('Content-Type', 'application/json; charset=utf-8'),
+        )
+
         def __call__(self, *args, **kwargs):
             result = super(JsonHandler, self).__call__(*args, **kwargs)
             return json.dumps(result)
