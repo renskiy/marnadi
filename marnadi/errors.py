@@ -36,11 +36,11 @@ class HttpError(Exception):
     @property
     def headers(self):
         headers_sent = set()
-        for header, value in self._headers:
-            header, value = unicode(header), unicode(value)
-            headers_sent.add(header)
-            yield header, value
-        for header, value in self.default_headers:
-            header = unicode(header)
-            if header not in headers_sent:
-                yield header, unicode(value)
+        for header in self._headers:
+            header = map(str, header)
+            headers_sent.add(header[0])
+            yield header
+        for header in self.default_headers:
+            header = map(str, header)
+            if header[0] not in headers_sent:
+                yield header

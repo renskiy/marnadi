@@ -36,8 +36,8 @@ class App(object):
             next_header = next(response_flow)
             while next_header:
                 next_header = (
-                    next_header[0].title().encode('utf-8'),
-                    next_header[1].encode('utf-8')
+                    next_header[0].title(),
+                    next_header[1],
                 )
                 headers.append(next_header)
                 next_header = next(response_flow)

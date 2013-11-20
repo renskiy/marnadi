@@ -32,13 +32,13 @@ class HandlerProcessor(type):
                     first_chunk = unicode(next(chunks)).encode('utf-8')
                 except StopIteration:
                     pass
-            yield unicode(handler.status)
+            yield str(handler.status)
             try:
                 handler.headers.set('Content-Length', len(result))
             except TypeError:
                 pass
-            for header, value in handler.headers:
-                yield unicode(header), unicode(value)
+            for header in handler.headers:
+                yield map(str, header)
             yield  # separator between headers and body
             yield first_chunk
             for next_chunk in chunks:
