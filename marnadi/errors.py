@@ -1,5 +1,3 @@
-from marnadi import byte_str
-
 HTTP_200_OK = '200 OK'
 
 HTTP_400_BAD_REQUEST = '400 Bad Request'
@@ -19,7 +17,7 @@ class HttpError(Exception):
 
     def __init__(self, status=HTTP_500_INTERNAL_SERVER_ERROR,
                  data=None, headers=None):
-        self._status = status
+        self.status = status
         self._headers = headers or ()
         self._data = data
 
@@ -30,23 +28,19 @@ class HttpError(Exception):
         yield self.__str__()
 
     def __str__(self):
-        return byte_str(self._data)
+        return unicode(self._data or '').encode('utf-8')
 
     def __repr__(self):
         return '%s: %s' % (self.status, self)
 
     @property
-    def status(self):
-        return byte_str(self._status)
-
-    @property
     def headers(self):
         headers_sent = set()
         for header, value in self._headers:
-            header, value = byte_str(header), byte_str(value)
+            header, value = unicode(header), unicode(value)
             headers_sent.add(header)
             yield header, value
         for header, value in self.default_headers:
-            header = header
+            header = unicode(header)
             if header not in headers_sent:
-                yield header, value
+                yield header, unicode(value)

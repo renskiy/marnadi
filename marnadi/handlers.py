@@ -1,6 +1,6 @@
 import logging
 
-from marnadi import errors, descriptors, byte_str
+from marnadi import errors, descriptors
 
 logger = logging.getLogger('marnadi')
 
@@ -20,25 +20,29 @@ class HandlerProcessor(type):
     def __call__(cls, environ, *args, **kwargs):
         try:
             handler = super(HandlerProcessor, cls).__call__(environ)
-            result, result_stream = handler(*args, **kwargs), ()
+            result = handler(*args, **kwargs)
+            chunks, first_chunk = (), ''
             try:
                 assert not isinstance(result, basestring)
-                result_stream = iter(result)
+                chunks = iter(result)
             except (TypeError, AssertionError):
-                first_chunk = result = byte_str(result)
+                first_chunk = result = unicode(result or '').encode('utf-8')
             else:
-                first_chunk = byte_str(next(result_stream))
+                try:
+                    first_chunk = unicode(next(chunks)).encode('utf-8')
+                except StopIteration:
+                    pass
+            yield unicode(handler.status)
             try:
                 handler.headers.set('Content-Length', len(result))
             except TypeError:
                 pass
-            yield byte_str(handler.status)
             for header, value in handler.headers:
-                yield byte_str(header), byte_str(value)
+                yield unicode(header), unicode(value)
             yield  # separator between headers and body
             yield first_chunk
-            for next_chunk in result_stream:
-                yield byte_str(next_chunk)
+            for next_chunk in chunks:
+                yield unicode(next_chunk).encode('utf-8')
         except errors.HttpError:
             raise
         except Exception as error:

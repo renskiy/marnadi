@@ -32,11 +32,15 @@ class App(object):
             response = handler(environ)
             response_flow = iter(response)
             headers = []
-            status = next(response_flow)
-            header = next(response_flow)
-            while header:
-                headers.append(header)
-                header = next(response_flow)
+            status = next(response_flow).encode('utf-8')
+            next_header = next(response_flow)
+            while next_header:
+                next_header = (
+                    next_header[0].title().encode('utf-8'),
+                    next_header[1].encode('utf-8')
+                )
+                headers.append(next_header)
+                next_header = next(response_flow)
         except errors.HttpError as response_flow:
             status, headers = response_flow.status, list(response_flow.headers)
 
