@@ -54,44 +54,47 @@ class App(object):
 
     @staticmethod
     def get_match_subgroups(match_object):
-        match_args = match_object.groups()
+        match_args = list(match_object.groups())
         match_kwargs = match_object.groupdict()
         if match_kwargs:
             if len(match_args) == len(match_kwargs):
-                match_args = ()
+                match_args = []
             else:
                 # mixing simple and named subgroups is bad idea
                 # because of non-trivial logic of distinguishing them,
                 # use it only if you're sure
-                match_args = list(match_args)
                 for kwarg in match_kwargs.itervalues():
                     match_args.remove(kwarg)
-                match_args = tuple(match_args)
         return match_args, match_kwargs
 
-    def get_handler(self, path, routes=None, *args, **kwargs):
-        if routes is None:
-            routes = self.routes
-        for route_path, handler in routes:
+    def get_handler(self, path, routes=None, handler_args=None,
+                    handler_kwargs=None):
+        routes = routes or self.routes
+        handler_args = handler_args or []
+        handler_kwargs = handler_kwargs or {}
+        for route_path, route_handler in routes:
             if hasattr(route_path, 'match'):  # assume it's compiled regexp
                 match = route_path.match(path)
                 if not match:
                     continue
                 match_args, match_kwargs = self.get_match_subgroups(match)
-                args += match_args
-                kwargs.update(match_kwargs)
+                handler_args.extend(match_args)
+                handler_kwargs.update(match_kwargs)
                 rest_path = path[match.end(0):]
             elif path.startswith(route_path):
                 rest_path = path[len(route_path):]
             else:
                 continue
-            if not callable(handler):
-                routes = iter(handler)
+            if not callable(route_handler):
+                routes = iter(route_handler)
                 return self.get_handler(
                     rest_path,
                     routes=routes,
-                    *args, **kwargs
+                    handler_args=handler_args,
+                    handler_kwargs=handler_kwargs,
                 )
             if not rest_path:
-                return lambda environ: handler(environ, *args, **kwargs)
+                return lambda environ: route_handler(
+                    environ, *handler_args, **handler_kwargs
+                )
         raise errors.HttpError(errors.HTTP_404_NOT_FOUND)
