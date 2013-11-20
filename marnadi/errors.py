@@ -13,7 +13,9 @@ HTTP_501_NOT_IMPLEMENTED = '501 Not Implemented'
 
 class HttpError(Exception):
 
-    default_headers = ()
+    default_headers = (
+        ('Content-Type', 'text/plain; charset=utf-8'),
+    )
 
     def __init__(self, status=HTTP_500_INTERNAL_SERVER_ERROR,
                  data=None, headers=None):
