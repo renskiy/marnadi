@@ -95,6 +95,8 @@ class App(object):
                 )
             if not rest_path:
                 return lambda environ: route_handler(
-                    environ, *handler_args, **handler_kwargs
+                    environ,
+                    handler_args=handler_args,
+                    handler_kwargs=handler_kwargs,
                 )
         raise errors.HttpError(errors.HTTP_404_NOT_FOUND)

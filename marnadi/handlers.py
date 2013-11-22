@@ -17,10 +17,10 @@ class HandlerProcessor(type):
         super(HandlerProcessor, cls).__setattr__(attr_name, attr_value)
         cls.set_descriptor_name(attr_value, attr_name)
 
-    def __call__(cls, environ, *args, **kwargs):
+    def __call__(cls, environ, handler_args=None, handler_kwargs=None):
         try:
             handler = super(HandlerProcessor, cls).__call__(environ)
-            result = handler(*args, **kwargs)
+            result = handler(*handler_args or (), **handler_kwargs or {})
             chunks, first_chunk = (), ''
             try:
                 assert not isinstance(result, basestring)
