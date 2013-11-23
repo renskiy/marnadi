@@ -12,6 +12,8 @@ Example
 
     class JsonHandler(handlers.Handler):
 
+        SUPPORTED_HTTP_METHODS = ('OPTIONS', 'GET')
+
         headers = descriptors.Headers(
             ('Content-Type', 'application/json; charset=utf-8'),
         )
@@ -23,8 +25,14 @@ Example
         def get(self, receiver, sender=None):
             return {'Hello':  receiver, 'from': sender}
 
+
+    @handlers.handler(JsonHandler)
+    def hello(username):
+        return "Hello, %s" % username
+
     routes=(
         ('/', handlers.Handler),  # HTTP 405 Method Not Allowed
+        (re.compile(r'/hello/(?P<username>\w+')$'), hello),
         (re.compile(r'/hello/(?P<receiver>\w+'), (
             ('', JsonHandler),
             (re.compile(r'/from/(?P<sender>\w+)$'), JsonHandler),

@@ -1,3 +1,4 @@
+import functools
 import logging
 
 from marnadi import errors, descriptors
@@ -17,10 +18,14 @@ class HandlerProcessor(type):
         super(HandlerProcessor, cls).__setattr__(attr_name, attr_value)
         cls.set_descriptor_name(attr_value, attr_name)
 
-    def __call__(cls, environ, handler_args=None, handler_kwargs=None):
+    def __call__(cls, environ, callback=None, handler_args=None, handler_kwargs=None):
         try:
             handler = super(HandlerProcessor, cls).__call__(environ)
-            result = handler(*handler_args or (), **handler_kwargs or {})
+            result = handler(
+                callback=callback,
+                handler_args=handler_args,
+                handler_kwargs=handler_kwargs,
+            )
             chunks, first_chunk = (), ''
             try:
                 assert not isinstance(result, basestring)
@@ -82,21 +87,21 @@ class Handler(object):
     def __init__(self, environ):
         self.environ = environ
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, callback=None, handler_args=None, handler_kwargs=None):
         request_method = self.environ.request_method
         if request_method not in self.SUPPORTED_HTTP_METHODS:
             raise errors.HttpError(
                 errors.HTTP_501_NOT_IMPLEMENTED,
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
             )
-        else:
+        if callback is None:
             callback = getattr(self, request_method.lower(), NotImplemented)
             if callback is NotImplemented:
                 raise errors.HttpError(
                     errors.HTTP_405_METHOD_NOT_ALLOWED,
                     headers=(('Allow', ', '.join(self.allowed_http_methods)), )
                 )
-            return callback(*args, **kwargs)
+        return callback(*handler_args or (), **handler_kwargs or {})
 
     @property
     def allowed_http_methods(self):
@@ -120,3 +125,24 @@ class Handler(object):
     patch = NotImplemented
 
     delete = NotImplemented
+
+
+def handler(handler_class):
+
+    assert issubclass(handler_class, Handler), \
+        "Argument must be a subclass of Handler"
+
+    def _decorator(func):
+
+        @functools.wraps(func)
+        def _func(environ, handler_args=None, handler_kwargs=None):
+            return handler_class(
+                environ,
+                callback=func,
+                handler_args=handler_args,
+                handler_kwargs=handler_kwargs,
+            )
+
+        return _func
+
+    return _decorator
