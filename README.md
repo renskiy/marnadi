@@ -27,12 +27,12 @@ Example
 
 
     @handlers.handler(JsonHandler)
-    def hello(username):
-        return "Hello, %s" % username
+    def foo(bar):
+        return "Foo %s" % bar
 
     routes=(
         ('/', handlers.Handler),  # HTTP 405 Method Not Allowed
-        (re.compile(r'/hello/(?P<username>\w+')$'), hello),
+        (re.compile(r'/foo/(?P<bar>\w+')$'), foo),
         (re.compile(r'/hello/(?P<receiver>\w+'), (
             ('', JsonHandler),
             (re.compile(r'/from/(?P<sender>\w+)$'), JsonHandler),
