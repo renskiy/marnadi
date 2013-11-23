@@ -15,6 +15,7 @@ Hello World
     routes=(
         ('/', hello),
     )
+
     application = wsgi.App(routes=routes)
 
     if __name__ == '__main__':
@@ -26,7 +27,7 @@ More Complex Example
 
     import json
     import re
-    from marnadi import handlers, wsgi
+    from marnadi import handlers, wsgi, Lazy
 
 
     class JsonHandler(handlers.Handler):
@@ -49,13 +50,17 @@ More Complex Example
     def foo(bar):
         return {'foo': bar}
 
+    hello_routes = (
+        ('', JsonHandler),
+        (re.compile(r'/from/(?P<sender>\w+)$'), JsonHandler),
+    )
+
     routes=(
         ('/', handlers.Handler),  # HTTP 405 Method Not Allowed
         (re.compile(r'/foo/(?P<bar>\w+')$'), foo),
-        (re.compile(r'/hello/(?P<receiver>\w+')/?, (
-            ('', JsonHandler),
-            (re.compile(r'/from/(?P<sender>\w+)$'), JsonHandler),
-        )),
+        (re.compile(r'/hello/(?P<receiver>\w+')/?, hello_routes),
+        ('/lazy', Lazy('path.to.handler')),
+        ('/nested', Lazy('path.to.subroutes'))
     )
 
     application = wsgi.App(routes=routes)
