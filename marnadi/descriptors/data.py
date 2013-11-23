@@ -1,6 +1,4 @@
-import importlib
-
-from marnadi import mime
+from marnadi import mime, Lazy
 from marnadi.descriptors import Descriptor
 
 
@@ -8,7 +6,14 @@ class Data(Descriptor):
 
     def __init__(self, *content_decoders):
         super(Data, self).__init__()
-        self.content_decoders = dict(content_decoders)
+        self.content_decoders = dict(
+            (content_type, Lazy(content_decoder))
+            for content_type, content_decoder in (
+                content_decoders.iteritems()
+                if isinstance(content_decoders, dict) else
+                content_decoders
+            )
+        )
 
     def get_value(self, handler):
         return self.decode(
@@ -22,12 +27,4 @@ class Data(Descriptor):
         return decode(stream, headers, content_params)
 
     def get_decoder(self, content_type):
-        if content_type not in self.content_decoders:
-            return mime.Decoder  # default mime decoder
-        decoder = self.content_decoders[content_type]
-        if not callable(decoder):
-            module_name, decoder_name = str(decoder).rsplit('.', 1)
-            decoder_module = importlib.import_module(module_name)
-            decoder = getattr(decoder_module, decoder_name)
-            self.content_decoders[content_type] = decoder
-        return decoder
+        return self.content_decoders.get(content_type, mime.Decoder)
