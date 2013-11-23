@@ -39,10 +39,10 @@ class HttpError(Exception):
     def headers(self):
         headers_sent = set()
         for header in self._headers:
-            header = map(str, header)
+            header = tuple(map(str, header))
             headers_sent.add(header[0])
             yield header
         for header in self.default_headers:
-            header = map(str, header)
+            header = tuple(map(str, header))
             if header[0] not in headers_sent:
                 yield header
