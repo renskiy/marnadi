@@ -17,8 +17,6 @@ Example
 
     class JsonHandler(handlers.Handler):
 
-        SUPPORTED_HTTP_METHODS = ('OPTIONS', 'GET')
-
         headers = descriptors.Headers(
             ('Content-Type', 'application/json; charset=utf-8'),
         )
