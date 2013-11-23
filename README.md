@@ -10,6 +10,11 @@ Example
     from marnadi import handlers, wsgi
 
 
+    @handlers.handler
+    def foo(bar):
+        return "Foo %s" % bar
+
+
     class JsonHandler(handlers.Handler):
 
         SUPPORTED_HTTP_METHODS = ('OPTIONS', 'GET')
@@ -24,11 +29,6 @@ Example
 
         def get(self, receiver, sender=None):
             return {'Hello':  receiver, 'from': sender}
-
-
-    @handlers.handler(JsonHandler)
-    def foo(bar):
-        return "Foo %s" % bar
 
     routes=(
         ('/', handlers.Handler),  # HTTP 405 Method Not Allowed

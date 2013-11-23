@@ -127,16 +127,13 @@ class Handler(object):
     delete = NotImplemented
 
 
-def handler(handler_class):
-
-    assert issubclass(handler_class, Handler), \
-        "Argument must be a subclass of Handler"
+def handler(callback):
 
     def _decorator(func):
 
         @functools.wraps(func)
         def _func(environ, handler_args=None, handler_kwargs=None):
-            return handler_class(
+            return callback(
                 environ,
                 callback=func,
                 handler_args=handler_args,
@@ -145,4 +142,11 @@ def handler(handler_class):
 
         return _func
 
-    return _decorator
+    try:
+        if issubclass(callback, Handler):
+            return _decorator
+    except TypeError:
+        pass
+
+    func, callback = callback, Handler
+    return _decorator(func)
