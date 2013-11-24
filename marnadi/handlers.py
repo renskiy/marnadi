@@ -150,11 +150,8 @@ def handler(callback):
 
         return _func
 
-    try:
-        if issubclass(callback, Handler):
-            return _decorator
-    except TypeError:
-        pass
+    if issubclass(callback, Handler):
+        return _decorator
 
     func, callback = callback, Handler
     return _decorator(func)
