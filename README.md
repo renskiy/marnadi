@@ -52,13 +52,13 @@ More Complex Example
 
     hello_routes = (
         ('', JsonHandler),
-        (re.compile(r'/from/(?P<sender>\w+)$'), JsonHandler),
+        (re.compile(r'from/(?P<sender>\w+)$'), JsonHandler),
     )
 
     routes=(
         ('/', handlers.Handler),  # HTTP 405 Method Not Allowed
         (re.compile(r'/foo/(?P<bar>\w+')$'), foo),
-        (re.compile(r'/hello/(?P<receiver>\w+')/?, hello_routes),
+        (re.compile(r'/hello/(?P<receiver>\w+)/?'), hello_routes),
         ('/lazy', Lazy('path.to.handler')),
         ('/nested', Lazy('path.to.subroutes'))
     )
