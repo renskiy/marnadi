@@ -24,7 +24,7 @@ class Data(Descriptor):
     def decode(self, stream, headers):
         content_type, content_params = headers.get_splitted('Content-Type')
         decode = self.get_decoder(content_type)
-        return decode(stream, headers, content_params)
+        return decode(stream, **content_params)
 
     def get_decoder(self, content_type):
         return self.content_decoders.get(content_type, mime.Decoder)
