@@ -1,7 +1,7 @@
 import functools
 import logging
 
-from marnadi import errors, descriptors
+from marnadi import errors, descriptors, Lazy
 
 logger = logging.getLogger('marnadi')
 
@@ -53,6 +53,14 @@ class HandlerProcessor(type):
         except Exception as error:
             logger.exception(error)
             raise errors.HttpError
+
+    def __subclasscheck__(cls, subclass):
+        if isinstance(subclass, Lazy):
+            subclass = subclass.obj
+        try:
+            return super(HandlerProcessor, cls).__subclasscheck__(subclass)
+        except TypeError:
+            return False
 
     def set_descriptor_name(cls, descriptor, attr_name):
         if isinstance(descriptor, descriptors.Descriptor):

@@ -88,8 +88,8 @@ class App(object):
                 rest_path = path[len(route_path):]
             else:
                 continue
-            try:
-                if not issubclass(route_handler, handlers.Handler):
+            if not issubclass(route_handler, handlers.Handler):
+                try:
                     routes = iter(route_handler)
                     return self.get_handler(
                         rest_path,
@@ -97,8 +97,8 @@ class App(object):
                         handler_args=handler_args,
                         handler_kwargs=handler_kwargs,
                     )
-            except (AttributeError, TypeError):
-                pass
+                except (AttributeError, TypeError):
+                    pass
             if not rest_path:
                 return lambda environ: route_handler(
                     environ,
