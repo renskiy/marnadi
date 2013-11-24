@@ -21,8 +21,8 @@ class Environ(dict):
 
 class App(object):
 
-    def __init__(self, routes=None):
-        self.routes = routes or ()
+    def __init__(self, routes=()):
+        self.routes = routes
 
     def __call__(self, environ, start_response):
         try:
@@ -54,15 +54,16 @@ class App(object):
 
     @staticmethod
     def get_match_subgroups(match_object):
-        match_args = list(match_object.groups())
+        match_args = match_object.groups()
         match_kwargs = match_object.groupdict()
         if match_kwargs:
             if len(match_args) == len(match_kwargs):
-                match_args = []
+                match_args = ()
             else:
                 # mixing simple and named subgroups is bad idea
                 # because of non-trivial logic of distinguishing them,
                 # use it only if you're sure
+                match_args = list(match_args)
                 for kwarg in match_kwargs.itervalues():
                     match_args.remove(kwarg)
         return match_args, match_kwargs

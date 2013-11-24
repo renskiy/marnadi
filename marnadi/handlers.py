@@ -18,13 +18,13 @@ class HandlerProcessor(type):
         super(HandlerProcessor, cls).__setattr__(attr_name, attr_value)
         cls.set_descriptor_name(attr_value, attr_name)
 
-    def __call__(cls, environ, callback=None, handler_args=None, handler_kwargs=None):
+    def __call__(cls, environ, handler_args, handler_kwargs, callback=None):
         try:
             handler = super(HandlerProcessor, cls).__call__(environ)
             result = handler(
-                callback=callback,
                 handler_args=handler_args,
                 handler_kwargs=handler_kwargs,
+                callback=callback,
             )
             chunks, first_chunk = (), ''
             try:
@@ -87,7 +87,7 @@ class Handler(object):
     def __init__(self, environ):
         self.environ = environ
 
-    def __call__(self, callback=None, handler_args=None, handler_kwargs=None):
+    def __call__(self, handler_args, handler_kwargs, callback):
         request_method = self.environ.request_method
         if request_method not in self.SUPPORTED_HTTP_METHODS:
             raise errors.HttpError(
@@ -101,7 +101,7 @@ class Handler(object):
                     errors.HTTP_405_METHOD_NOT_ALLOWED,
                     headers=(('Allow', ', '.join(self.allowed_http_methods)), )
                 )
-        return callback(*handler_args or (), **handler_kwargs or {})
+        return callback(*handler_args, **handler_kwargs)
 
     @property
     def allowed_http_methods(self):
@@ -132,12 +132,12 @@ def handler(callback):
     def _decorator(func):
 
         @functools.wraps(func)
-        def _func(environ, handler_args=None, handler_kwargs=None):
+        def _func(environ, handler_args, handler_kwargs):
             return callback(
                 environ,
-                callback=func,
                 handler_args=handler_args,
                 handler_kwargs=handler_kwargs,
+                callback=func,
             )
 
         return _func
