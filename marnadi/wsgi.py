@@ -1,4 +1,4 @@
-from marnadi import errors
+from marnadi import errors, handlers
 
 
 class Environ(dict):
@@ -85,14 +85,17 @@ class App(object):
                 rest_path = path[len(route_path):]
             else:
                 continue
-            if not callable(route_handler):
-                routes = iter(route_handler)
-                return self.get_handler(
-                    rest_path,
-                    routes=routes,
-                    handler_args=handler_args,
-                    handler_kwargs=handler_kwargs,
-                )
+            try:
+                if not issubclass(route_handler, handlers.Handler):
+                    routes = iter(route_handler)
+                    return self.get_handler(
+                        rest_path,
+                        routes=routes,
+                        handler_args=handler_args,
+                        handler_kwargs=handler_kwargs,
+                    )
+            except (AttributeError, TypeError):
+                pass
             if not rest_path:
                 return lambda environ: route_handler(
                     environ,
