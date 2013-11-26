@@ -5,10 +5,10 @@ Yet another WSGI Web Server, the simplest and fastest ever written
 
 Hello World
 -------
-    from marnadi import handlers, wsgi
+    from marnadi import wsgi
 
 
-    @handlers.handler
+    @wsgi.Handler
     def hello():
         return "Hello World"
 
@@ -27,10 +27,10 @@ More Complex Example
 
     import json
     import re
-    from marnadi import handlers, wsgi, Lazy
+    from marnadi import wsgi, Lazy
 
 
-    class JsonHandler(handlers.Handler):
+    class JsonHandler(wsgi.Handler):
 
         SUPPORTED_HTTP_METHODS = ('OPTIONS', 'GET')
 
@@ -46,7 +46,7 @@ More Complex Example
             return {'Hello':  receiver, 'from': sender}
 
 
-    @handlers.handler(JsonHandler)
+    @JsonHandler
     def foo(bar):
         return {'foo': bar}
 
@@ -56,7 +56,7 @@ More Complex Example
     )
 
     routes=(
-        ('/', handlers.Handler),  # HTTP 405 Method Not Allowed
+        ('/', wsgi.Handler),  # HTTP 405 Method Not Allowed
         (re.compile(r'/foo/(?P<bar>\w+')$'), foo),
         (re.compile(r'/hello/(?P<receiver>\w+)/?'), hello_routes),
         ('/lazy', Lazy('path.to.handler')),
