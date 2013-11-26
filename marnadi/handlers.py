@@ -30,11 +30,15 @@ class HandlerProcessor(type):
             try:
                 assert not isinstance(result, basestring)
                 chunks = iter(result)
-                first_chunk = unicode(chunks.next()).encode('utf-8')
             except (AssertionError, TypeError):
                 first_chunk = result = unicode(result or '').encode('utf-8')
-            except StopIteration:
-                pass
+            else:
+                try:
+                    first_chunk = unicode(chunks.next()).encode('utf-8')
+                except StopIteration:
+                    # only StopIteration exceptions should be caught
+                    # at this place
+                    pass
             yield str(handler.status)
             try:
                 handler.headers.set('Content-Length', len(result))
