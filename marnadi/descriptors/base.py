@@ -1,5 +1,4 @@
-class Empty(object):
-    pass
+from copy import copy
 
 
 class Descriptor(object):
@@ -20,9 +19,7 @@ class Descriptor(object):
         setattr(handler, self.attr_name, value)
         return value
 
-    @classmethod
-    def get_value(cls, handler):
-        value = Empty()
-        value.__class__ = cls
+    def get_value(self, handler):
+        value = copy(self)
         value.environ = handler.environ
         return value

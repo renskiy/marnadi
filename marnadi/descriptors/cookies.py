@@ -20,7 +20,6 @@ class Cookies(Descriptor):
     def get_value(self, handler):
         value = super(Cookies, self).get_value(handler)
         value.headers = handler.headers
-        value._cookies = None
         return value
 
     def __contains__(self, cookie):

@@ -21,9 +21,8 @@ class Headers(Descriptor):
         self._response_headers = collections.defaultdict(list)
         self.extend(*default_headers)
 
-    def get_value(self, handler):
-        value = super(Headers, self).get_value(handler)
-        value._headers_sent = False
+    def __copy__(self):
+        value = Headers()
         value._response_headers = self._response_headers.copy()
         return value
 
