@@ -119,7 +119,21 @@ class HandlerProcessor(type):
         super(HandlerProcessor, cls).__setattr__(attr_name, attr_value)
         cls.set_descriptor_name(attr_value, attr_name)
 
-    def __call__(cls, environ, args=None, kwargs=None, callback=None):
+    def __call__(cls, environ, **kwargs):
+        if isinstance(environ, Environ):
+            return cls.as_class(environ, **kwargs)
+        assert len(kwargs) == 0, "invalid usage"
+        return cls.as_decorator(func=environ)
+
+    def as_decorator(cls, func):
+        return functools.wraps(func)(lambda environ, args, kwargs: cls(
+            environ,
+            args=args,
+            kwargs=kwargs,
+            callback=func,
+        ))
+
+    def as_class(cls, environ, args, kwargs, callback=None):
         try:
             handler = super(HandlerProcessor, cls).__call__(environ)
             result = handler(
@@ -235,25 +249,3 @@ class Handler(object):
     patch = NotImplemented
 
     delete = NotImplemented
-
-
-def handler(callback):
-
-    def _decorator(func):
-
-        @functools.wraps(func)
-        def _func(environ, args, kwargs):
-            return callback(
-                environ,
-                args=args,
-                kwargs=kwargs,
-                callback=func,
-            )
-
-        return _func
-
-    if issubclass(callback, Handler):
-        return _decorator
-
-    func, callback = callback, Handler
-    return _decorator(func)
