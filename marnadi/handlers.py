@@ -41,7 +41,7 @@ class HandlerProcessor(type):
             except TypeError:
                 pass
             for header in handler.headers:
-                yield map(str, header)
+                yield tuple(map(str, header))
             yield  # separator between headers and body
             yield first_chunk
             for next_chunk in chunks:
