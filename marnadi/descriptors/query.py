@@ -16,4 +16,4 @@ class Query(Descriptor):
                 keep_blank_values=True,
             )
         except AttributeError:  # query_string not in environ
-            return {}
+            return ()
