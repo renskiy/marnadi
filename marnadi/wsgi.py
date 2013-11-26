@@ -35,20 +35,15 @@ class App(object):
             status = next(response_flow)
             next_header = next(response_flow)
             while next_header:
-                next_header = self.header(next_header)
                 headers.append(next_header)
                 next_header = next(response_flow)
         except errors.HttpError as response_flow:
             status = response_flow.status
-            headers = map(self.header, response_flow.headers)
+            headers = response_flow.headers
 
         start_response(status, headers)
 
         return response_flow  # return rest of the flow as response body
-
-    @staticmethod
-    def header(header):
-        return header[0].title(), header[1]
 
     @staticmethod
     def get_path(environ):
