@@ -23,6 +23,7 @@ class Headers(Descriptor):
 
     def __copy__(self):
         value = Headers()
+        value._headers_sent = self._headers_sent
         value._response_headers = self._response_headers.copy()
         return value
 
