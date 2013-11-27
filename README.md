@@ -32,7 +32,7 @@ More Complex Example
 
     class JsonHandler(wsgi.Handler):
 
-        SUPPORTED_HTTP_METHODS = ('OPTIONS', 'GET')
+        SUPPORTED_HTTP_METHODS = ('OPTIONS', 'GET', 'POST')
 
         headers = descriptors.Headers(
             ('Content-Type', 'application/json; charset=utf-8'),
@@ -47,7 +47,7 @@ More Complex Example
 
 
     @JsonHandler
-    def foo(bar):
+    def foo(bar):  # will be called only on HTTP "POST" request
         return {'foo': bar}
 
     hello_routes = (
