@@ -135,12 +135,8 @@ class HandlerProcessor(type):
 
     def as_class(cls, environ, args, kwargs, callback=None):
         try:
-            handler = super(HandlerProcessor, cls).__call__(environ)
-            result = handler(
-                args=args,
-                kwargs=kwargs,
-                callback=callback,
-            )
+            handler = super(HandlerProcessor, cls).__call__(environ, callback)
+            result = handler(*args, **kwargs)
             chunks, first_chunk = (), ''
             try:
                 assert not isinstance(result, basestring)
@@ -208,44 +204,43 @@ class Handler(object):
             'marnadi.mime.application.x_www_form_urlencoded.Decoder'),
     )
 
-    def __init__(self, environ):
+    def __init__(self, environ, callback=None):
         self.environ = environ
+        self.callback = callback
 
-    def __call__(self, args, kwargs, callback):
+    def __call__(self, *args, **kwargs):
         request_method = self.environ.request_method
         if request_method not in self.SUPPORTED_HTTP_METHODS:
             raise errors.HttpError(
                 errors.HTTP_501_NOT_IMPLEMENTED,
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
             )
+        callback = getattr(self, request_method.lower()) or self.callback
         if callback is None:
-            callback = getattr(self, request_method.lower(), NotImplemented)
-            if callback is NotImplemented:
-                raise errors.HttpError(
-                    errors.HTTP_405_METHOD_NOT_ALLOWED,
-                    headers=(('Allow', ', '.join(self.allowed_http_methods)), )
-                )
+            raise errors.HttpError(
+                errors.HTTP_405_METHOD_NOT_ALLOWED,
+                headers=(('Allow', ', '.join(self.allowed_http_methods)), )
+            )
         return callback(*args, **kwargs)
 
     @property
     def allowed_http_methods(self):
         for method in self.SUPPORTED_HTTP_METHODS:
-            allowed_method = getattr(self, method.lower(), NotImplemented)
-            if allowed_method is NotImplemented:
-                continue
-            yield method
+            allowed_method = self.callback or getattr(self, method.lower())
+            if allowed_method is not None:
+                yield method
 
     def options(self, *args, **kwargs):
         self.headers.set('Allow', ', '.join(self.allowed_http_methods))
 
-    get = NotImplemented
+    get = None
 
-    head = NotImplemented
+    head = None
 
-    post = NotImplemented
+    post = None
 
-    put = NotImplemented
+    put = None
 
-    patch = NotImplemented
+    patch = None
 
-    delete = NotImplemented
+    delete = None
