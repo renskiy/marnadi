@@ -126,7 +126,7 @@ class HandlerProcessor(type):
         return cls.as_decorator(func=environ)
 
     def as_decorator(cls, func):
-        return functools.wraps(func)(lambda environ, args, kwargs: cls(
+        return functools.wraps(func)(lambda environ, args=(), kwargs=None: cls(
             environ,
             args=args,
             kwargs=kwargs,
