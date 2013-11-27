@@ -231,7 +231,6 @@ class Handler(object):
                 yield method
 
     def options(self, *args, **kwargs):
-        self.status = errors.HTTP_204_NO_CONTENT
         self.headers.set('Allow', ', '.join(self.allowed_http_methods))
 
     get = None
