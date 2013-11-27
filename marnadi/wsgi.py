@@ -133,10 +133,10 @@ class HandlerProcessor(type):
             callback=func,
         ))
 
-    def as_class(cls, environ, args, kwargs, callback=None):
+    def as_class(cls, environ, args=(), kwargs=None, callback=None):
         try:
             handler = super(HandlerProcessor, cls).__call__(environ, callback)
-            result = handler(*args, **kwargs)
+            result = handler(*args, **kwargs or {})
             chunks, first_chunk = (), ''
             try:
                 assert not isinstance(result, basestring)
