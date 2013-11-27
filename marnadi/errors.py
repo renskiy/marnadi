@@ -1,4 +1,5 @@
 HTTP_200_OK = '200 OK'
+HTTP_204_NO_CONTENT = '204 No Content'
 
 HTTP_400_BAD_REQUEST = '400 Bad Request'
 HTTP_401_UNAUTHORIZED = '401 Unauthorized'
