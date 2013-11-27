@@ -150,11 +150,11 @@ class HandlerProcessor(type):
                     # only StopIteration exceptions should be caught
                     # at this place
                     pass
-            yield str(handler.status)
             try:
                 handler.headers.set('Content-Length', len(result))
             except TypeError:
                 pass
+            yield str(handler.status)
             for header in handler.headers:
                 yield tuple(map(str, header))
             yield  # separator between headers and body
