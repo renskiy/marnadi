@@ -1,4 +1,5 @@
 import collections
+import itertools
 
 from marnadi.descriptors import Descriptor
 
@@ -18,12 +19,12 @@ class Headers(Descriptor):
     def __init__(self, *default_headers):
         super(Headers, self).__init__()
         self._headers_sent = False
+        self._request_headers = None
         self._response_headers = collections.defaultdict(list)
         self.extend(*default_headers)
 
     def __copy__(self):
-        value = Headers()
-        value._headers_sent = self._headers_sent
+        value = self.__class__()
         value._response_headers = self._response_headers.copy()
         return value
 
@@ -43,23 +44,48 @@ class Headers(Descriptor):
         raise TypeError("Request headers are read only, use set() or append() "
                         "if you wish set or append new response header")
 
-    def get(self, request_header, default=None):
-        return getattr(
-            self.environ,
-            'http_%s' % request_header.lower().replace('-', '_'),
-            default
-        )
+    def __str__(self):
+        return str(self.request_headers)
+
+    def get(self, request_header, *args, **kwargs):
+        return self.request_headers.get(request_header.title(), *args, **kwargs)
 
     def get_splitted(self, request_header):
         """Returns value and params of complex request header"""
 
-        raw_value = self.get(request_header, default='')
+        raw_value = self.get(request_header, '')
         parts = iter(raw_value.split(';'))
         value = parts.next()
         return value, dict(
-            (lambda p, v: (p, v.strip('"')))(*param.strip().split('=', 1))
-            for param in parts
+            (lambda p, v='': (p, v.strip('"')))(*param.split('=', 1))
+            for param in (part.strip() for part in parts) if param
         )
+
+    @property
+    def request_headers(self):
+        if self._request_headers is None:
+            self._request_headers = dict(
+                (name.title().replace('_', '-'), value)
+                for name, value in
+                itertools.chain(
+                    (
+                        self.environ.get('CONTENT_TYPE', ())
+                        and
+                        (('CONTENT_TYPE', self.environ['CONTENT_TYPE']), )
+                    ),
+                    (
+                        self.environ.get('CONTENT_LENGTH', ())
+                        and
+                        (('CONTENT_LENGTH', self.environ['CONTENT_LENGTH']), )
+                    ),
+                    (
+                        (name[5:], value)
+                        for name, value in self.environ.iteritems()
+                        if name.startswith('HTTP_')
+                    )
+                )
+            )
+        return self._request_headers
 
     ### response headers ###
 
