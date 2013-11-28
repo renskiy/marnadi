@@ -50,6 +50,11 @@ More Complex Example
     def foo(bar):  # will be called only on HTTP "POST" request
         return {'foo': bar}
 
+    @wsgi.Handler
+    def http_stream():
+        yield 'first chunk'
+        yield 'second chunk'
+
     hello_routes = (
         ('', JsonHandler),
         (re.compile(r'from/(?P<sender>\w+)$'), JsonHandler),
@@ -58,6 +63,7 @@ More Complex Example
     routes=(
         ('/', wsgi.Handler),  # HTTP 405 Method Not Allowed
         (re.compile(r'/foo/(?P<bar>\w+')$'), foo),
+        ('/http_stream', http_stream),
         (re.compile(r'/hello/(?P<receiver>\w+)/?'), hello_routes),
         ('/lazy', Lazy('path.to.handler')),
         ('/nested', Lazy('path.to.subroutes'))
