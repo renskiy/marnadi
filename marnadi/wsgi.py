@@ -137,7 +137,7 @@ class HandlerProcessor(type):
         try:
             handler = super(HandlerProcessor, cls).__call__(environ, callback)
             result = handler(*args, **kwargs or {})
-            chunks, first_chunk = (), ''
+            chunks, first_chunk, chunked = (), '', False
             try:
                 assert not isinstance(result, basestring)
                 chunks = iter(result)
@@ -153,19 +153,31 @@ class HandlerProcessor(type):
             try:
                 handler.headers.set('Content-Length', len(result))
             except TypeError:
-                pass
+                handler.headers.set('Transfer-Encoding', 'chunked')
+                chunked = True
             yield str(handler.status)
             for header in handler.headers:
                 yield tuple(map(str, header))
             yield  # separator between headers and body
-            yield first_chunk
+            if first_chunk:
+                yield cls.make_chunk(first_chunk, chunked)
             for next_chunk in chunks:
-                yield unicode(next_chunk).encode('utf-8')
+                next_chunk = unicode(next_chunk).encode('utf-8')
+                if next_chunk:
+                    yield cls.make_chunk(next_chunk, chunked)
+            if chunked:
+                yield '0\r\n\r\n'  # end of stream
         except errors.HttpError:
             raise
         except Exception as error:
             logger.exception(error)
             raise errors.HttpError
+
+    @staticmethod
+    def make_chunk(chunk, chunked=False):
+        if chunked:
+            return hex(len(chunk))[2:].upper() + '\r\n' + chunk + '\r\n'
+        return chunk
 
     def __subclasscheck__(cls, subclass):
         if isinstance(subclass, Lazy):
@@ -175,7 +187,8 @@ class HandlerProcessor(type):
         except TypeError:
             return False
 
-    def set_descriptor_name(cls, descriptor, attr_name):
+    @staticmethod
+    def set_descriptor_name(descriptor, attr_name):
         if isinstance(descriptor, descriptors.Descriptor):
             descriptor.attr_name = attr_name
 
