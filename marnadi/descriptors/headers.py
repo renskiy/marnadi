@@ -58,7 +58,7 @@ class Headers(Descriptor):
         value = parts.next()
         return value, dict(
             (lambda p, v='': (p, v.strip('"')))(*param.split('=', 1))
-            for param in (part.strip() for part in parts) if param
+            for param in itertools.ifilter(str.strip, parts)
         )
 
     @property
