@@ -215,7 +215,7 @@ class Handler(object):
                 errors.HTTP_501_NOT_IMPLEMENTED,
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
             )
-        callback = getattr(self, request_method.lower()) or self.callback
+        callback = getattr(self, request_method.lower(), None) or self.callback
         if callback is None:
             raise errors.HttpError(
                 errors.HTTP_405_METHOD_NOT_ALLOWED,
@@ -226,8 +226,8 @@ class Handler(object):
     @property
     def allowed_http_methods(self):
         for method in self.SUPPORTED_HTTP_METHODS:
-            allowed_method = self.callback or getattr(self, method.lower())
-            if allowed_method is not None:
+            allowed = self.callback or getattr(self, method.lower(), None)
+            if allowed:
                 yield method
 
     def options(self, *args, **kwargs):
