@@ -1,7 +1,7 @@
 marnadi
 =======
 
-Yet another WSGI Web Server, the simplest and fastest ever written
+Yet another WSGI Web Framework, the simplest and fastest ever written
 
 Hello World
 -------
