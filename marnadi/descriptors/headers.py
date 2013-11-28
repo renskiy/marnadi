@@ -50,7 +50,7 @@ class Headers(Descriptor):
     def get(self, request_header, *args, **kwargs):
         return self.request_headers.get(request_header.title(), *args, **kwargs)
 
-    def get_splitted(self, request_header):
+    def get_parsed(self, request_header):
         """Returns value and params of complex request header"""
 
         raw_value = self.get(request_header, '')

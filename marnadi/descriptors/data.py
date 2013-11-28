@@ -22,7 +22,7 @@ class Data(Descriptor):
         )
 
     def decode(self, stream, headers):
-        content_type, content_params = headers.get_splitted('Content-Type')
+        content_type, content_params = headers.get_parsed('Content-Type')
         decode = self.get_decoder(content_type)
         return decode(stream, **content_params)
 
