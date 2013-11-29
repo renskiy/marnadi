@@ -142,17 +142,18 @@ class HandlerProcessor(type):
                 assert not isinstance(result, basestring)
                 chunks = iter(result)
             except (AssertionError, TypeError):
-                first_chunk = result = unicode(result or '').encode('utf-8')
+                first_chunk = unicode(result or '').encode('utf-8')
             else:
                 try:
                     first_chunk = unicode(chunks.next()).encode('utf-8')
                 except StopIteration:
-                    # only StopIteration exceptions should be caught
+                    # only StopIteration exception alone should be caught
                     # at this place
                     pass
             try:
-                handler.headers.set('Content-Length', len(result))
-            except TypeError:
+                assert not (chunks and len(result) > 1)
+                handler.headers.set('Content-Length', len(first_chunk))
+            except (TypeError, AssertionError):
                 handler.headers.set('Transfer-Encoding', 'chunked')
                 chunked = True
             yield str(handler.status)
