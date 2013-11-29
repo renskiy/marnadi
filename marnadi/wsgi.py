@@ -165,8 +165,7 @@ class HandlerProcessor(type):
                 next_chunk = unicode(next_chunk).encode('utf-8')
                 if next_chunk:
                     yield cls.make_chunk(next_chunk, chunked)
-            if chunked:
-                yield '0\r\n\r\n'  # end of stream
+            yield cls.make_chunk('', chunked)  # end of stream
         except errors.HttpError:
             raise
         except Exception as error:
