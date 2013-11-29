@@ -150,12 +150,13 @@ class HandlerProcessor(type):
                     # only StopIteration exception alone should be caught
                     # at this place
                     pass
-            try:
-                assert not (chunks and len(result) > 1)
-                handler.headers.set('Content-Length', len(first_chunk))
-            except (TypeError, AssertionError):
-                handler.headers.set('Transfer-Encoding', 'chunked')
-                chunked = True
+            if 'Content-Length' not in handler.headers.response_headers:
+                try:
+                    assert not (chunks and len(result) > 1)
+                    handler.headers.set('Content-Length', len(first_chunk))
+                except (TypeError, AssertionError):
+                    handler.headers.set('Transfer-Encoding', 'chunked')
+                    chunked = True
             yield str(handler.status)
             for header in handler.headers:
                 yield tuple(map(str, header))
