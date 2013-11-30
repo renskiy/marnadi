@@ -150,7 +150,7 @@ class HandlerProcessor(type):
                     # only StopIteration exception alone should be caught
                     # at this place
                     pass
-            if 'Content-Length' not in handler.headers.response_headers:
+            if not handler.headers.is_set('Content-Length'):
                 try:
                     assert not (chunks and len(result) > 1)
                     handler.headers.set('Content-Length', len(first_chunk))

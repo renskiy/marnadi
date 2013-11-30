@@ -118,9 +118,11 @@ class Headers(Descriptor):
         value = self.make_header_value(value, **attributes)
         self.response_headers[response_header.title()] = [value]
 
+    def is_set(self, response_header):
+        return response_header.title() in self.response_headers
+
     def set_if_not(self, response_header, value, **attributes):
-        response_header = response_header.title()
-        if response_header in self.response_headers:
+        if self.is_set(response_header):
             return
         self.set(response_header, value, **attributes)
 
