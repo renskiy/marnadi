@@ -181,6 +181,8 @@ class HandlerProcessor(type):
     def __subclasscheck__(cls, subclass):
         if isinstance(subclass, Lazy):
             subclass = subclass.obj
+            if isinstance(subclass, functools.partial):
+                subclass = subclass.func
         try:
             return super(HandlerProcessor, cls).__subclasscheck__(subclass)
         except TypeError:
