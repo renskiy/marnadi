@@ -3,8 +3,6 @@ import logging
 
 from marnadi import errors, descriptors, Lazy
 
-logger = logging.getLogger('marnadi')
-
 
 class Environ(dict):
 
@@ -109,6 +107,8 @@ class App(object):
 
 class HandlerProcessor(type):
 
+    logger = logging.getLogger('marnadi')
+
     def __new__(mcs, name, bases, attributes):
         cls = super(HandlerProcessor, mcs).__new__(mcs, name, bases, attributes)
         for attr_name, attr_value in attributes.iteritems():
@@ -169,7 +169,7 @@ class HandlerProcessor(type):
         except errors.HttpError:
             raise
         except Exception as error:
-            logger.exception(error)
+            cls.logger.exception(error)
             raise errors.HttpError
 
     @staticmethod
