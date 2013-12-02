@@ -29,7 +29,7 @@ class Cookies(Descriptor):
         raise TypeError("Cookie modifying allowed only using set() method")
 
     def __delitem__(self, cookie):
-        self.remove(cookie)
+        raise TypeError("Cookie removing allowed only using remove() method")
 
     def __getitem__(self, cookie):
         return self.cookies[cookie]
