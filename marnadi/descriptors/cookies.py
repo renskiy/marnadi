@@ -36,9 +36,11 @@ class Cookies(Descriptor, UserDict.DictMixin):
 
     def __setitem__(self, cookie, value):
         self.set(cookie, value)
+        self.cookies[cookie] = value
 
     def __delitem__(self, cookie):
         self.remove(cookie)
+        self.cookies.pop(cookie, None)
 
     def __getitem__(self, cookie):
         return self.cookies[cookie]
