@@ -147,7 +147,7 @@ class Headers(Descriptor, UserDict.DictMixin):
         if response_headers:
             for response_header in response_headers:
                 try:
-                    del self.response_headers[response_header.title()]
+                    del self[response_header.title()]
                 except KeyError:
                     pass
         else:
