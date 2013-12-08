@@ -106,10 +106,11 @@ class Headers(Descriptor, UserDict.DictMixin):
     ### response headers ###
 
     def __delitem__(self, response_header):
-        self.clear(response_header)
+        del self.response_headers[response_header.title()]
 
     def __setitem__(self, response_header, value):
-        self.set(response_header, value)
+        if value is not None:
+            self.response_headers[response_header.title()] = [value]
 
     def flush(self):
         """
@@ -135,19 +136,19 @@ class Headers(Descriptor, UserDict.DictMixin):
         for header in response_headers:
             self.append(*header)
 
-    def set(self, response_header, value):
-        self.response_headers[response_header.title()] = [value]
-
     def setdefault(self, response_header, default=None):
-        try:
-            return self.response_headers[response_header.title()]
-        except KeyError:
-            self.set(response_header, default)
-        return default
+        response_header = response_header.title()
+        value = self.response_headers.get(response_header)
+        if value is None:
+            value = self[response_header] = default
+        return value
 
     def clear(self, *response_headers):
         if response_headers:
             for response_header in response_headers:
-                del self.response_headers[response_header.title()]
+                try:
+                    del self.response_headers[response_header.title()]
+                except KeyError:
+                    pass
         else:
             self.response_headers.clear()
