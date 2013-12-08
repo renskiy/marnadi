@@ -1,38 +1,49 @@
+import copy
 import datetime
 import time
-import urllib
+import UserDict
 
 from marnadi.descriptors import Descriptor
 
 
-class Cookies(Descriptor):
+class Cookies(Descriptor, UserDict.DictMixin):
     """Cookies.
 
     Like Headers allow access to request cookies ONLY by key
     or using `get` method.
     """
 
-    def __init__(self):
+    def __init__(self, domain=None, path=None, expires=None):
         super(Cookies, self).__init__()
-        self.headers = None
+        self._headers = None
         self._cookies = None
+        self.domain = domain
+        self.path = path
+        self.expires = expires
 
     def get_value(self, handler):
         value = super(Cookies, self).get_value(handler)
-        value.headers = handler.headers
+        value._headers = handler.headers
         return value
 
-    def __contains__(self, cookie):
-        return cookie in self.cookies
+    def __copy__(self):
+        return self.__class__(
+            domain=self.domain,
+            path=self.path,
+            expires=copy.copy(self.expires),
+        )
 
-    def __setitem__(self, *args, **kwargs):
-        raise TypeError("Cookie modifying allowed only using set() method")
+    def __setitem__(self, cookie, value):
+        self.set(cookie, value)
 
     def __delitem__(self, cookie):
-        raise TypeError("Cookie removing allowed only using remove() method")
+        self.remove(cookie)
 
     def __getitem__(self, cookie):
         return self.cookies[cookie]
+
+    def keys(self):
+        return self.cookies.keys()
 
     @property
     def cookies(self):
@@ -40,7 +51,7 @@ class Cookies(Descriptor):
             try:
                 self._cookies = dict(
                     cookie.strip().split('=', 1)
-                    for cookie in self.headers['Cookie'].split(';')
+                    for cookie in self._headers['Cookie'].split(';')
                 )
             except KeyError:
                 self._cookies = {}
@@ -55,21 +66,20 @@ class Cookies(Descriptor):
             path=path
         )
 
-    def get(self, cookie, default=None, decode=False):
-        value = self.cookies.get(cookie, default)
-        if decode:
-            return self.decode(value)
-        return value
-
     def set(self, cookie, value, expires=None, domain=None, path=None,
-            secure=False, http_only=True, encode=False):
-        if encode:
-            value = self.encode(value)
+            secure=False, http_only=True):
+        domain = domain or self.domain
+        path = path or self.path
+        expires = expires or self.expires
         cookie_params = ['%s=%s' % (cookie, value)]
         if domain:
             cookie_params.append("Domain=%s" % domain)
         if path:
             cookie_params.append("Path=%s" % path)
+        try:
+            expires = datetime.datetime.now() + expires
+        except TypeError:
+            pass
         if isinstance(expires, datetime.datetime):
             struct_time = (
                 time.gmtime(time.mktime(expires.timetuple()))
@@ -84,10 +94,4 @@ class Cookies(Descriptor):
             cookie_params.append("Secure")
         if http_only:
             cookie_params.append("HttpOnly")
-        self.headers.append('Set-Cookie', '; '.join(cookie_params))
-
-    def encode(self, value):
-        return urllib.quote(value)
-
-    def decode(self, value):
-        return urllib.unquote(value)
+        self._headers.append('Set-Cookie', '; '.join(cookie_params))
