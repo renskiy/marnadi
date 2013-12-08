@@ -1,23 +1,44 @@
 import collections
 import itertools
+import UserDict
 
 from marnadi.descriptors import Descriptor
 
 
-class Headers(Descriptor):
-    """Request/response headers.
+class Header(object):
 
-    Request headers can be accessed ONLY by key or `get` method. All other
-    ways lead to response headers.
+    def __init__(self, value, **attributes):
+        self.value = value
+        self.attributes = attributes
 
-    Note:
-        Request handler uses iteration over the response headers when
-        it's ready to generate response, so there is no more ability to modify
-        response headers once iteration has been started.
+    def __str__(self):
+        return self.make_value(self.value, **self.attributes)
+
+    @staticmethod
+    def make_value(value, **attributes):
+        if not attributes:
+            return value
+        return "%s; %s" % (
+            value, '; '.join(
+                attr_name + ('' if attr_value is None else '=%s' % attr_value)
+                for attr_name, attr_value in attributes.iteritems()
+            )
+        )
+
+
+class Headers(Descriptor, UserDict.DictMixin):
+    """Headers - dict-like object which allow to read request
+    and set response headers.
+
+    All methods are divided into two groups: getters and setters where
+    getters usually provide access to request headers and setters
+    allow to modify response headers. For more information see
+    particular method description.
     """
 
     def __init__(self, *default_headers):
         super(Headers, self).__init__()
+        self._next = None
         self._headers_sent = False
         self._request_headers = None
         self._response_headers = collections.defaultdict(list)
@@ -31,30 +52,25 @@ class Headers(Descriptor):
     ### request headers ###
 
     def __getitem__(self, request_header):
-        result = self.get(request_header)
-        if result is None:
-            raise KeyError
-        return result
+        return self.request_headers[request_header]
 
-    def __delitem__(self, *args, **kwargs):
-        raise TypeError("Request headers are read only, "
-                        "use clear() if you wish delete response header")
+    def iterkeys(self):
+        return self.request_headers.iterkeys()
 
-    def __setitem__(self, *args, **kwargs):
-        raise TypeError("Request headers are read only, use set() or append() "
-                        "if you wish set or append new response header")
+    def iteritems(self):
+        return self.request_headers.iteritems()
 
-    def __str__(self):
-        return str(self.request_headers)
+    def keys(self):
+        return self.request_headers.keys()
 
-    def get(self, request_header, *args, **kwargs):
-        return self.request_headers.get(request_header.title(), *args, **kwargs)
-
-    def get_parsed(self, request_header):
+    def get_parsed(self, request_header, default=None):
         """Returns value and params of complex request header"""
 
-        raw_value = self.get(request_header, '')
-        parts = iter(raw_value.split(';'))
+        try:
+            unparsed_value = self[request_header]
+        except KeyError:
+            return default, {}
+        parts = iter(unparsed_value.split(';'))
         value = parts.next()
         return value, dict(
             (lambda p, v='': (p, v.strip('"')))(*param.split('=', 1))
@@ -87,44 +103,47 @@ class Headers(Descriptor):
             )
         return self._request_headers
 
+    def pop(self, key, *args):
+        raise NotImplementedError("`Headers.pop()` is not implemented")
+
+    def popitem(self):
+        raise NotImplementedError("`Headers.popitem()` is not implemented")
+
     ### response headers ###
 
-    def __iter__(self):
-        self._next = (
-            (header, value)
-            for header, values in self._response_headers.iteritems()
-            for value in values
-        ).next
-        return self
+    def __delitem__(self, response_header):
+        self.clear(response_header)
 
-    def next(self):
-        self._headers_sent = True
-        return self._next()
+    def __setitem__(self, response_header, value):
+        self.set(response_header, value)
+
+    def for_send(self):
+        for header, values in self.response_headers.iteritems():
+            self._headers_sent = True
+            for value in values:
+                yield header, value
 
     @property
     def response_headers(self):
-        assert not self._headers_sent, "headers been already sent"
+        assert not self._headers_sent, "Headers been already sent"
         return self._response_headers
 
-    def append(self, response_header, value, **attributes):
-        value = self.make_header_value(value, **attributes)
+    def append(self, response_header, value):
         self.response_headers[response_header.title()].append(value)
 
     def extend(self, *response_headers):
         for header in response_headers:
             self.append(*header)
 
-    def set(self, response_header, value, **attributes):
-        value = self.make_header_value(value, **attributes)
+    def set(self, response_header, value):
         self.response_headers[response_header.title()] = [value]
 
-    def is_set(self, response_header):
-        return response_header.title() in self._response_headers
-
-    def set_if_not(self, response_header, value, **attributes):
-        if self.is_set(response_header):
-            return
-        self.set(response_header, value, **attributes)
+    def setdefault(self, response_header, default=None):
+        try:
+            return self.response_headers[response_header.title()]
+        except KeyError:
+            self.set(response_header, default)
+        return default
 
     def clear(self, *response_headers):
         if response_headers:
@@ -132,15 +151,3 @@ class Headers(Descriptor):
                 del self.response_headers[response_header.title()]
         else:
             self.response_headers.clear()
-
-    ### helpers ###
-
-    def make_header_value(self, value, **attributes):
-        if not attributes:
-            return value
-        return "%s; %s" % (
-            value, '; '.join(
-                attr_name + ('' if attr_value is None else '=%s' % attr_value)
-                for attr_name, attr_value in attributes.iteritems()
-            )
-        )
