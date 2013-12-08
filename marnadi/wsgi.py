@@ -156,7 +156,7 @@ class HandlerProcessor(type):
                     handler.headers['Transfer-Encoding'] = 'chunked'
                     chunked = True
             yield str(handler.status)
-            for header in handler.headers.for_send():
+            for header in handler.headers.flush():
                 yield tuple(map(str, header))
             yield  # separator between headers and body
             if first_chunk:

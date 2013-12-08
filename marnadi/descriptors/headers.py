@@ -111,7 +111,13 @@ class Headers(Descriptor, UserDict.DictMixin):
     def __setitem__(self, response_header, value):
         self.set(response_header, value)
 
-    def for_send(self):
+    def flush(self):
+        """
+        Returns list of response headers as generator after getting
+        first element of which there will be no ability to modify
+        response headers anymore.
+        """
+
         for header, values in self.response_headers.iteritems():
             self._headers_sent = True
             for value in values:
