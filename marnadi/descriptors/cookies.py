@@ -7,11 +7,7 @@ from marnadi.descriptors import Descriptor
 
 
 class Cookies(Descriptor, UserDict.DictMixin):
-    """Cookies.
-
-    Like Headers allow access to request cookies ONLY by key
-    or using `get` method.
-    """
+    """Cookies - dict-like object allowing to get/set HTTP cookies"""
 
     def __init__(self, domain=None, path=None, expires=None,
                  secure=False, http_only=True):
