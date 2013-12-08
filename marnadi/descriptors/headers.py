@@ -98,10 +98,10 @@ class Headers(Descriptor, UserDict.DictMixin):
         return self._request_headers
 
     def pop(self, key, *args):
-        raise NotImplementedError("`Headers.pop()` is not implemented")
+        raise NotImplementedError
 
     def popitem(self):
-        raise NotImplementedError("`Headers.popitem()` is not implemented")
+        raise NotImplementedError
 
     ### response headers ###
 
