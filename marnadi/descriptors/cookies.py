@@ -13,13 +13,16 @@ class Cookies(Descriptor, UserDict.DictMixin):
     or using `get` method.
     """
 
-    def __init__(self, domain=None, path=None, expires=None):
+    def __init__(self, domain=None, path=None, expires=None,
+                 secure=False, http_only=True):
         super(Cookies, self).__init__()
         self._headers = None
         self._cookies = None
         self.domain = domain
         self.path = path
         self.expires = expires
+        self.secure = secure
+        self.http_only = http_only
 
     def get_value(self, handler):
         value = super(Cookies, self).get_value(handler)
@@ -31,6 +34,8 @@ class Cookies(Descriptor, UserDict.DictMixin):
             domain=self.domain,
             path=self.path,
             expires=copy.copy(self.expires),
+            secure=self.secure,
+            http_only=self.http_only,
         )
 
     def __setitem__(self, cookie, value):
@@ -71,6 +76,9 @@ class Cookies(Descriptor, UserDict.DictMixin):
         domain = domain or self.domain
         path = path or self.path
         expires = expires or self.expires
+        secure = secure or self.secure
+        http_only = http_only or self.http_only
+
         cookie_params = ['%s=%s' % (cookie, value)]
         if domain:
             cookie_params.append("Domain=%s" % domain)
