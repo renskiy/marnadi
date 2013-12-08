@@ -54,12 +54,6 @@ class Headers(Descriptor, UserDict.DictMixin):
     def __getitem__(self, request_header):
         return self.request_headers[request_header]
 
-    def iterkeys(self):
-        return self.request_headers.iterkeys()
-
-    def iteritems(self):
-        return self.request_headers.iteritems()
-
     def keys(self):
         return self.request_headers.keys()
 
