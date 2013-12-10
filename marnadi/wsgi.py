@@ -2,6 +2,7 @@ import functools
 import logging
 
 from marnadi import errors, descriptors, Lazy
+from marnadi.descriptors.headers import Header
 
 
 class Environ(dict):
@@ -205,7 +206,7 @@ class Handler(object):
     status = errors.HTTP_200_OK
 
     headers = descriptors.Headers(
-        ('Content-Type', 'text/plain; charset=utf-8'),
+        ('Content-Type', Header('text/plain', charset='utf-8')),
     )
 
     cookies = descriptors.Cookies()

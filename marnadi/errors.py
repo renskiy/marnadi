@@ -1,3 +1,5 @@
+from marnadi.descriptors.headers import Header
+
 HTTP_200_OK = '200 OK'
 HTTP_204_NO_CONTENT = '204 No Content'
 
@@ -15,7 +17,7 @@ HTTP_501_NOT_IMPLEMENTED = '501 Not Implemented'
 class HttpError(Exception):
 
     default_headers = (
-        ('Content-Type', 'text/plain; charset=utf-8'),
+        ('Content-Type', Header('text/plain', charset='utf-8')),
     )
 
     def __init__(self, status=HTTP_500_INTERNAL_SERVER_ERROR,
