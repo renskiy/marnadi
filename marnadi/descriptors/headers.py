@@ -109,7 +109,9 @@ class Headers(Descriptor, UserDict.DictMixin):
         del self.response_headers[response_header.title()]
 
     def __setitem__(self, response_header, value):
-        if value is not None:
+        if value is None:
+            self.clear(response_header)
+        else:
             self.response_headers[response_header.title()] = [value]
 
     def flush(self):
@@ -130,7 +132,8 @@ class Headers(Descriptor, UserDict.DictMixin):
         return self._response_headers
 
     def append(self, response_header, value):
-        self.response_headers[response_header.title()].append(value)
+        if value is not None:
+            self.response_headers[response_header.title()].append(value)
 
     def extend(self, *response_headers):
         for header in response_headers:
