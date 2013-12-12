@@ -137,11 +137,10 @@ class Headers(Descriptor, UserDict.DictMixin):
             self.append(*header)
 
     def setdefault(self, response_header, default=None):
-        response_header = response_header.title()
-        value = self.response_headers.get(response_header)
-        if value is None:
-            value = self[response_header] = default
-        return value
+        values = self.response_headers[response_header]
+        if not values:  # empty list of values
+            self[response_header] = default
+        return self.response_headers[response_header]
 
     def clear(self, *response_headers):
         if response_headers:
