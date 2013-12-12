@@ -70,12 +70,12 @@ class Cookies(Descriptor, UserDict.DictMixin):
         )
 
     def set(self, cookie, value, expires=None, domain=None, path=None,
-            secure=False, http_only=True):
+            secure=None, http_only=None):
         domain = domain or self.domain
         path = path or self.path
         expires = expires or self.expires
-        secure = secure or self.secure
-        http_only = http_only or self.http_only
+        secure = self.secure if secure is None else secure
+        http_only = self.http_only if http_only is None else http_only
 
         cookie_params = ['%s=%s' % (cookie, value)]
         if domain:
