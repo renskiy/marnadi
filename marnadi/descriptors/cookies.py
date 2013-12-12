@@ -36,11 +36,14 @@ class Cookies(Descriptor, UserDict.DictMixin):
 
     def __setitem__(self, cookie, value):
         self.set(cookie, value)
-        self.cookies[cookie] = value
+        if value is None:
+            self.cookies.pop(cookie, None)
+        else:
+            self.cookies[cookie] = value
 
     def __delitem__(self, cookie):
         self.remove(cookie)
-        self.cookies.pop(cookie, None)
+        del self.cookies[cookie]
 
     def __getitem__(self, cookie):
         return self.cookies[cookie]
@@ -60,17 +63,21 @@ class Cookies(Descriptor, UserDict.DictMixin):
                 self._cookies = {}
         return self._cookies
 
-    def remove(self, cookie, domain=None, path=None):
-        self.set(
-            cookie,
-            '',
-            expires=datetime.datetime(1980, 1, 1),
-            domain=domain,
-            path=path
-        )
+    def clear(self, *cookies):
+        for cookie in cookies or list(self.cookies.keys()):
+            try:
+                del self[cookie]
+            except KeyError:
+                pass
+
+    def remove(self, cookie, **kwargs):
+        self.set(cookie, '', expires=datetime.datetime(1980, 1, 1), **kwargs)
 
     def set(self, cookie, value, expires=None, domain=None, path=None,
             secure=None, http_only=None):
+        if value is None:
+            return self.remove(cookie, domain=domain, path=path,
+                               secure=secure, http_only=http_only)
         domain = domain or self.domain
         path = path or self.path
         expires = expires or self.expires
