@@ -85,9 +85,9 @@ class Cookies(Descriptor, UserDict.DictMixin):
         http_only = self.http_only if http_only is None else http_only
 
         cookie_params = ['%s=%s' % (cookie, value)]
-        if domain:
+        if domain is not None:
             cookie_params.append("Domain=%s" % domain)
-        if path:
+        if path is not None:
             cookie_params.append("Path=%s" % path)
         if expires is not None:
             try:
