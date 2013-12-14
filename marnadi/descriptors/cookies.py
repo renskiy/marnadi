@@ -78,9 +78,9 @@ class Cookies(Descriptor, UserDict.DictMixin):
         if value is None:
             return self.remove(cookie, domain=domain, path=path,
                                secure=secure, http_only=http_only)
-        domain = domain or self.domain
-        path = path or self.path
-        expires = expires or self.expires
+        domain = self.domain if domain is None else domain
+        path = self.path if path is None else path
+        expires = self.expires if expires is None else expires
         secure = self.secure if secure is None else secure
         http_only = self.http_only if http_only is None else http_only
 
