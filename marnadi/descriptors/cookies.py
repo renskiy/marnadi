@@ -89,20 +89,20 @@ class Cookies(Descriptor, UserDict.DictMixin):
             cookie_params.append("Domain=%s" % domain)
         if path:
             cookie_params.append("Path=%s" % path)
-        try:
-            expires = datetime.datetime.now() + expires
-        except TypeError:
-            pass
-        if isinstance(expires, datetime.datetime):
-            struct_time = (
-                time.gmtime(time.mktime(expires.timetuple()))
-                if expires.tzinfo is None else
-                time.localtime(time.mktime(expires.utctimetuple()))
-            )
-            cookie_params.append(
-                "Expires=%s" %
-                time.strftime("%a, %d %b %Y %H:%M:%S GMT", struct_time)
-            )
+        if expires is not None:
+            try:
+                expires = datetime.datetime.now() + expires
+            except TypeError:
+                pass
+            if isinstance(expires, datetime.datetime):
+                struct_time = (
+                    time.gmtime(time.mktime(expires.timetuple()))
+                    if expires.tzinfo is None else
+                    time.localtime(time.mktime(expires.utctimetuple()))
+                )
+                expires = time.strftime("%a, %d %b %Y %H:%M:%S GMT",
+                                        struct_time)
+            cookie_params.append("Expires=%s" % expires)
         if secure:
             cookie_params.append("Secure")
         if http_only:
