@@ -1,3 +1,6 @@
+import collections
+import itertools
+
 from marnadi.descriptors.headers import Header
 
 HTTP_200_OK = '200 OK'
@@ -38,17 +41,19 @@ class HttpError(Exception):
 
     @property
     def headers(self):
-        headers_sent = set()
-        for header in self._headers:
-            header = self.make_header(header)
-            headers_sent.add(header[0])
-            yield header
-        for header in self.default_headers:
-            header = self.make_header(header)
-            if header[0] not in headers_sent:
-                yield header
-
-    @staticmethod
-    def make_header(header):
-        header = map(str, header)
-        return header[0].title(), header[1]
+        headers = collections.defaultdict(list)
+        default_headers = collections.defaultdict(list)
+        for header, value in self._headers:
+            headers[header.title()].append(value)
+        for header, value in self.default_headers:
+            header = header.title()
+            if header not in headers:
+                default_headers[header].append(value)
+        return [
+            (header, str(value))
+            for header, values in itertools.chain(
+                headers.iteritems(),
+                default_headers.iteritems(),
+            )
+            for value in values
+        ]

@@ -43,7 +43,7 @@ class App(object):
                 next_header = next(response_flow)
         except errors.HttpError as response_flow:
             status = response_flow.status
-            headers = list(response_flow.headers)
+            headers = response_flow.headers
 
         start_response(status, headers)
 
