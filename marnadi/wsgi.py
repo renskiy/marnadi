@@ -156,9 +156,9 @@ class HandlerProcessor(type):
                 except (TypeError, AssertionError):
                     handler.headers['Transfer-Encoding'] = 'chunked'
                     chunked = True
-            yield str(handler.status)
-            for header in handler.headers.flush():
-                yield tuple(map(str, header))
+            yield handler.status
+            for header, value in handler.headers.flush():
+                yield header, str(value)
             yield  # separator between headers and body
             if first_chunk:
                 yield cls.make_chunk(first_chunk, chunked)

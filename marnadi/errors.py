@@ -25,7 +25,7 @@ class HttpError(Exception):
 
     def __init__(self, status=HTTP_500_INTERNAL_SERVER_ERROR,
                  data=None, headers=(), info=None):
-        self.status = str(status)
+        self.status = status
         self._headers = headers
         self._data = data
         self.info = info
