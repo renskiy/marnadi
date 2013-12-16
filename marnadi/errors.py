@@ -21,22 +21,20 @@ class HttpError(Exception):
     )
 
     def __init__(self, status=HTTP_500_INTERNAL_SERVER_ERROR,
-                 data=None, headers=None):
+                 data=None, headers=None, info=None):
         self.status = str(status)
         self._headers = headers or ()
         self._data = data
+        self.info = info
 
     def __len__(self):
         return 1
 
     def __iter__(self):
-        yield self.__str__()
+        yield unicode(self._data or '').encode('utf-8')
 
     def __str__(self):
-        return unicode(self._data or '').encode('utf-8')
-
-    def __repr__(self):
-        return '%s: %s' % (self.status, self)
+        return "%s, info: %s" % (self.status, self.info)
 
     @property
     def headers(self):
