@@ -176,7 +176,7 @@ class HandlerProcessor(type):
     @staticmethod
     def make_chunk(chunk, chunked=False):
         if chunked:
-            return hex(len(chunk))[2:].upper() + '\r\n' + chunk + '\r\n'
+            return '%X\r\n%s\r\n' % (len(chunk), chunk)
         return chunk
 
     def __subclasscheck__(cls, subclass):
