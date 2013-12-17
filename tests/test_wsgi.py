@@ -18,9 +18,11 @@ class EnvironTestCase(unittest.TestCase):
         self.assertEqual(environ['wsgi.input'], 'input')
 
         self.assertEqual(environ.http_content_type, 'content_type')
+        self.assertEqual(environ.content_type, 'content_type')
         self.assertEqual(environ['CONTENT_TYPE'], 'content_type')
 
         self.assertEqual(environ.http_content_length, 'content_length')
+        self.assertEqual(environ.content_length, 'content_length')
         self.assertEqual(environ['CONTENT_LENGTH'], 'content_length')
 
         self.assertEqual(environ.http_cookies, 'cookies')
