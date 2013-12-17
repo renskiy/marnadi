@@ -4,10 +4,11 @@ import importlib
 
 class Lazy(object):
 
-    __slots__ = ('_obj', 'args', 'kwargs')
+    __slots__ = ('path', 'value', 'args', 'kwargs')
 
-    def __init__(self, obj, *args, **kwargs):
-        self._obj = obj
+    def __init__(self, path, *args, **kwargs):
+        self.path = path
+        self.value = None
         self.args = args
         self.kwargs = kwargs
 
@@ -17,12 +18,22 @@ class Lazy(object):
     def __iter__(self):
         return self.obj.__iter__()
 
+    def __str__(self):
+        return str(self.obj)
+
+    def __getitem__(self, item):
+        return self.obj[item]
+
+    def keys(self):
+        return self.obj.iterkeys()
+
     @property
     def obj(self):
-        if isinstance(self._obj, basestring):
-            module_name, obj_name = self._obj.rsplit('.', 1)
+        if self.value is None:
+            module_name, obj_name = self.path.rsplit('.', 1)
             module = importlib.import_module(module_name)
-            self._obj = obj = getattr(module, obj_name)
-            if callable(obj):
-                self._obj = functools.partial(obj, *self.args, **self.kwargs)
-        return self._obj
+            value = getattr(module, obj_name)
+            if callable(value):
+                value = functools.partial(value, *self.args, **self.kwargs)
+            self.value = value
+        return self.value
