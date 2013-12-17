@@ -40,7 +40,6 @@ class AppTestCase(unittest.TestCase):
         self,
         handler_path,
         nested_handler_path=None,
-        requested_path='/foo/bar',
         expected_args=None,
         expected_kwargs=None,
     ):
@@ -55,12 +54,11 @@ class AppTestCase(unittest.TestCase):
             )),
         )
         app = wsgi.App(routes=routes)
-        app.get_handler(requested_path)('environ')
+        app.get_handler('/foo/bar')('environ')
 
     def test_get_handler_args__no_args(self):
         self._get_handler_args_parametrized_test_case(
-            handler_path='/',
-            requested_path='/',
+            handler_path='/foo/bar',
         )
 
     def test_get_handler_args__arg(self):
