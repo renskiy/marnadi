@@ -249,7 +249,7 @@ class Handler(object):
                 yield method
 
     def options(self, *args, **kwargs):
-        self.headers.set('Allow', ', '.join(self.allowed_http_methods))
+        self.headers['Allow'] = ', '.join(self.allowed_http_methods)
 
     get = None
 
