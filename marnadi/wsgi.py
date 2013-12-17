@@ -1,3 +1,4 @@
+import collections
 import functools
 import logging
 
@@ -71,7 +72,7 @@ class App(object):
 
     def get_handler(self, path, routes=None, args=None, kwargs=None):
         routes = routes or self.routes
-        args = args or []
+        args = args or collections.deque()
         kwargs = kwargs or {}
         for route_path, route_handler in routes:
             if hasattr(route_path, 'match'):  # assume it's compiled regexp
@@ -98,6 +99,11 @@ class App(object):
                 except (AttributeError, TypeError, errors.HttpError):
                     pass
             if not rest_path:
+                if isinstance(route_handler, Lazy) \
+                        and isinstance(route_handler.obj, functools.partial):
+                    args.extendleft(reversed(route_handler.obj.args))
+                    kwargs.update(route_handler.obj.keywords)
+                    route_handler = route_handler.obj.func
                 return lambda environ: route_handler(
                     environ,
                     args=args,

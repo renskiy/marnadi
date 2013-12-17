@@ -45,7 +45,7 @@ class AppTestCase(unittest.TestCase):
     ):
         def handler(environ, args, kwargs):
             self.assertEqual('environ', environ)
-            self.assertListEqual(expected_args or [], args)
+            self.assertListEqual(expected_args or [], list(args))
             self.assertDictEqual(expected_kwargs or {}, kwargs)
 
         routes = (
