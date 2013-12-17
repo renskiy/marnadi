@@ -1,6 +1,6 @@
 import unittest
 
-from marnadi import wsgi
+from marnadi import wsgi, errors
 
 
 class EnvironTestCase(unittest.TestCase):
@@ -30,5 +30,4 @@ class EnvironTestCase(unittest.TestCase):
 
         with self.assertRaises(AttributeError):
             getattr(environ, 'unknown_wsgi_key')
-        with self.assertRaises(KeyError):
-            environ['unknown_wsgi_key']
+        self.assertNotIn('unknown_wsgi_key', environ)
