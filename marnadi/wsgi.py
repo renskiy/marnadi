@@ -95,7 +95,7 @@ class App(object):
                         args=args,
                         kwargs=kwargs,
                     )
-                except (AttributeError, TypeError):
+                except (AttributeError, TypeError, errors.HttpError):
                     pass
             if not rest_path:
                 return lambda environ: route_handler(

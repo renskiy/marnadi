@@ -156,3 +156,232 @@ class AppTestCase(unittest.TestCase):
             expected_args=['bar'],
             expected_kwargs=dict(foo='foo'),
         )
+
+    def test_get_handler__handler_not_found(self):
+        app = wsgi.App()
+        with self.assertRaises(errors.HttpError) as context:
+            app.get_handler('unknown_path')
+        error = context.exception
+        self.assertEqual(errors.HTTP_404_NOT_FOUND, error.status)
+
+    def expected_handler(self, *args, **kwargs):
+        pass
+
+    def unexpected_handler(self, *args, **kwargs):
+        self.fail("Unexpected handler call")
+
+    def _get_handler_parametrized_test_case(self, routes, requested_path):
+        app = wsgi.App(routes=routes)
+        app.get_handler(requested_path)('environ')
+
+    def test_get_handler__expected_unexpected(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                ('/', self.expected_handler),
+                ('/foo', self.unexpected_handler),
+            ),
+            requested_path='/',
+        )
+
+    def test_get_handler__unexpected_expected(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                ('/foo', self.unexpected_handler),
+                ('/', self.expected_handler),
+            ),
+            requested_path='/',
+        )
+
+    def test_get_handler__regexp_expected_unexpected(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                (re.compile(r'/'), self.expected_handler),
+                (re.compile(r'/foo'), self.unexpected_handler),
+            ),
+            requested_path='/',
+        )
+
+    def test_get_handler__regexp_unexpected_expected(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                (re.compile(r'/foo'), self.unexpected_handler),
+                (re.compile(r'/'), self.expected_handler),
+            ),
+            requested_path='/',
+        )
+
+    def test_get_handler__foo_unexpected_expected(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                ('/', self.unexpected_handler),
+                ('/foo', self.expected_handler),
+            ),
+            requested_path='/foo',
+        )
+
+    def test_get_handler__foo_expected_unexpected(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                ('/foo', self.expected_handler),
+                ('/', self.unexpected_handler),
+            ),
+            requested_path='/foo',
+        )
+
+    def test_get_handler__foo_regexp_unexpected_expected(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                (re.compile(r'/'), self.unexpected_handler),
+                (re.compile(r'/foo'), self.expected_handler),
+            ),
+            requested_path='/foo',
+        )
+
+    def test_get_handler__foo_regexp_expected_unexpected(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                (re.compile(r'/foo'), self.expected_handler),
+                (re.compile(r'/'), self.unexpected_handler),
+            ),
+            requested_path='/foo',
+        )
+
+    def test_get_handler__nested_foo_unexpected_expected(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                ('/foo', (
+                    ('/bar', self.unexpected_handler),
+                    ('', self.expected_handler),
+                )),
+            ),
+            requested_path='/foo',
+        )
+
+    def test_get_handler__nested_foo_expected_unexpected(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                ('/foo', (
+                    ('', self.expected_handler),
+                    ('/bar', self.unexpected_handler),
+                )),
+            ),
+            requested_path='/foo',
+        )
+
+    def test_get_handler__nested_regexp_foo_unexpected_expected(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                (re.compile(r'/foo'), (
+                    ('/bar', self.unexpected_handler),
+                    ('', self.expected_handler),
+                )),
+            ),
+            requested_path='/foo',
+        )
+
+    def test_get_handler__nested_regexp_foo_expected_unexpected(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                (re.compile(r'/foo'), (
+                    ('', self.expected_handler),
+                    ('/bar', self.unexpected_handler),
+                )),
+            ),
+            requested_path='/foo',
+        )
+
+    def test_get_handler__nested_foobar_unexpected_expected(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                ('/foo', (
+                    ('', self.unexpected_handler),
+                    ('/bar', self.expected_handler),
+                )),
+            ),
+            requested_path='/foo/bar',
+        )
+
+    def test_get_handler__nested_foobar_expected_unexpected(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                ('/foo', (
+                    ('/bar', self.expected_handler),
+                    ('', self.unexpected_handler),
+                )),
+            ),
+            requested_path='/foo/bar',
+        )
+
+    def test_get_handler__nested_regexp_foobar_unexpected_expected(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                (re.compile(r'/foo'), (
+                    ('', self.unexpected_handler),
+                    (re.compile(r'/bar'), self.expected_handler),
+                )),
+            ),
+            requested_path='/foo/bar',
+        )
+
+    def test_get_handler__nested_regexp_foobar_expected_unexpected(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                (re.compile(r'/foo'), (
+                    (re.compile(r'/bar'), self.expected_handler),
+                    ('', self.unexpected_handler),
+                )),
+            ),
+            requested_path='/foo/bar',
+        )
+
+    def test_get_handler__nested_foobaz_expected_unexpected(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                ('/foo', (
+                    ('/baz', self.expected_handler),
+                )),
+                ('/foo', (
+                    ('/bar', self.unexpected_handler),
+                )),
+            ),
+            requested_path='/foo/baz',
+        )
+
+    def test_get_handler__nested_foobaz_unexpected_expected(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                ('/foo', (
+                    ('/bar', self.unexpected_handler),
+                )),
+                ('/foo', (
+                    ('/baz', self.expected_handler),
+                )),
+            ),
+            requested_path='/foo/baz',
+        )
+
+    def test_get_handler__nested_regexp_foobaz_expected_unexpected(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                (re.compile(r'/foo'), (
+                    (re.compile(r'/baz'), self.expected_handler),
+                )),
+                (re.compile(r'/foo'), (
+                    (re.compile(r'/bar'), self.unexpected_handler),
+                )),
+            ),
+            requested_path='/foo/baz',
+        )
+
+    def test_get_handler__nested_regexp_foobaz_unexpected_expected(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                (re.compile(r'/foo'), (
+                    (re.compile(r'/bar'), self.unexpected_handler),
+                )),
+                (re.compile(r'/foo'), (
+                    (re.compile(r'/baz'), self.expected_handler),
+                )),
+            ),
+            requested_path='/foo/baz',
+        )
