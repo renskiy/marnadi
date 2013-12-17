@@ -63,38 +63,38 @@ class AppTestCase(unittest.TestCase):
 
     def test_get_handler_args__arg(self):
         self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(\w+)/bar$'),
+            handler_path=re.compile(r'/(\w+)/bar'),
             expected_args=['foo'],
         )
 
     def test_get_handler_args__arg_arg(self):
         self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(\w+)/(\w+)$'),
+            handler_path=re.compile(r'/(\w+)/(\w+)'),
             expected_args=['foo', 'bar'],
         )
 
     def test_get_handler_args__kwarg(self):
         self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(?P<foo>\w+)/bar$'),
+            handler_path=re.compile(r'/(?P<foo>\w+)/bar'),
             expected_kwargs=dict(foo='foo'),
         )
 
     def test_get_handler_args__kwarg_kwarg(self):
         self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(?P<foo>\w+)/(?P<bar>\w+)$'),
+            handler_path=re.compile(r'/(?P<foo>\w+)/(?P<bar>\w+)'),
             expected_kwargs=dict(foo='foo', bar='bar'),
         )
 
     def test_get_handler_args__arg_kwarg(self):
         self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(\w+)/(?P<bar>\w+)$'),
+            handler_path=re.compile(r'/(\w+)/(?P<bar>\w+)'),
             expected_args=['foo'],
             expected_kwargs=dict(bar='bar'),
         )
 
     def test_get_handler_args__kwarg_arg(self):
         self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(?P<foo>\w+)/(\w+)$'),
+            handler_path=re.compile(r'/(?P<foo>\w+)/(\w+)'),
             expected_args=['bar'],
             expected_kwargs=dict(foo='foo'),
         )
@@ -102,7 +102,7 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler_args__nested_const_arg(self):
         self._get_handler_args_parametrized_test_case(
             handler_path='/foo',
-            nested_handler_path=re.compile(r'/(\w+)$'),
+            nested_handler_path=re.compile(r'/(\w+)'),
             expected_args=['bar'],
         )
 
@@ -116,7 +116,7 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler_args__nested_const_kwarg(self):
         self._get_handler_args_parametrized_test_case(
             handler_path='/foo',
-            nested_handler_path=re.compile(r'/(?P<bar>\w+)$'),
+            nested_handler_path=re.compile(r'/(?P<bar>\w+)'),
             expected_kwargs=dict(bar='bar'),
         )
 
@@ -130,7 +130,7 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler_args__nested_arg_arg(self):
         self._get_handler_args_parametrized_test_case(
             handler_path=re.compile(r'/(\w+)'),
-            nested_handler_path=re.compile(r'/(\w+)$'),
+            nested_handler_path=re.compile(r'/(\w+)'),
             expected_args=['foo', 'bar'],
         )
 
