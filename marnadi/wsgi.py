@@ -75,7 +75,8 @@ class App(object):
         args = args or collections.deque()
         kwargs = kwargs or {}
         for route in routes:
-            route = Route(*route)
+            if not isinstance(route, Route):
+                route = Route(*route)
             if hasattr(route.path, 'match'):  # assume it's compiled regexp
                 match = route.path.match(path)
                 if not match:
