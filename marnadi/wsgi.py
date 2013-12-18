@@ -1,3 +1,4 @@
+import functools
 import logging
 import itertools
 
@@ -54,7 +55,10 @@ class App(object):
             if not isinstance(route, Route):
                 routes[index] = route = Route(*route)
             if not issubclass(route.handler, Handler):
-                route.handler = self.compile_routes(list(route.handler))
+                try:
+                    route.handler = self.compile_routes(list(route.handler))
+                except TypeError:
+                    pass
         return routes
 
     @staticmethod
@@ -141,7 +145,11 @@ class HandlerProcessor(type):
             supported_method = supported_method.lower()
             if getattr(cls, supported_method, NotImplemented) is NotImplemented:
                 attributes[supported_method] = method
-        return type(func.__name__, (cls, ), attributes)
+        handler = type(func.__name__, (cls, ), attributes)
+        func = functools.wraps(func)(
+            lambda *args, **kwargs: handler(*args, **kwargs))
+        func.handle = handler.handle
+        return func
 
     def handle(cls, environ, args=(), kwargs=None):
         try:
