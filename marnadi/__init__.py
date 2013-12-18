@@ -24,8 +24,8 @@ class Lazy(object):
     def __getitem__(self, item):
         return self.obj[item]
 
-    def keys(self):
-        return self.obj.iterkeys()
+    def __getattr__(self, attr):
+        return getattr(self.obj, attr)
 
     @property
     def obj(self):
