@@ -71,25 +71,3 @@ class LazyTestCase(unittest.TestCase):
             lazy_function('foo', 'bar', foo='bar'),
             (('foo', 'bar'), {'foo': 'bar'}),
         )
-
-    def test_lazy_function__predefined_args(self):
-        lazy_function = Lazy(
-            '%s._test_function' % __name__,
-            'foo', 'bar',
-            foo='bar',
-        )
-        self.assertEqual(
-            lazy_function(),
-            (('foo', 'bar'), {'foo': 'bar'}),
-        )
-
-    def test_lazy_function__args_kwargs_predefined_args(self):
-        lazy_function = Lazy(
-            '%s._test_function' % __name__,
-            'foo', 'bar',
-            foo='bar',
-        )
-        self.assertEqual(
-            lazy_function('baz', baz='baz'),
-            (('foo', 'bar', 'baz'), {'foo': 'bar', 'baz': 'baz'}),
-        )

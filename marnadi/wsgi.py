@@ -2,7 +2,7 @@ import collections
 import functools
 import logging
 
-from marnadi import errors, descriptors, Lazy
+from marnadi import errors, descriptors, Route
 from marnadi.descriptors.headers import Header
 
 
@@ -74,22 +74,23 @@ class App(object):
         routes = routes or self.routes
         args = args or collections.deque()
         kwargs = kwargs or {}
-        for route_path, route_handler in routes:
-            if hasattr(route_path, 'match'):  # assume it's compiled regexp
-                match = route_path.match(path)
+        for route in routes:
+            route = Route(*route)
+            if hasattr(route.path, 'match'):  # assume it's compiled regexp
+                match = route.path.match(path)
                 if not match:
                     continue
                 match_args, match_kwargs = self.get_match_subgroups(match)
                 args.extend(match_args)
                 kwargs.update(match_kwargs)
                 rest_path = path[match.end(0):]
-            elif path.startswith(route_path):
-                rest_path = path[len(route_path):]
+            elif path.startswith(route.path):
+                rest_path = path[len(route.path):]
             else:
                 continue
-            if not issubclass(route_handler, Handler):
+            if not issubclass(route.handler, Handler):
                 try:
-                    routes = iter(route_handler)
+                    routes = iter(route.handler)
                     return self.get_handler(
                         rest_path,
                         routes=routes,
@@ -99,12 +100,7 @@ class App(object):
                 except (AttributeError, TypeError, errors.HttpError):
                     pass
             if not rest_path:
-                if isinstance(route_handler, Lazy) \
-                        and isinstance(route_handler.obj, functools.partial):
-                    args.extendleft(reversed(route_handler.obj.args))
-                    kwargs.update(route_handler.obj.keywords)
-                    route_handler = route_handler.obj.func
-                return lambda environ: route_handler(
+                return lambda environ: route.handler(
                     environ,
                     args=args,
                     kwargs=kwargs,
@@ -194,10 +190,6 @@ class HandlerProcessor(type):
         return chunk
 
     def __subclasscheck__(cls, subclass):
-        if isinstance(subclass, Lazy):
-            subclass = subclass.obj
-            if isinstance(subclass, functools.partial):
-                subclass = subclass.func
         try:
             return super(HandlerProcessor, cls).__subclasscheck__(subclass)
         except TypeError:
