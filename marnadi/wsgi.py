@@ -1,4 +1,3 @@
-import collections
 import functools
 import logging
 
@@ -72,7 +71,7 @@ class App(object):
 
     def get_handler(self, path, routes=None, args=None, kwargs=None):
         routes = routes or self.routes
-        args = args or collections.deque()
+        args = args or []
         kwargs = kwargs or {}
         for route in routes:
             if not isinstance(route, Route):
