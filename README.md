@@ -27,7 +27,7 @@ More Complex Example
 
     import json
     import re
-    from marnadi import wsgi, Lazy
+    from marnadi import wsgi, Lazy, Route
 
 
     class JsonHandler(wsgi.Handler):
@@ -47,13 +47,13 @@ More Complex Example
 
 
     @JsonHandler.decorator
-    def foo(bar):  # will be called only on HTTP "POST" request
-        return {'foo': bar}
+    def foo(foo, bar=None):  # will be called only on HTTP "POST" request
+        return {'foo': foo, 'bar': bar}
 
     @wsgi.Handler.decorator
-    def http_stream():
-        yield 'first chunk'
-        yield 'second chunk'
+    def http_stream(*args):
+        for arg in args:
+            yield arg
 
     hello_routes = (
         ('', JsonHandler),
@@ -62,8 +62,8 @@ More Complex Example
 
     routes=(
         ('/', wsgi.Handler),  # HTTP 405 Method Not Allowed
-        (re.compile(r'/foo/(?P<bar>\w+')$'), foo),
-        ('/http_stream', http_stream),
+        Route(re.compile(r'/foo/(?P<foo>\w+')$'), foo, bar='bar'),
+        ('/http_stream', http_stream, 1, 2, 3),
         (re.compile(r'/hello/(?P<receiver>\w+)/?'), hello_routes),
         ('/lazy', Lazy('path.to.handler')),
         ('/nested', Lazy('path.to.subroutes'))

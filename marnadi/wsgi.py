@@ -1,4 +1,5 @@
 import logging
+import itertools
 
 from marnadi import errors, descriptors, Route
 from marnadi.descriptors.headers import Header
@@ -106,8 +107,8 @@ class App(object):
             if not rest_path:
                 return lambda environ: route.handler.handle(
                     environ,
-                    args=args,
-                    kwargs=kwargs,
+                    args=itertools.chain(route.args, args),
+                    kwargs=dict(kwargs, **route.kwargs),
                 )
         raise errors.HttpError(errors.HTTP_404_NOT_FOUND)
 

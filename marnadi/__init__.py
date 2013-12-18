@@ -49,6 +49,8 @@ class Route(object):
 
     handler = Lazy()
 
-    def __init__(self, path, handler):
+    def __init__(self, path, handler, *args, **kwargs):
         self.path = path
         self.original_handler = handler
+        self.args = args
+        self.kwargs = kwargs
