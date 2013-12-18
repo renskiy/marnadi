@@ -25,7 +25,7 @@ class Environ(dict):
 class App(object):
 
     def __init__(self, routes=()):
-        self.routes = routes
+        self.routes = self.compile_routes(list(routes))
 
     def __call__(self, environ, start_response):
         try:
@@ -47,6 +47,14 @@ class App(object):
         start_response(status, headers)
 
         return response_flow  # return rest of the flow as response body
+
+    def compile_routes(self, routes):
+        for index, route in enumerate(routes):
+            if not isinstance(route, Route):
+                routes[index] = route = Route(*route)
+            if not issubclass(route.handler, Handler):
+                route.handler = self.compile_routes(list(route.handler))
+        return routes
 
     @staticmethod
     def get_path(environ):
@@ -73,8 +81,6 @@ class App(object):
         args = args or []
         kwargs = kwargs or {}
         for route in routes:
-            if not isinstance(route, Route):
-                route = Route(*route)
             if hasattr(route.path, 'match'):  # assume it's compiled regexp
                 match = route.path.match(path)
                 if not match:
@@ -87,16 +93,15 @@ class App(object):
                 rest_path = path[len(route.path):]
             else:
                 continue
-            if not issubclass(route.handler, Handler):
+            if isinstance(route.handler, list):
                 try:
-                    routes = iter(route.handler)
                     return self.get_handler(
                         rest_path,
-                        routes=routes,
+                        routes=route.handler,
                         args=args,
                         kwargs=kwargs,
                     )
-                except (AttributeError, TypeError, errors.HttpError):
+                except errors.HttpError:
                     pass
             if not rest_path:
                 return lambda environ: route.handler.handle(
