@@ -27,7 +27,7 @@ More Complex Example
 
     import json
     import re
-    from marnadi import wsgi, Lazy, Route
+    from marnadi import wsgi, Route
 
 
     class JsonHandler(wsgi.Handler):
@@ -65,8 +65,8 @@ More Complex Example
         Route(re.compile(r'/foo/(?P<foo>\w+')$'), foo, bar='bar'),
         ('/http_stream', http_stream, 1, 2, 3),
         (re.compile(r'/hello/(?P<receiver>\w+)/?'), hello_routes),
-        ('/lazy', Lazy('path.to.handler')),
-        ('/nested', Lazy('path.to.subroutes'))
+        ('/lazy', 'path.to.handler'),
+        ('/nested', 'path.to.subroutes')
     )
 
     application = wsgi.App(routes=routes)

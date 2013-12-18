@@ -5,9 +5,12 @@ class Lazy(object):
 
     __slots__ = ('_path', '_value')
 
-    def __init__(self, path=None):
-        self._path = path
-        self._value = None
+    def __init__(self, path):
+        if isinstance(path, basestring):
+            self._value = None
+            self._path = path
+        else:
+            self.obj = path
 
     def __call__(self, *args, **kwargs):
         return self.obj(*args, **kwargs)
@@ -24,33 +27,32 @@ class Lazy(object):
     def __getattr__(self, attr):
         return getattr(self.obj, attr)
 
-    def __get__(self, instance, owner):
-        if not issubclass(owner, Route):
-            return self.obj
-        route = instance
-        value = (
-            route.original_handler.obj
-            if isinstance(route.original_handler, Lazy) else
-            route.original_handler
-        )
-        route.handler = value
-        return value
-
     @property
     def obj(self):
         if self._value is None:
             module_name, obj_name = self._path.rsplit('.', 1)
             module = importlib.import_module(module_name)
-            self._value = getattr(module, obj_name)
+            self.obj = getattr(module, obj_name)
         return self._value
+
+    @obj.setter
+    def obj(self, value):
+        assert value is not None, "`obj` value can't be None"
+        self._value = value
 
 
 class Route(object):
 
-    handler = Lazy()
-
     def __init__(self, path, handler, *args, **kwargs):
         self.path = path
-        self.original_handler = handler
+        self._handler = Lazy(handler)
         self.args = args
         self.kwargs = kwargs
+
+    @property
+    def handler(self):
+        return self._handler.obj
+
+    @handler.setter
+    def handler(self, value):
+        self._handler.obj = value
