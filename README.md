@@ -65,7 +65,7 @@ More Complex Example
         (re.compile(r'/foo/(?P<bar>\w+')$'), foo),
         ('/http_stream', http_stream),
         (re.compile(r'/hello/(?P<receiver>\w+)/?'), hello_routes),
-        ('/lazy', Lazy('path.to.handler', 'foo', bar='baz')),
+        ('/lazy', Lazy('path.to.handler')),
         ('/nested', Lazy('path.to.subroutes'))
     )
 
