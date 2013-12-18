@@ -43,6 +43,7 @@ class AppTestCase(unittest.TestCase):
         expected_args=None,
         expected_kwargs=None,
     ):
+        @wsgi.Handler.decorator
         def handler(environ, args, kwargs):
             self.assertEqual('environ', environ)
             self.assertListEqual(expected_args or [], list(args))
@@ -164,9 +165,11 @@ class AppTestCase(unittest.TestCase):
         error = context.exception
         self.assertEqual(errors.HTTP_404_NOT_FOUND, error.status)
 
+    @wsgi.Handler.decorator
     def expected_handler(self, *args, **kwargs):
         pass
 
+    @wsgi.Handler.decorator
     def unexpected_handler(self, *args, **kwargs):
         self.fail("Unexpected handler call")
 

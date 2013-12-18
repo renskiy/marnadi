@@ -8,7 +8,7 @@ Hello World
     from marnadi import wsgi
 
 
-    @wsgi.Handler
+    @wsgi.Handler.decorator
     def hello():
         return "Hello World"
 
@@ -46,11 +46,11 @@ More Complex Example
             return {'Hello':  receiver, 'from': sender}
 
 
-    @JsonHandler
+    @JsonHandler.decorator
     def foo(bar):  # will be called only on HTTP "POST" request
         return {'foo': bar}
 
-    @wsgi.Handler
+    @wsgi.Handler.decorator
     def http_stream():
         yield 'first chunk'
         yield 'second chunk'

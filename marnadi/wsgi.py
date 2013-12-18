@@ -1,4 +1,3 @@
-import functools
 import logging
 
 from marnadi import errors, descriptors, Route
@@ -100,7 +99,7 @@ class App(object):
                 except (AttributeError, TypeError, errors.HttpError):
                     pass
             if not rest_path:
-                return lambda environ: route.handler(
+                return lambda environ: route.handler.handle(
                     environ,
                     args=args,
                     kwargs=kwargs,
@@ -122,24 +121,23 @@ class HandlerProcessor(type):
         super(HandlerProcessor, cls).__setattr__(attr_name, attr_value)
         cls.set_descriptor_name(attr_value, attr_name)
 
-    def __call__(cls, environ, **kwargs):
-        if isinstance(environ, Environ):
-            return cls.as_class(environ, **kwargs)
-        assert len(kwargs) == 0, "invalid usage"
-        return cls.as_decorator(func=environ)
+    def __call__(cls, *args, **kwargs):
+        if cls.func is not None:
+            return cls.func(*args, **kwargs)
+        return super(HandlerProcessor, cls).__call__(*args, **kwargs)
 
-    def as_decorator(cls, func):
-        method = functools.wraps(func)(lambda self, *args, **kwargs: func(
+    def decorator(cls, func):
+        method = lambda self, *args, **kwargs: func(
             *args, **kwargs
-        ))
-        attributes = {}
+        )
+        attributes = dict(func=staticmethod(func))
         for supported_method in cls.SUPPORTED_HTTP_METHODS:
             supported_method = supported_method.lower()
             if getattr(cls, supported_method, NotImplemented) is NotImplemented:
                 attributes[supported_method] = method
         return type(func.__name__, (cls, ), attributes)
 
-    def as_class(cls, environ, args=(), kwargs=None):
+    def handle(cls, environ, args=(), kwargs=None):
         try:
             handler = super(HandlerProcessor, cls).__call__(environ)
             result = handler(*args, **kwargs or {})
@@ -224,6 +222,8 @@ class Handler(object):
         ('application/x-www-form-urlencoded',
             'marnadi.mime.application.x_www_form_urlencoded.Decoder'),
     )
+
+    func = None  # function decorated by this class
 
     def __init__(self, environ):
         self.environ = environ
