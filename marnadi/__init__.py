@@ -10,26 +10,26 @@ class Lazy(object):
         self._value = None
 
     def __call__(self, *args, **kwargs):
-        return self._obj(*args, **kwargs)
+        return self.obj(*args, **kwargs)
 
     def __iter__(self):
-        return self._obj.__iter__()
+        return self.obj.__iter__()
 
     def __str__(self):
-        return str(self._obj)
+        return str(self.obj)
 
     def __getitem__(self, item):
-        return self._obj[item]
+        return self.obj[item]
 
     def __getattr__(self, attr):
-        return getattr(self._obj, attr)
+        return getattr(self.obj, attr)
 
     def __get__(self, instance, owner):
         if not issubclass(owner, Route):
-            return self._obj
+            return self.obj
         route = instance
         value = (
-            route.original_handler._obj
+            route.original_handler.obj
             if isinstance(route.original_handler, Lazy) else
             route.original_handler
         )
@@ -37,7 +37,7 @@ class Lazy(object):
         return value
 
     @property
-    def _obj(self):
+    def obj(self):
         if self._value is None:
             module_name, obj_name = self._path.rsplit('.', 1)
             module = importlib.import_module(module_name)
