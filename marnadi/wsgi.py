@@ -133,14 +133,19 @@ class HandlerProcessor(type):
         return cls.as_decorator(func=environ)
 
     def as_decorator(cls, func):
-        return functools.wraps(func)(lambda *args, **kwargs: cls(
-            callback=func,
+        method = functools.wraps(func)(lambda self, *args, **kwargs: func(
             *args, **kwargs
         ))
+        attributes = {}
+        for supported_method in cls.SUPPORTED_HTTP_METHODS:
+            supported_method = supported_method.lower()
+            if getattr(cls, supported_method, NotImplemented) is NotImplemented:
+                attributes[supported_method] = method
+        return type(func.__name__, (cls, ), attributes)
 
-    def as_class(cls, environ, args=(), kwargs=None, callback=None):
+    def as_class(cls, environ, args=(), kwargs=None):
         try:
-            handler = super(HandlerProcessor, cls).__call__(environ, callback)
+            handler = super(HandlerProcessor, cls).__call__(environ)
             result = handler(*args, **kwargs or {})
             chunks, first_chunk, chunked = (), '', False
             try:
@@ -228,9 +233,8 @@ class Handler(object):
             'marnadi.mime.application.x_www_form_urlencoded.Decoder'),
     )
 
-    def __init__(self, environ, callback=None):
+    def __init__(self, environ):
         self.environ = environ
-        self.callback = callback
 
     def __call__(self, *args, **kwargs):
         request_method = self.environ.request_method
@@ -239,8 +243,8 @@ class Handler(object):
                 errors.HTTP_501_NOT_IMPLEMENTED,
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
             )
-        callback = getattr(self, request_method.lower(), None) or self.callback
-        if callback is None:
+        callback = getattr(self, request_method.lower(), NotImplemented)
+        if callback is NotImplemented:
             raise errors.HttpError(
                 errors.HTTP_405_METHOD_NOT_ALLOWED,
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
@@ -250,21 +254,21 @@ class Handler(object):
     @property
     def allowed_http_methods(self):
         for method in self.SUPPORTED_HTTP_METHODS:
-            allowed = self.callback or getattr(self, method.lower(), None)
-            if allowed:
-                yield method
+            if getattr(self, method.lower(), NotImplemented) is NotImplemented:
+                continue
+            yield method
 
     def options(self, *args, **kwargs):
         self.headers['Allow'] = ', '.join(self.allowed_http_methods)
 
-    get = None
+    get = NotImplemented
 
-    head = None
+    head = NotImplemented
 
-    post = None
+    post = NotImplemented
 
-    put = None
+    put = NotImplemented
 
-    patch = None
+    patch = NotImplemented
 
-    delete = None
+    delete = NotImplemented
