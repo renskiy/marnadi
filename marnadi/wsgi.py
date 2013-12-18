@@ -106,8 +106,8 @@ class App(object):
                     route_handler = route_handler.obj.func
                 return lambda environ: route_handler(
                     environ,
-                    *args,
-                    **kwargs
+                    args=args,
+                    kwargs=kwargs,
                 )
         raise errors.HttpError(errors.HTTP_404_NOT_FOUND)
 
@@ -126,10 +126,10 @@ class HandlerProcessor(type):
         super(HandlerProcessor, cls).__setattr__(attr_name, attr_value)
         cls.set_descriptor_name(attr_value, attr_name)
 
-    def __call__(cls, environ, *args, **kwargs):
+    def __call__(cls, environ, **kwargs):
         if isinstance(environ, Environ):
-            return cls.as_class(environ, *args, **kwargs)
-        assert len(args) == 0 and len(kwargs) == 0, "invalid usage"
+            return cls.as_class(environ, **kwargs)
+        assert len(kwargs) == 0, "invalid usage"
         return cls.as_decorator(func=environ)
 
     def as_decorator(cls, func):
@@ -143,10 +143,10 @@ class HandlerProcessor(type):
                 attributes[supported_method] = method
         return type(func.__name__, (cls, ), attributes)
 
-    def as_class(cls, environ, *args, **kwargs):
+    def as_class(cls, environ, args=(), kwargs=None):
         try:
             handler = super(HandlerProcessor, cls).__call__(environ)
-            result = handler(*args, **kwargs)
+            result = handler(*args, **kwargs or {})
             chunks, first_chunk, chunked = (), '', False
             try:
                 assert not isinstance(result, basestring)
