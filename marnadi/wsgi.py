@@ -54,8 +54,12 @@ class App(object):
         for index, route in enumerate(routes):
             if not isinstance(route, Route):
                 routes[index] = route = Route(*route)
-            if not issubclass(route.handler, Handler):
-                route.handler = self.compile_routes(list(route.handler))
+            try:
+                if issubclass(route.handler, Handler):
+                    continue
+            except TypeError:
+                pass
+            route.handler = self.compile_routes(list(route.handler))
         return routes
 
     @staticmethod
@@ -194,12 +198,6 @@ class HandlerProcessor(type):
         if chunked:
             return '%X\r\n%s\r\n' % (len(chunk), chunk)
         return chunk
-
-    def __subclasscheck__(cls, subclass):
-        try:
-            return super(HandlerProcessor, cls).__subclasscheck__(subclass)
-        except TypeError:
-            return False
 
     @staticmethod
     def set_descriptor_name(descriptor, attr_name):
