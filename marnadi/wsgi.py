@@ -134,16 +134,14 @@ class HandlerProcessor(type):
         return super(HandlerProcessor, cls).__call__(*args, **kwargs)
 
     def decorator(cls, func):
-        method = lambda self, *args, **kwargs: func(
-            *args, **kwargs
-        )
-        attributes = dict(func=staticmethod(func))
+        method = staticmethod(func)
+        attributes = dict(func=method)
         for supported_method in cls.SUPPORTED_HTTP_METHODS:
             supported_method = supported_method.lower()
             if getattr(cls, supported_method, NotImplemented) is NotImplemented:
                 attributes[supported_method] = method
         return functools.update_wrapper(
-            type(func.__name__, (cls, ), attributes),
+            type('', (cls, ), attributes),
             func, updated=(),
         )
 
