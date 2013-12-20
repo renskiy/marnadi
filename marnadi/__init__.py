@@ -1,4 +1,5 @@
 import importlib
+import itertools
 
 
 class Lazy(object):
@@ -62,20 +63,21 @@ class Route(object):
 
 class Header(object):
 
-    def __init__(self, value, **attributes):
-        self.value = value
+    __slots__ = ('values', 'attributes')
+
+    def __init__(self, *values, **attributes):
+        self.values = values
         self.attributes = attributes
 
     def __str__(self):
-        return self.make_value(self.value, **self.attributes)
+        return self.make_value(*self.values, **self.attributes)
 
     @staticmethod
-    def make_value(value, **attributes):
-        if not attributes:
-            return value
-        return "%s; %s" % (
-            value, '; '.join(
-                attr_name + ('' if attr_value is None else '=%s' % attr_value)
+    def make_value(*values, **attributes):
+        return '; '.join(itertools.chain(
+            values,
+            (
+                '%s=%s' % (attr_name, attr_value)
                 for attr_name, attr_value in attributes.iteritems()
-            )
-        )
+            ),
+        ))
