@@ -6,9 +6,10 @@ Yet another WSGI Web Framework, the simplest and fastest ever written
 Hello World
 -------
     from marnadi import wsgi
+    from marnadi.handlers import Handler
 
 
-    @wsgi.Handler.decorator
+    @Handler.decorator
     def hello():
         return "Hello World"
 
@@ -28,9 +29,10 @@ More Complex Example
     import json
     import re
     from marnadi import wsgi, Route, Header
+    from marnadi.handlers import Handler
 
 
-    class JsonHandler(wsgi.Handler):
+    class JsonHandler(Handler):
 
         SUPPORTED_HTTP_METHODS = ('OPTIONS', 'GET', 'POST')
 
@@ -50,7 +52,7 @@ More Complex Example
     def foo(foo, bar=None):  # will be called only on HTTP "POST" request
         return {'foo': foo, 'bar': bar}
 
-    @wsgi.Handler.decorator
+    @Handler.decorator
     def http_stream(*args):
         for arg in args:
             yield arg
@@ -61,7 +63,7 @@ More Complex Example
     )
 
     routes=(
-        ('/', wsgi.Handler),  # HTTP 405 Method Not Allowed
+        ('/', Handler),  # HTTP 405 Method Not Allowed
         Route(re.compile(r'/foo/(?P<foo>\w+')$'), foo, bar='bar'),
         ('/http_stream', http_stream, 1, 2, 3),
         (re.compile(r'/hello/(?P<receiver>\w+)/?'), hello_routes),

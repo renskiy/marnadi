@@ -2,6 +2,7 @@ import re
 import unittest
 
 from marnadi import wsgi, errors
+from marnadi.handlers import Handler
 
 
 class EnvironTestCase(unittest.TestCase):
@@ -43,7 +44,7 @@ class AppTestCase(unittest.TestCase):
         expected_args=None,
         expected_kwargs=None,
     ):
-        @wsgi.Handler.decorator
+        @Handler.decorator
         def handler(environ, args, kwargs):
             self.assertEqual('environ', environ)
             self.assertListEqual(expected_args or [], list(args))
@@ -165,11 +166,11 @@ class AppTestCase(unittest.TestCase):
         error = context.exception
         self.assertEqual('404 Not Found', error.status)
 
-    @wsgi.Handler.decorator
+    @Handler.decorator
     def expected_handler(self, *args, **kwargs):
         pass
 
-    @wsgi.Handler.decorator
+    @Handler.decorator
     def unexpected_handler(self, *args, **kwargs):
         self.fail("Unexpected handler call")
 
