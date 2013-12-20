@@ -27,7 +27,7 @@ More Complex Example
 
     import json
     import re
-    from marnadi import wsgi, Route
+    from marnadi import wsgi, Route, Header
 
 
     class JsonHandler(wsgi.Handler):
@@ -35,7 +35,7 @@ More Complex Example
         SUPPORTED_HTTP_METHODS = ('OPTIONS', 'GET', 'POST')
 
         headers = descriptors.Headers(
-            ('Content-Type', 'application/json; charset=utf-8'),
+            ('Content-Type', Header('application/json', charset='utf-8'),
         )
 
         def __call__(self, *args, **kwargs):

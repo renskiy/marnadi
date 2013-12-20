@@ -2,8 +2,7 @@ import functools
 import itertools
 import logging
 
-from marnadi import errors, descriptors, Route
-from marnadi.descriptors.headers import Header
+from marnadi import errors, descriptors, Route, Header
 
 
 class Environ(dict):

@@ -5,27 +5,6 @@ import UserDict
 from marnadi.descriptors import Descriptor
 
 
-class Header(object):
-
-    def __init__(self, value, **attributes):
-        self.value = value
-        self.attributes = attributes
-
-    def __str__(self):
-        return self.make_value(self.value, **self.attributes)
-
-    @staticmethod
-    def make_value(value, **attributes):
-        if not attributes:
-            return value
-        return "%s; %s" % (
-            value, '; '.join(
-                attr_name + ('' if attr_value is None else '=%s' % attr_value)
-                for attr_name, attr_value in attributes.iteritems()
-            )
-        )
-
-
 class Headers(Descriptor, UserDict.DictMixin):
     """Headers - dict-like object which allow to read request
     and set response headers.

@@ -1,7 +1,7 @@
 import collections
 import itertools
 
-from marnadi.descriptors.headers import Header
+from marnadi import Header
 
 HTTP_200_OK = '200 OK'
 HTTP_204_NO_CONTENT = '204 No Content'
