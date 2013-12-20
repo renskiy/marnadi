@@ -114,7 +114,7 @@ class App(object):
                     args=itertools.chain(route.args, args),
                     kwargs=dict(kwargs, **route.kwargs),
                 )
-        raise errors.HttpError(errors.HTTP_404_NOT_FOUND)
+        raise errors.HttpError('404 Not Found')
 
 
 class HandlerProcessor(type):
@@ -212,7 +212,7 @@ class Handler(object):
         'OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',
     )
 
-    status = errors.HTTP_200_OK
+    status = '200 OK'
 
     headers = descriptors.Headers(
         ('Content-Type', Header('text/plain', charset='utf-8')),
@@ -237,13 +237,13 @@ class Handler(object):
         request_method = self.environ.request_method
         if request_method not in self.SUPPORTED_HTTP_METHODS:
             raise errors.HttpError(
-                errors.HTTP_501_NOT_IMPLEMENTED,
+                '501 Not Implemented',
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
             )
         callback = getattr(self, request_method.lower(), NotImplemented)
         if callback is NotImplemented:
             raise errors.HttpError(
-                errors.HTTP_405_METHOD_NOT_ALLOWED,
+                '405 Method Not Allowed',
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
             )
         return callback(*args, **kwargs)

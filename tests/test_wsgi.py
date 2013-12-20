@@ -163,7 +163,7 @@ class AppTestCase(unittest.TestCase):
         with self.assertRaises(errors.HttpError) as context:
             app.get_handler('unknown_path')
         error = context.exception
-        self.assertEqual(errors.HTTP_404_NOT_FOUND, error.status)
+        self.assertEqual('404 Not Found', error.status)
 
     @wsgi.Handler.decorator
     def expected_handler(self, *args, **kwargs):
