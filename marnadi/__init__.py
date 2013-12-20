@@ -43,6 +43,8 @@ class Lazy(object):
 
 class Route(object):
 
+    __slots__ = ('path', '_handler', 'args', 'kwargs')
+
     def __init__(self, path, handler, *args, **kwargs):
         self.path = path
         self._handler = Lazy(handler)
