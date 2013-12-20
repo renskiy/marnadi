@@ -77,7 +77,7 @@ class HandlerProcessor(type):
 
     def handle_exception(cls, error):
         cls.logger.exception(error)
-        raise errors.HttpError(info=error)
+        raise errors.HttpError(exception=error)
 
     @staticmethod
     def make_chunk(chunk, chunked=False):

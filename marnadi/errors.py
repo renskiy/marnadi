@@ -11,11 +11,11 @@ class HttpError(Exception):
     )
 
     def __init__(self, status='500 Internal Server Error',
-                 data=None, headers=(), info=None):
+                 data=None, headers=(), exception=None):
         self.status = status
         self._headers = headers
         self._data = data
-        self.info = info
+        self.exception = exception
 
     def __len__(self):
         return 1
@@ -24,7 +24,7 @@ class HttpError(Exception):
         yield unicode(self._data or '').encode('utf-8')
 
     def __str__(self):
-        return "%s, info: %s" % (self.status, self.info)
+        return "%s, exception: %s" % (self.status, self.exception)
 
     @property
     def headers(self):
