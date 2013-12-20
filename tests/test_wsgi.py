@@ -1,7 +1,7 @@
 import re
 import unittest
 
-from marnadi import wsgi, errors
+from marnadi import wsgi, errors,  HttpError
 
 
 class EnvironTestCase(unittest.TestCase):
@@ -160,7 +160,7 @@ class AppTestCase(unittest.TestCase):
 
     def test_get_handler__handler_not_found(self):
         app = wsgi.App()
-        with self.assertRaises(errors.HttpError) as context:
+        with self.assertRaises(HttpError) as context:
             app.get_handler('unknown_path')
         error = context.exception
         self.assertEqual(errors.HTTP_404_NOT_FOUND, error.status)

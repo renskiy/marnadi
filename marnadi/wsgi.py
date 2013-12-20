@@ -2,7 +2,7 @@ import functools
 import itertools
 import logging
 
-from marnadi import errors, descriptors, Route, Header
+from marnadi import descriptors, errors, Route, Header, HttpError
 
 
 class Environ(dict):
@@ -41,7 +41,7 @@ class App(object):
             while next_header:
                 headers.append(next_header)
                 next_header = next(response_flow)
-        except errors.HttpError as response_flow:
+        except HttpError as response_flow:
             status = response_flow.status
             headers = response_flow.headers
 
@@ -106,7 +106,7 @@ class App(object):
                         args=args,
                         kwargs=kwargs,
                     )
-                except errors.HttpError:
+                except HttpError:
                     pass
             if not rest_path:
                 return lambda environ: route.handler.handle(
@@ -114,7 +114,7 @@ class App(object):
                     args=itertools.chain(route.args, args),
                     kwargs=dict(kwargs, **route.kwargs),
                 )
-        raise errors.HttpError(errors.HTTP_404_NOT_FOUND)
+        raise HttpError(errors.HTTP_404_NOT_FOUND)
 
 
 class HandlerProcessor(type):
@@ -183,14 +183,14 @@ class HandlerProcessor(type):
                 if next_chunk:
                     yield cls.make_chunk(next_chunk, chunked)
             yield cls.make_chunk('', chunked)  # end of stream
-        except errors.HttpError:
+        except HttpError:
             raise
         except Exception as error:
             cls.handle_exception(error)
 
     def handle_exception(cls, error):
         cls.logger.exception(error)
-        raise errors.HttpError(info=error)
+        raise HttpError(info=error)
 
     @staticmethod
     def make_chunk(chunk, chunked=False):
@@ -236,13 +236,13 @@ class Handler(object):
     def __call__(self, *args, **kwargs):
         request_method = self.environ.request_method
         if request_method not in self.SUPPORTED_HTTP_METHODS:
-            raise errors.HttpError(
+            raise HttpError(
                 errors.HTTP_501_NOT_IMPLEMENTED,
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
             )
         callback = getattr(self, request_method.lower(), NotImplemented)
         if callback is NotImplemented:
-            raise errors.HttpError(
+            raise HttpError(
                 errors.HTTP_405_METHOD_NOT_ALLOWED,
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
             )
