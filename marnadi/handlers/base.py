@@ -6,6 +6,8 @@ from marnadi import errors, descriptors, Header
 
 class HandlerProcessor(type):
 
+    logger = logging.getLogger('marnadi')
+
     def __new__(mcs, name, bases, attributes):
         cls = super(HandlerProcessor, mcs).__new__(mcs, name, bases, attributes)
         for attr_name, attr_value in attributes.iteritems():
@@ -92,8 +94,6 @@ class HandlerProcessor(type):
 class Handler(object):
 
     __metaclass__ = HandlerProcessor
-
-    logger = logging.getLogger('marnadi')
 
     SUPPORTED_HTTP_METHODS = (
         'OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',
