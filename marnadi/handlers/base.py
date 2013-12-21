@@ -39,7 +39,7 @@ class HandlerProcessor(type):
         try:
             handler = super(HandlerProcessor, cls).__call__(environ)
             result = handler(*args, **kwargs or {})
-            chunks, first_chunk, chunked = (), '', False
+            chunks, first_chunk = (), ''
             try:
                 assert not isinstance(result, basestring)
                 chunks = iter(result)
@@ -57,19 +57,15 @@ class HandlerProcessor(type):
                     assert not (chunks and len(result) > 1)
                     handler.headers['Content-Length'] = len(first_chunk)
                 except (TypeError, AssertionError):
-                    handler.headers['Transfer-Encoding'] = 'chunked'
-                    chunked = True
+                    pass
             yield handler.status
             for header, value in handler.headers.flush():
                 yield header, str(value)
             yield  # separator between headers and body
-            if first_chunk:
-                yield cls.make_chunk(first_chunk, chunked)
+            yield first_chunk
             for next_chunk in chunks:
                 next_chunk = unicode(next_chunk or '').encode('utf-8')
-                if next_chunk:
-                    yield cls.make_chunk(next_chunk, chunked)
-            yield cls.make_chunk('', chunked)  # end of stream
+                yield next_chunk
         except errors.HttpError:
             raise
         except Exception as error:
@@ -78,12 +74,6 @@ class HandlerProcessor(type):
 
     def handle_exception(cls, error, environ, args, kwargs):
         cls.logger.exception(error)
-
-    @staticmethod
-    def make_chunk(chunk, chunked=False):
-        if chunked:
-            return '%X\r\n%s\r\n' % (len(chunk), chunk)
-        return chunk
 
     @staticmethod
     def set_descriptor_name(descriptor, attr_name):
