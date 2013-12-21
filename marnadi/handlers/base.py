@@ -47,7 +47,7 @@ class HandlerProcessor(type):
                 first_chunk = unicode(result or '').encode('utf-8')
             else:
                 try:
-                    first_chunk = unicode(chunks.next()).encode('utf-8')
+                    first_chunk = unicode(next(chunks) or '').encode('utf-8')
                 except StopIteration:
                     # only StopIteration exception alone should be caught
                     # at this place
@@ -66,7 +66,7 @@ class HandlerProcessor(type):
             if first_chunk:
                 yield cls.make_chunk(first_chunk, chunked)
             for next_chunk in chunks:
-                next_chunk = unicode(next_chunk).encode('utf-8')
+                next_chunk = unicode(next_chunk or '').encode('utf-8')
                 if next_chunk:
                     yield cls.make_chunk(next_chunk, chunked)
             yield cls.make_chunk('', chunked)  # end of stream
