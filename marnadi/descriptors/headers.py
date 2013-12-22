@@ -107,7 +107,8 @@ class Headers(Descriptor, UserDict.DictMixin):
 
     @property
     def response_headers(self):
-        assert not self._headers_sent, "Headers been already sent"
+        if self._headers_sent:
+            raise ValueError("Headers been already sent")
         return self._response_headers
 
     def append(self, response_header, value):

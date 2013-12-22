@@ -38,7 +38,8 @@ class Lazy(object):
 
     @obj.setter
     def obj(self, value):
-        assert value is not None, "`obj` can't be None"
+        if value is None:
+            raise TypeError("`obj` can't be None")
         self._value = value
 
 

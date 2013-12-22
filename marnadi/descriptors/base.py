@@ -14,7 +14,7 @@ class Descriptor(object):
     def __get__(self, handler, handler_class):
         if handler is None:
             return self  # static access
-        assert self.attr_name, "Descriptor need not empty `attr_name`"
+        assert self.attr_name is not None
         value = self.get_value(handler)
         setattr(handler, self.attr_name, value)
         return value
