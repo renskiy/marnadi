@@ -2,7 +2,7 @@ import mock
 import re
 import unittest
 
-from marnadi import wsgi, errors
+from marnadi import wsgi, errors, Route
 from marnadi.handlers import Handler
 
 
@@ -177,8 +177,19 @@ class AppTestCase(unittest.TestCase):
     def unexpected_handler(self, *args, **kwargs):
         pass
 
-    def _get_handler_parametrized_test_case(self, routes, requested_path):
-        self.expected_handler.handle = mock.Mock()
+    def _get_handler_parametrized_test_case(
+        self,
+        routes,
+        requested_path,
+        expected_args=None,
+        expected_kwargs=None,
+    ):
+        def side_effect(environ, args, kwargs):
+            self.assertEqual('environ', environ)
+            self.assertListEqual(expected_args or [], list(args))
+            self.assertDictEqual(expected_kwargs or {}, kwargs)
+
+        self.expected_handler.handle = mock.Mock(side_effect=side_effect)
         self.unexpected_handler.handle = mock.Mock()
         app = wsgi.App(routes=routes)
         app.get_handler(requested_path)('environ')
@@ -395,4 +406,108 @@ class AppTestCase(unittest.TestCase):
                 )),
             ),
             requested_path='/foo/baz',
+        )
+
+    def test_get_handler_predefined(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                ('/', self.expected_handler),
+            ),
+            requested_path='/',
+        )
+
+    def test_get_handler_predefined__args(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                ('/', self.expected_handler, 'foo', 'bar'),
+            ),
+            requested_path='/',
+            expected_args=['foo', 'bar'],
+        )
+
+    def test_get_handler_predefined__route(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                Route('/', self.expected_handler),
+            ),
+            requested_path='/',
+        )
+
+    def test_get_handler_predefined__route_args(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                Route('/', self.expected_handler, 'foo', 'bar'),
+            ),
+            requested_path='/',
+            expected_args=['foo', 'bar'],
+        )
+
+    def test_get_handler_predefined__route_args_kwargs(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                Route('/', self.expected_handler, 'foo', 'bar', baz='baz'),
+            ),
+            requested_path='/',
+            expected_args=['foo', 'bar'],
+            expected_kwargs={'baz': 'baz'},
+        )
+
+    def test_get_handler_predefined__regexp_args(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                (re.compile(r'/(baz)'), self.expected_handler, 'foo', 'bar'),
+            ),
+            requested_path='/baz',
+            expected_args=['foo', 'bar', 'baz'],
+        )
+
+    def test_get_handler_predefined__regexp_route(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                Route(re.compile(r'/(baz)'), self.expected_handler),
+            ),
+            requested_path='/baz',
+            expected_args=['baz'],
+        )
+
+    def test_get_handler_predefined__regexp_route_args(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                Route(re.compile(r'/(baz)'),
+                      self.expected_handler, 'foo', 'bar'),
+            ),
+            requested_path='/baz',
+            expected_args=['foo', 'bar', 'baz'],
+        )
+
+    def test_get_handler_predefined__regexp_route_args_kwargs(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                Route(re.compile(r'/(baz)'),
+                      self.expected_handler, 'foo', 'bar', baz='baz'),
+            ),
+            requested_path='/baz',
+            expected_args=['foo', 'bar', 'baz'],
+            expected_kwargs={'baz': 'baz'},
+        )
+
+    def test_get_handler_predefined__regexp_route_kwargs_collision(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                Route(re.compile(r'/(?P<baz>bar)'),
+                      self.expected_handler, baz='baz'),
+            ),
+            requested_path='/bar',
+            expected_kwargs={'baz': 'baz'},
+        )
+
+    def test_get_handler_predefined__regexp_route_complex(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                Route(re.compile(r'/(?P<foo>foo)/(bar)'),
+                      self.expected_handler, 'foo', baz='baz'),
+            ),
+            requested_path='/foo/bar',
+            expected_args=['foo', 'bar'],
+            expected_kwargs={'baz': 'baz', 'foo': 'foo'},
         )
