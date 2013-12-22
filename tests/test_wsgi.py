@@ -45,14 +45,13 @@ class AppTestCase(unittest.TestCase):
         expected_args=None,
         expected_kwargs=None,
     ):
-        def side_effects(environ, args, kwargs):
+        def side_effect(environ, args, kwargs):
             self.assertEqual('environ', environ)
             self.assertListEqual(expected_args or [], list(args))
             self.assertDictEqual(expected_kwargs or {}, kwargs)
 
         handler = Handler.decorator(lambda *args, **kwargs: None)
-        handler.handle = mock.Mock()
-        handler.handle.side_effect = side_effects
+        handler.handle = mock.Mock(side_effect=side_effect)
         routes = (
             (handler_path, nested_handler_path is None and handler or (
                 (nested_handler_path, handler),
@@ -60,6 +59,7 @@ class AppTestCase(unittest.TestCase):
         )
         app = wsgi.App(routes=routes)
         app.get_handler('/foo/bar')('environ')
+        self.assertEqual(1, handler.handle.call_count)
 
     def test_get_handler_args__no_args(self):
         self._get_handler_args_parametrized_test_case(
@@ -175,11 +175,15 @@ class AppTestCase(unittest.TestCase):
 
     @Handler.decorator
     def unexpected_handler(self, *args, **kwargs):
-        self.fail("Unexpected handler call")
+        pass
 
     def _get_handler_parametrized_test_case(self, routes, requested_path):
+        self.expected_handler.handle = mock.Mock()
+        self.unexpected_handler.handle = mock.Mock()
         app = wsgi.App(routes=routes)
         app.get_handler(requested_path)('environ')
+        self.assertEqual(1, self.expected_handler.handle.call_count)
+        self.assertEqual(0, self.unexpected_handler.handle.call_count)
 
     def test_get_handler__expected_unexpected(self):
         self._get_handler_parametrized_test_case(
