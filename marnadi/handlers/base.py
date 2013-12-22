@@ -134,6 +134,7 @@ class Handler(object):
 
     def options(self, *args, **kwargs):
         self.headers['Allow'] = ', '.join(self.allowed_http_methods)
+        return self.__doc__
 
     get = NotImplemented
 
