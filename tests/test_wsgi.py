@@ -1,3 +1,4 @@
+import mock
 import re
 import unittest
 
@@ -44,12 +45,14 @@ class AppTestCase(unittest.TestCase):
         expected_args=None,
         expected_kwargs=None,
     ):
-        @Handler.decorator
-        def handler(environ, args, kwargs):
+        def side_effects(environ, args, kwargs):
             self.assertEqual('environ', environ)
             self.assertListEqual(expected_args or [], list(args))
             self.assertDictEqual(expected_kwargs or {}, kwargs)
 
+        handler = Handler.decorator(lambda *args, **kwargs: None)
+        handler.handle = mock.Mock()
+        handler.handle.side_effect = side_effects
         routes = (
             (handler_path, nested_handler_path is None and handler or (
                 (nested_handler_path, handler),
