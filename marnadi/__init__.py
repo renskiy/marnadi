@@ -43,9 +43,28 @@ class Lazy(object):
         self._value = value
 
 
+class _Route(type):
+
+    def __call__(self, *args, **kwargs):
+        _kwargs = {}
+        try:
+            _kwargs['path'] = kwargs.pop('path')
+        except KeyError:
+            pass
+        try:
+            _kwargs['handler'] = kwargs.pop('handler')
+        except KeyError:
+            pass
+        route = super(_Route, self).__call__(*args, **kwargs)
+        route.kwargs.update(_kwargs)
+        return route
+
+
 class Route(object):
 
     __slots__ = ('path', '_handler', 'args', 'kwargs')
+
+    __metaclass__ = _Route
 
     def __init__(self, path, handler, *args, **kwargs):
         self.path = path
