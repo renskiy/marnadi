@@ -5,6 +5,18 @@ import unittest
 from marnadi import wsgi, errors, Route
 from marnadi.handlers import Handler
 
+_test_handler = Handler
+
+_test_handler_seq = (
+    ('a', Handler),
+    ('b', Handler),
+)
+
+_test_handler_seq_routes = (
+    Route('a', Handler),
+    Route('b', Handler),
+)
+
 
 class EnvironTestCase(unittest.TestCase):
 
@@ -511,3 +523,81 @@ class AppTestCase(unittest.TestCase):
             expected_args=['foo', 'bar'],
             expected_kwargs={'baz': 'baz', 'foo': 'foo'},
         )
+
+    def test_compile_routes(self):
+        app = wsgi.App()
+        self.assertListEqual([], app.routes)
+
+    def test_compile_routes__tuple(self):
+        app = wsgi.App(routes=(
+            ('/', _test_handler),
+        ))
+        self.assertEqual(1, len(app.routes))
+        route = app.routes[0]
+        self.assertIsInstance(route, Route)
+        self.assertEqual(_test_handler, route.handler)
+
+    def test_compile_routes__tuple_lazy_handler(self):
+        app = wsgi.App(routes=(
+            ('/', '%s._test_handler' % __name__),
+        ))
+        self.assertEqual(1, len(app.routes))
+        route = app.routes[0]
+        self.assertIsInstance(route, Route)
+        self.assertEqual(_test_handler, route.handler)
+
+    def test_compile_routes__tuple_lazy_seq(self):
+        app = wsgi.App(routes=(
+            ('/', '%s._test_handler_seq' % __name__),
+        ))
+        self.assertEqual(1, len(app.routes))
+        root_route = app.routes[0]
+        self.assertEqual(2, len(root_route.handler))
+        route_a, route_b = root_route.handler
+        self.assertIsInstance(route_a, Route)
+        self.assertIsInstance(route_b, Route)
+        self.assertEqual(_test_handler, route_a.handler)
+        self.assertEqual(_test_handler, route_b.handler)
+
+    def test_compile_routes__tuple_lazy_seq_routes(self):
+        app = wsgi.App(routes=(
+            ('/', '%s._test_handler_seq_routes' % __name__),
+        ))
+        self.assertEqual(1, len(app.routes))
+        root_route = app.routes[0]
+        self.assertEqual(2, len(root_route.handler))
+        route_a, route_b = root_route.handler
+        self.assertIsInstance(route_a, Route)
+        self.assertIsInstance(route_b, Route)
+        self.assertEqual(_test_handler, route_a.handler)
+        self.assertEqual(_test_handler, route_b.handler)
+
+    def test_compile_routes__route(self):
+        route = Route('/', _test_handler)
+        app = wsgi.App(routes=(route, ))
+        self.assertListEqual([route], app.routes)
+
+    def test_compile_routes__route_lazy_handler(self):
+        route = Route('/', '%s._test_handler' % __name__)
+        app = wsgi.App(routes=(route, ))
+        self.assertListEqual([route], app.routes)
+
+    def test_compile_routes__route_lazy_seq(self):
+        route = Route('/', '%s._test_handler_seq' % __name__)
+        app = wsgi.App(routes=(route, ))
+        self.assertListEqual([route], app.routes)
+        route_a, route_b = route.handler
+        self.assertIsInstance(route_a, Route)
+        self.assertIsInstance(route_b, Route)
+        self.assertEqual(_test_handler, route_a.handler)
+        self.assertEqual(_test_handler, route_b.handler)
+
+    def test_compile_routes__route_lazy_seq_routes(self):
+        route = Route('/', '%s._test_handler_seq_routes' % __name__)
+        app = wsgi.App(routes=(route, ))
+        self.assertListEqual([route], app.routes)
+        route_a, route_b = route.handler
+        self.assertIsInstance(route_a, Route)
+        self.assertIsInstance(route_b, Route)
+        self.assertEqual(_test_handler, route_a.handler)
+        self.assertEqual(_test_handler, route_b.handler)
