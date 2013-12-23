@@ -57,7 +57,13 @@ class App(object):
                     continue
             except TypeError:
                 pass
-            route.handler = self.compile_routes(list(route.handler))
+            try:
+                route.handler = self.compile_routes(list(route.handler))
+            except TypeError:
+                raise TypeError(
+                    "Route's handler must be either subclass of Handler "
+                    "or sequence of handlers"
+                )
         return routes
 
     @staticmethod
