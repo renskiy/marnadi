@@ -45,7 +45,7 @@ class Lazy(object):
 
 class _Route(type):
 
-    def __call__(self, *args, **kwargs):
+    def __call__(cls, *args, **kwargs):
         _kwargs = {}
         try:
             _kwargs['path'] = kwargs.pop('path')
@@ -55,7 +55,7 @@ class _Route(type):
             _kwargs['handler'] = kwargs.pop('handler')
         except KeyError:
             pass
-        route = super(_Route, self).__call__(*args, **kwargs)
+        route = super(_Route, cls).__call__(*args, **kwargs)
         route.kwargs.update(_kwargs)
         return route
 
