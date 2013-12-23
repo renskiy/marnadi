@@ -46,6 +46,9 @@ class Lazy(object):
 class _Route(type):
 
     def __call__(cls, *args, **kwargs):
+        if len(args) < 2:
+            raise ValueError(
+                "`%s` needs minimum two arguments" % cls.__name__)
         _kwargs = {}
         try:
             _kwargs['path'] = kwargs.pop('path')
