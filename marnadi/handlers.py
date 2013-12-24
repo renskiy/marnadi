@@ -41,22 +41,19 @@ class HandlerProcessor(type):
             result = handler(*args, **kwargs or {})
             chunks, first_chunk = (), ''
             try:
-                assert not isinstance(result, basestring)
-                chunks = iter(result)
-            except (AssertionError, TypeError):
-                first_chunk = unicode(result or '').encode('utf-8')
-            else:
+                if not isinstance(result, basestring):
+                    chunks = iter(result)
                 try:
                     first_chunk = unicode(next(chunks) or '').encode('utf-8')
                 except StopIteration:
-                    # only StopIteration exception alone should be caught
-                    # at this place
                     pass
+            except TypeError:
+                first_chunk = unicode(result or '').encode('utf-8')
             if not handler.headers.setdefault('Content-Length'):
                 try:
-                    assert not (chunks and len(result) > 1)
-                    handler.headers['Content-Length'] = len(first_chunk)
-                except (TypeError, AssertionError):
+                    if not chunks or len(result) == 1:
+                        handler.headers['Content-Length'] = len(first_chunk)
+                except TypeError:
                     pass
             yield handler.status
             for header, value in handler.headers.flush():
