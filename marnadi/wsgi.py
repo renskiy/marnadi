@@ -64,7 +64,7 @@ class App(object):
         except TypeError:
             raise TypeError(
                 "Route's handler must be either subclass of Handler "
-                "or sequence of handlers"
+                "or sequence of nested subroutes"
             )
         return route
 
