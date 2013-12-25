@@ -53,6 +53,7 @@ class AppTestCase(unittest.TestCase):
     def _get_handler_args_parametrized_test_case(
         self,
         handler_path,
+        requested_path='/foo/bar',
         nested_handler_path=None,
         expected_args=None,
         expected_kwargs=None,
@@ -70,12 +71,20 @@ class AppTestCase(unittest.TestCase):
             )),
         )
         app = wsgi.App(routes=routes)
-        app.get_handler('/foo/bar')('environ')
+        app.get_handler(requested_path)('environ')
         self.assertEqual(1, handler.handle.call_count)
 
     def test_get_handler_args__no_args(self):
         self._get_handler_args_parametrized_test_case(
             handler_path='/foo/bar',
+        )
+
+    def test_get_handler_args__arg_kwarg_collision(self):
+        self._get_handler_args_parametrized_test_case(
+            handler_path=re.compile(r'/(foo)/(?P<key_foo>foo)'),
+            requested_path='/foo/foo',
+            expected_args=['foo'],
+            expected_kwargs={'key_foo': 'foo'},
         )
 
     def test_get_handler_args__arg(self):
