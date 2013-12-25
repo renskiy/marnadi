@@ -2,9 +2,19 @@ import importlib
 import itertools
 
 
+class _Lazy(type):
+
+    def __call__(cls, path):
+        if isinstance(path, cls):
+            return path
+        return super(_Lazy, cls).__call__(path)
+
+
 class Lazy(object):
 
     __slots__ = ('_path', '_value')
+
+    __metaclass__ = _Lazy
 
     def __init__(self, path):
         if isinstance(path, basestring):
