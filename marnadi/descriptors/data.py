@@ -7,13 +7,7 @@ class Data(Descriptor):
     def __init__(self, *content_decoders):
         super(Data, self).__init__()
         self.content_decoders = dict(
-            (
-                content_type, (
-                    content_decoder
-                    if isinstance(content_decoder, Lazy) else
-                    Lazy(content_decoder)
-                )
-            )
+            (content_type, Lazy(content_decoder))
             for content_type, content_decoder in (
                 content_decoders.iteritems()
                 if isinstance(content_decoders, dict) else
