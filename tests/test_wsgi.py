@@ -524,6 +524,21 @@ class AppTestCase(unittest.TestCase):
             expected_kwargs={'baz': 'baz', 'foo': 'foo'},
         )
 
+    def test_get_handler__non_trivial_situation(self):
+        self.skipTest(
+            "The order of args received by handler is wrong "
+            "due to inability to determine correct one"
+        )
+        self._get_handler_parametrized_test_case(
+            routes=(
+                (re.compile(r'/(foo)/(bar)/(?P<key_foo>foo)'),
+                    self.expected_handler),
+            ),
+            requested_path='/foo/bar/foo',
+            expected_args=['foo', 'bar'],  # expectation failed
+            expected_kwargs={'key_foo': 'foo'},
+        )
+
     def test_compile_routes(self):
         app = wsgi.App()
         self.assertListEqual([], app.routes)
