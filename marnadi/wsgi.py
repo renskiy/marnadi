@@ -25,7 +25,7 @@ class Environ(dict):
 class App(object):
 
     def __init__(self, routes=()):
-        self.routes = self.compile_routes(list(routes))
+        self.routes = self.compile_routes(routes)
 
     def __call__(self, environ, start_response):
         try:
@@ -60,7 +60,7 @@ class App(object):
         except TypeError:
             pass
         try:
-            route.handler = self.compile_routes(list(route.handler))
+            route.handler = self.compile_routes(route.handler)
         except TypeError:
             raise TypeError(
                 "Route's handler must be either subclass of Handler "
