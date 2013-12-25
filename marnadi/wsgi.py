@@ -49,22 +49,24 @@ class App(object):
         return response_flow  # return rest of the flow as response body
 
     def compile_routes(self, routes):
-        for index, route in enumerate(routes):
-            if not isinstance(route, Route):
-                routes[index] = route = Route(*route)
-            try:
-                if issubclass(route.handler, Handler):
-                    continue
-            except TypeError:
-                pass
-            try:
-                route.handler = self.compile_routes(list(route.handler))
-            except TypeError:
-                raise TypeError(
-                    "Route's handler must be either subclass of Handler "
-                    "or sequence of handlers"
-                )
-        return routes
+        return map(self.compile_route, routes)
+
+    def compile_route(self, route):
+        if not isinstance(route, Route):
+            route = Route(*route)
+        try:
+            if issubclass(route.handler, Handler):
+                return route
+        except TypeError:
+            pass
+        try:
+            route.handler = self.compile_routes(list(route.handler))
+        except TypeError:
+            raise TypeError(
+                "Route's handler must be either subclass of Handler "
+                "or sequence of handlers"
+            )
+        return route
 
     @staticmethod
     def get_path(environ):
