@@ -92,28 +92,28 @@ class AppTestCase(unittest.TestCase):
 
     def test_get_handler_args__kwarg(self):
         self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(?P<foo>\w+)/bar'),
-            expected_kwargs=dict(foo='foo'),
+            handler_path=re.compile(r'/(?P<key_foo>\w+)/bar'),
+            expected_kwargs=dict(key_foo='foo'),
         )
 
     def test_get_handler_args__kwarg_kwarg(self):
         self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(?P<foo>\w+)/(?P<bar>\w+)'),
-            expected_kwargs=dict(foo='foo', bar='bar'),
+            handler_path=re.compile(r'/(?P<key_foo>\w+)/(?P<key_bar>\w+)'),
+            expected_kwargs=dict(key_foo='foo', key_bar='bar'),
         )
 
     def test_get_handler_args__arg_kwarg(self):
         self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(\w+)/(?P<bar>\w+)'),
+            handler_path=re.compile(r'/(\w+)/(?P<key_bar>\w+)'),
             expected_args=['foo'],
-            expected_kwargs=dict(bar='bar'),
+            expected_kwargs=dict(key_bar='bar'),
         )
 
     def test_get_handler_args__kwarg_arg(self):
         self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(?P<foo>\w+)/(\w+)'),
+            handler_path=re.compile(r'/(?P<key_foo>\w+)/(\w+)'),
             expected_args=['bar'],
-            expected_kwargs=dict(foo='foo'),
+            expected_kwargs=dict(key_foo='foo'),
         )
 
     def test_get_handler_args__nested_const_arg(self):
@@ -133,15 +133,15 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler_args__nested_const_kwarg(self):
         self._get_handler_args_parametrized_test_case(
             handler_path='/foo',
-            nested_handler_path=re.compile(r'/(?P<bar>\w+)'),
-            expected_kwargs=dict(bar='bar'),
+            nested_handler_path=re.compile(r'/(?P<key_bar>\w+)'),
+            expected_kwargs=dict(key_bar='bar'),
         )
 
     def test_get_handler_args__nested_kwarg_const(self):
         self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(?P<foo>\w+)'),
+            handler_path=re.compile(r'/(?P<key_foo>\w+)'),
             nested_handler_path='/bar',
-            expected_kwargs=dict(foo='foo'),
+            expected_kwargs=dict(key_foo='foo'),
         )
 
     def test_get_handler_args__nested_arg_arg(self):
@@ -153,25 +153,25 @@ class AppTestCase(unittest.TestCase):
 
     def test_get_handler_args__nested_kwarg_kwarg(self):
         self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(?P<foo>\w+)'),
-            nested_handler_path=re.compile(r'/(?P<bar>\w+)'),
-            expected_kwargs=dict(foo='foo', bar='bar'),
+            handler_path=re.compile(r'/(?P<key_foo>\w+)'),
+            nested_handler_path=re.compile(r'/(?P<key_bar>\w+)'),
+            expected_kwargs=dict(key_foo='foo', key_bar='bar'),
         )
 
     def test_get_handler_args__nested_arg_kwarg(self):
         self._get_handler_args_parametrized_test_case(
             handler_path=re.compile(r'/(\w+)'),
-            nested_handler_path=re.compile(r'/(?P<bar>\w+)'),
+            nested_handler_path=re.compile(r'/(?P<key_bar>\w+)'),
             expected_args=['foo'],
-            expected_kwargs=dict(bar='bar'),
+            expected_kwargs=dict(key_bar='bar'),
         )
 
     def test_get_handler_args__nested_kwarg_arg(self):
         self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(?P<foo>\w+)'),
+            handler_path=re.compile(r'/(?P<key_foo>\w+)'),
             nested_handler_path=re.compile(r'/(\w+)'),
             expected_args=['bar'],
-            expected_kwargs=dict(foo='foo'),
+            expected_kwargs=dict(key_foo='foo'),
         )
 
     def test_get_handler__handler_not_found(self):
@@ -457,11 +457,11 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler_predefined__route_args_kwargs(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                Route('/', self.expected_handler, 'foo', 'bar', baz='baz'),
+                Route('/', self.expected_handler, 'foo', 'bar', key_baz='baz'),
             ),
             requested_path='/',
             expected_args=['foo', 'bar'],
-            expected_kwargs={'baz': 'baz'},
+            expected_kwargs={'key_baz': 'baz'},
         )
 
     def test_get_handler_predefined__regexp_args(self):
@@ -496,32 +496,32 @@ class AppTestCase(unittest.TestCase):
         self._get_handler_parametrized_test_case(
             routes=(
                 Route(re.compile(r'/(baz)'),
-                      self.expected_handler, 'foo', 'bar', baz='baz'),
+                      self.expected_handler, 'foo', 'bar', key_baz='baz'),
             ),
             requested_path='/baz',
             expected_args=['foo', 'bar', 'baz'],
-            expected_kwargs={'baz': 'baz'},
+            expected_kwargs={'key_baz': 'baz'},
         )
 
     def test_get_handler_predefined__regexp_route_kwargs_collision(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                Route(re.compile(r'/(?P<baz>bar)'),
-                      self.expected_handler, baz='baz'),
+                Route(re.compile(r'/(?P<key_baz>bar)'),
+                      self.expected_handler, key_baz='baz'),
             ),
             requested_path='/bar',
-            expected_kwargs={'baz': 'baz'},
+            expected_kwargs={'key_baz': 'baz'},
         )
 
     def test_get_handler_predefined__regexp_route_complex(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                Route(re.compile(r'/(?P<foo>foo)/(bar)'),
-                      self.expected_handler, 'foo', baz='baz'),
+                Route(re.compile(r'/(?P<key_foo>foo)/(bar)'),
+                      self.expected_handler, 'foo', key_baz='baz'),
             ),
             requested_path='/foo/bar',
             expected_args=['foo', 'bar'],
-            expected_kwargs={'baz': 'baz', 'foo': 'foo'},
+            expected_kwargs={'key_baz': 'baz', 'key_foo': 'foo'},
         )
 
     def test_get_handler__non_trivial_situation(self):
