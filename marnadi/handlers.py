@@ -4,24 +4,24 @@ import logging
 from marnadi import errors, descriptors, Header
 
 
-class HandlerProcessor(type):
+class HandlerType(type):
 
     logger = logging.getLogger('marnadi')
 
     def __new__(mcs, name, bases, attributes):
-        cls = super(HandlerProcessor, mcs).__new__(mcs, name, bases, attributes)
+        cls = super(HandlerType, mcs).__new__(mcs, name, bases, attributes)
         for attr_name, attr_value in attributes.iteritems():
             cls.set_descriptor_name(attr_value, attr_name)
         return cls
 
     def __setattr__(cls, attr_name, attr_value):
-        super(HandlerProcessor, cls).__setattr__(attr_name, attr_value)
+        super(HandlerType, cls).__setattr__(attr_name, attr_value)
         cls.set_descriptor_name(attr_value, attr_name)
 
     def __call__(cls, *args, **kwargs):
         if cls.func is not None:
             return cls.func(*args, **kwargs)
-        return super(HandlerProcessor, cls).__call__(*args, **kwargs)
+        return super(HandlerType, cls).__call__(*args, **kwargs)
 
     def decorator(cls, func):
         method = staticmethod(func)
@@ -37,7 +37,7 @@ class HandlerProcessor(type):
 
     def handle(cls, environ, args=(), kwargs=None):
         try:
-            handler = super(HandlerProcessor, cls).__call__(environ)
+            handler = super(HandlerType, cls).__call__(environ)
             result = handler(*args, **kwargs or {})
             chunks, first_chunk = (), ''
             try:
@@ -80,7 +80,7 @@ class HandlerProcessor(type):
 
 class Handler(object):
 
-    __metaclass__ = HandlerProcessor
+    __metaclass__ = HandlerType
 
     SUPPORTED_HTTP_METHODS = (
         'OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',
