@@ -115,6 +115,7 @@ class App(object):
                 # mixing simple and named subgroups is bad idea
                 # because of non-trivial logic of distinguishing them,
                 # use it only if you're sure
+                # (see tests.test_wsgi.test_get_handler__non_trivial_situation)
                 args = list(args)
                 for kwarg in kwargs.itervalues():
                     args.remove(kwarg)

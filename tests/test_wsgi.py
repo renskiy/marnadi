@@ -544,7 +544,7 @@ class AppTestCase(unittest.TestCase):
                     self.expected_handler),
             ),
             requested_path='/foo/bar/foo',
-            expected_args=['foo', 'bar'],  # expectation failed
+            expected_args=['foo', 'bar'],  # actual is ['bar', 'foo']
             expected_kwargs={'key_foo': 'foo'},
         )
 
