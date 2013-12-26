@@ -533,11 +533,11 @@ class AppTestCase(unittest.TestCase):
             expected_kwargs={'key_baz': 'baz', 'key_foo': 'foo'},
         )
 
+    @unittest.skip(
+        "The order of args received by handler is wrong "
+        "due to inability to determine correct one"
+    )
     def test_get_handler__non_trivial_situation(self):
-        self.skipTest(
-            "The order of args received by handler is wrong "
-            "due to inability to determine correct one"
-        )
         self._get_handler_parametrized_test_case(
             routes=(
                 (re.compile(r'/(foo)/(bar)/(?P<key_foo>foo)'),
