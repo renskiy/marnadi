@@ -6,9 +6,13 @@ from marnadi.handlers import Handler
 
 
 class Environ(object, UserDict.DictMixin):
-    """
-    Standard WSGI environ dict wrapped by class allowing
+    """WSGI environ object class.
+
+    Standard WSGI environ dict wrapped by class additionally allowing
     access to dict values using instance attributes.
+
+    Args:
+        environ (dict): original WSGI dict.
     """
 
     def __init__(self, environ):
@@ -42,6 +46,15 @@ class Environ(object, UserDict.DictMixin):
 
 
 class App(object):
+    """WSGI application class.
+
+    Instance of this class used as entry point for WSGI requests. Using
+    provided routes list it can determine which handler should be called.
+
+    Args:
+        routes (iterable): routes list each element of which can be either
+            instance of :class:`Route` or sequence of one's arguments.
+    """
 
     def __init__(self, routes=()):
         self.routes = self.compile_routes(routes)
