@@ -26,7 +26,7 @@ class Environ(object, UserDict.DictMixin):
     def __getitem__(self, key):
         return self._environ[key]
 
-    def __iter__(self):
+    def __iter__(self):  # native implementation is better
         return self._environ.__iter__()
 
     def keys(self):
