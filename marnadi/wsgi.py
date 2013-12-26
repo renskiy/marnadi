@@ -1,17 +1,36 @@
 import itertools
+import UserDict
 
 from marnadi import errors, Route
 from marnadi.handlers import Handler
 
 
-class Environ(dict):
+class Environ(object, UserDict.DictMixin):
+    """
+    Standard WSGI environ dict wrapped by class allowing
+    access to dict values using instance attributes.
+    """
 
-    def __getattr__(self, name):
+    def __init__(self, environ):
+        self._environ = environ
+
+    def __getattr__(self, attr_name):
         try:
-            attr = self.get(name)
-            return attr is None and self[name.upper()] or attr
+            attr_value = self._environ.get(attr_name)
+            if attr_value is None:
+                return self._environ[attr_name.upper()]
+            return attr_value
         except KeyError:
             raise AttributeError
+
+    def __getitem__(self, key):
+        return self._environ[key]
+
+    def __iter__(self):
+        return self._environ.__iter__()
+
+    def keys(self):
+        return self._environ.keys()
 
     @property
     def http_content_type(self):

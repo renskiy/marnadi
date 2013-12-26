@@ -30,10 +30,10 @@ class HandlerTestCase(unittest.TestCase):
         routes = (
             ('/', Handler.decorator(lambda: 'hello')),
         )
-        environ = wsgi.Environ(
+        environ = wsgi.Environ(dict(
             request_method='GET',
             path_info='/',
-        )
+        ))
         self.handler_parametrized_test_case(
             routes=routes,
             environ=environ,
@@ -51,10 +51,10 @@ class HandlerTestCase(unittest.TestCase):
         routes = (
             ('/', MyHadler),
         )
-        environ = wsgi.Environ(
+        environ = wsgi.Environ(dict(
             request_method='GET',
             path_info='/',
-        )
+        ))
         self.handler_parametrized_test_case(
             routes=routes,
             environ=environ,
