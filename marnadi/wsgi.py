@@ -120,7 +120,7 @@ class App(object):
             except IndexError:
                 raise ValueError(
                     "Requires path as first argument "
-                    "(it must be arg, not kwarg)"
+                    "(it must be an arg, not kwarg)"
                 )
             return _decorator
         return real_route
