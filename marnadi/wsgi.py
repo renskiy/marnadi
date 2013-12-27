@@ -121,7 +121,7 @@ class App(object):
         real=_route,
     )
     def route(self, path, *args, **kwargs):
-        pass  # this method is dummy, the real one provided by @_route
+        pass  # this method is dummy, the real one is `_route`
 
     @staticmethod
     def get_path(environ):
