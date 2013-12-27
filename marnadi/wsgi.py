@@ -1,10 +1,6 @@
 import functools
 import itertools
 import UserDict
-try:
-    assert False
-except AssertionError:
-    import inspect  # import `inspect` only if asserts are enabled
 
 from marnadi import errors, Route
 from marnadi.handlers import Handler
@@ -105,27 +101,25 @@ class App(object):
             )
         return route
 
-    def _route(dummy_route):
-        assert inspect.isfunction(dummy_route), "must be used in static context"
+    def _route(self, *args, **kwargs):
+        def _decorator(handler):
+            route = Route(path, handler, *args, **kwargs)
+            compiled_route = self.compile_route(route)
+            self.routes.append(compiled_route)
+            return handler
+        try:
+            path, args = args[0], args[1:]
+        except IndexError:
+            raise ValueError(
+                "Requires path as first argument "
+                "(it must be an arg, not kwarg)"
+            )
+        return _decorator
 
-        @functools.wraps(dummy_route)
-        def real_route(self, *args, **kwargs):
-            def _decorator(handler):
-                route = Route(path, handler, *args, **kwargs)
-                compiled_route = self.compile_route(route)
-                self.routes.append(compiled_route)
-                return handler
-            try:
-                path, args = args[0], args[1:]
-            except IndexError:
-                raise ValueError(
-                    "Requires path as first argument "
-                    "(it must be an arg, not kwarg)"
-                )
-            return _decorator
-        return real_route
-
-    @_route
+    @functools.partial(
+        lambda dummy, real: functools.wraps(dummy)(real),
+        real=_route,
+    )
     def route(self, path, *args, **kwargs):
         pass  # this method is dummy, the real one provided by @_route
 
