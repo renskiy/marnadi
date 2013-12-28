@@ -3,7 +3,7 @@ import re
 import unittest
 
 from marnadi import wsgi, errors, Route
-from marnadi.handler import Handler
+from marnadi.handlers import Handler
 
 _test_handler = Handler
 

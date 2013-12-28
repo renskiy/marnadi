@@ -3,7 +3,7 @@ import itertools
 import UserDict
 
 from marnadi import errors, Route
-from marnadi.handler import Handler
+from marnadi.handlers import Handler
 
 
 class Environ(object, UserDict.DictMixin):

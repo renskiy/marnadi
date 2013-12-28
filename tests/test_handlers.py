@@ -1,7 +1,7 @@
 import unittest
 
 from marnadi import wsgi
-from marnadi.handler import Handler
+from marnadi.handlers import Handler
 
 
 class HandlerTestCase(unittest.TestCase):
