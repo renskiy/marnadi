@@ -1,7 +1,8 @@
 import functools
 import logging
 
-from marnadi import errors, descriptors, Header
+from marnadi import descriptors, Header
+from marnadi.errors import HttpError
 
 
 class HandlerType(type):
@@ -63,14 +64,14 @@ class HandlerType(type):
             for next_chunk in chunks:
                 next_chunk = unicode(next_chunk or '').encode('utf-8')
                 yield next_chunk
-        except errors.HttpError:
+        except HttpError:
             raise
         except Exception as error:
             cls.logger.exception(error)
             cls.handle_exception(error, environ, args, kwargs)
 
     def handle_exception(cls, error, environ, args, kwargs):
-        raise errors.HttpError(exception=error)
+        raise HttpError(exception=error)
 
     @staticmethod
     def set_descriptor_name(descriptor, attr_name):
@@ -110,13 +111,13 @@ class Handler(object):
     def __call__(self, *args, **kwargs):
         request_method = self.environ.request_method
         if request_method not in self.SUPPORTED_HTTP_METHODS:
-            raise errors.HttpError(
+            raise HttpError(
                 '501 Not Implemented',
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
             )
         callback = getattr(self, request_method.lower(), NotImplemented)
         if callback is NotImplemented:
-            raise errors.HttpError(
+            raise HttpError(
                 '405 Method Not Allowed',
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
             )

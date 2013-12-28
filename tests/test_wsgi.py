@@ -2,8 +2,9 @@ import mock
 import re
 import unittest
 
-from marnadi import wsgi, errors, Route
-from marnadi.handlers import Handler
+from marnadi import Route, Handler, App
+from marnadi.errors import HttpError
+from marnadi.wsgi import Environ
 
 _test_handler = Handler
 
@@ -22,15 +23,15 @@ class EnvironTestCase(unittest.TestCase):
 
     def test_attribute_getter(self):
         original_environ = {
-            'wsgi.input': 'input',
+            'input': 'input',
             'CONTENT_TYPE': 'content_type',
             'CONTENT_LENGTH': 'content_length',
             'HTTP_COOKIES': 'cookies',
         }
-        environ = wsgi.Environ(original_environ)
+        environ = Environ(original_environ)
 
-        self.assertEqual(getattr(environ, 'wsgi.input'), 'input')
-        self.assertEqual(environ['wsgi.input'], 'input')
+        self.assertEqual(getattr(environ, 'input'), 'input')
+        self.assertEqual(environ['input'], 'input')
 
         self.assertEqual(environ.http_content_type, 'content_type')
         self.assertEqual(environ.content_type, 'content_type')
@@ -70,7 +71,7 @@ class AppTestCase(unittest.TestCase):
                 (nested_handler_path, handler),
             )),
         )
-        app = wsgi.App(routes=routes)
+        app = App(routes=routes)
         app.get_handler(requested_path)('environ')
         self.assertEqual(1, handler.handle.call_count)
 
@@ -184,8 +185,8 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__handler_not_found(self):
-        app = wsgi.App()
-        with self.assertRaises(errors.HttpError) as context:
+        app = App()
+        with self.assertRaises(HttpError) as context:
             app.get_handler('unknown_path')
         error = context.exception
         self.assertEqual('404 Not Found', error.status)
@@ -212,7 +213,7 @@ class AppTestCase(unittest.TestCase):
 
         self.expected_handler.handle = mock.Mock(side_effect=side_effect)
         self.unexpected_handler.handle = mock.Mock()
-        app = wsgi.App(routes=routes)
+        app = App(routes=routes)
         app.get_handler(requested_path)('environ')
         self.assertEqual(1, self.expected_handler.handle.call_count)
         self.assertEqual(0, self.unexpected_handler.handle.call_count)
@@ -549,11 +550,11 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_compile_routes(self):
-        app = wsgi.App()
+        app = App()
         self.assertListEqual([], app.routes)
 
     def test_compile_routes__tuple(self):
-        app = wsgi.App(routes=(
+        app = App(routes=(
             ('/', _test_handler),
         ))
         self.assertEqual(1, len(app.routes))
@@ -562,7 +563,7 @@ class AppTestCase(unittest.TestCase):
         self.assertEqual(_test_handler, route.handler)
 
     def test_compile_routes__tuple_lazy_handler(self):
-        app = wsgi.App(routes=(
+        app = App(routes=(
             ('/', '%s._test_handler' % __name__),
         ))
         self.assertEqual(1, len(app.routes))
@@ -571,7 +572,7 @@ class AppTestCase(unittest.TestCase):
         self.assertEqual(_test_handler, route.handler)
 
     def test_compile_routes__tuple_lazy_seq(self):
-        app = wsgi.App(routes=(
+        app = App(routes=(
             ('/', '%s._test_handler_seq' % __name__),
         ))
         self.assertEqual(1, len(app.routes))
@@ -584,7 +585,7 @@ class AppTestCase(unittest.TestCase):
         self.assertEqual(_test_handler, route_b.handler)
 
     def test_compile_routes__tuple_lazy_seq_routes(self):
-        app = wsgi.App(routes=(
+        app = App(routes=(
             ('/', '%s._test_handler_seq_routes' % __name__),
         ))
         self.assertEqual(1, len(app.routes))
@@ -598,17 +599,17 @@ class AppTestCase(unittest.TestCase):
 
     def test_compile_routes__route(self):
         route = Route('/', _test_handler)
-        app = wsgi.App(routes=(route, ))
+        app = App(routes=(route, ))
         self.assertListEqual([route], app.routes)
 
     def test_compile_routes__route_lazy_handler(self):
         route = Route('/', '%s._test_handler' % __name__)
-        app = wsgi.App(routes=(route, ))
+        app = App(routes=(route, ))
         self.assertListEqual([route], app.routes)
 
     def test_compile_routes__route_lazy_seq(self):
         route = Route('/', '%s._test_handler_seq' % __name__)
-        app = wsgi.App(routes=(route, ))
+        app = App(routes=(route, ))
         self.assertListEqual([route], app.routes)
         route_a, route_b = route.handler
         self.assertIsInstance(route_a, Route)
@@ -618,7 +619,7 @@ class AppTestCase(unittest.TestCase):
 
     def test_compile_routes__route_lazy_seq_routes(self):
         route = Route('/', '%s._test_handler_seq_routes' % __name__)
-        app = wsgi.App(routes=(route, ))
+        app = App(routes=(route, ))
         self.assertListEqual([route], app.routes)
         route_a, route_b = route.handler
         self.assertIsInstance(route_a, Route)

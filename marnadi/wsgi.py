@@ -2,8 +2,8 @@ import functools
 import itertools
 import UserDict
 
-from marnadi import errors, Route
-from marnadi.handlers import Handler
+from marnadi import Route, Handler
+from marnadi.errors import HttpError
 
 
 class Environ(object, UserDict.DictMixin):
@@ -73,7 +73,7 @@ class App(object):
             while next_header:
                 headers.append(next_header)
                 next_header = next(response_flow)
-        except errors.HttpError as response_flow:
+        except HttpError as response_flow:
             status = response_flow.status
             headers = response_flow.headers
 
@@ -169,7 +169,7 @@ class App(object):
                         args=args,
                         kwargs=kwargs,
                     )
-                except errors.HttpError:
+                except HttpError:
                     pass
             if not rest_path:
                 return lambda environ: route.handler.handle(
@@ -177,4 +177,4 @@ class App(object):
                     args=itertools.chain(route.args, args),
                     kwargs=dict(kwargs, **route.kwargs),
                 )
-        raise errors.HttpError('404 Not Found')
+        raise HttpError('404 Not Found')

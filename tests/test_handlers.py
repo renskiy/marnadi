@@ -1,7 +1,7 @@
 import unittest
 
-from marnadi import wsgi
-from marnadi.handlers import Handler
+from marnadi import App, Handler
+from marnadi.wsgi import Environ
 
 
 class HandlerTestCase(unittest.TestCase):
@@ -22,7 +22,7 @@ class HandlerTestCase(unittest.TestCase):
             for header in unexpected_headers or ():
                 self.assertNotIn(header, headers)
 
-        app = wsgi.App(routes=routes)
+        app = App(routes=routes)
         actual_result = ''.join(app(environ, start_response))
         self.assertEqual(expected_result, actual_result)
 
@@ -30,7 +30,7 @@ class HandlerTestCase(unittest.TestCase):
         routes = (
             ('/', Handler.decorator(lambda: 'hello')),
         )
-        environ = wsgi.Environ(dict(
+        environ = Environ(dict(
             request_method='GET',
             path_info='/',
         ))
@@ -51,7 +51,7 @@ class HandlerTestCase(unittest.TestCase):
         routes = (
             ('/', MyHadler),
         )
-        environ = wsgi.Environ(dict(
+        environ = Environ(dict(
             request_method='GET',
             path_info='/',
         ))
