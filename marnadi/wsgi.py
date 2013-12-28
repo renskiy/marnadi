@@ -116,10 +116,7 @@ class App(object):
             )
         return _decorator
 
-    @functools.partial(
-        lambda dummy, real: functools.wraps(dummy)(real),
-        real=_route,
-    )
+    @functools.partial(lambda real, dummy: functools.wraps(dummy)(real), _route)
     def route(self, path, *args, **kwargs):
         pass  # this method is dummy, the real one is `_route`
 
