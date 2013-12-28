@@ -40,14 +40,15 @@ More Complex Example
     # ("GET" and "OPTIONS" already implemented and the rest are restricted
     # by overriding SUPPORTED_HTTP_METHODS)
     @MyHandler.decorator
-    def foo(foo):
+    def who_is_foo(foo):
         return "foo is %s" % foo
 
     routes=(
-        r('/foo', foo, foo='bar'),
+        ('/', Handler),  # base handler implements only "OPTIONS" method
+        r('/foo', who_is_foo, foo='bar'),
         (re.compile(r'/to/(?P<receiver>\w+)/?'), (
-            ('', JsonHandler),
-            (re.compile(r'from/(?P<sender>\w+)$'), JsonHandler),
+            ('', MyHandler),
+            (re.compile(r'from/(?P<sender>\w+)$'), MyHandler),
         )),
     )
 
