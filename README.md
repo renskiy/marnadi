@@ -1,7 +1,7 @@
 marnadi
 =======
 
-Yet another WSGI Web Framework, the simplest and fastest ever written
+Yet another WSGI Web Framework, the simplest and fastest ever written.
 
 Hello World
 -------
@@ -24,7 +24,7 @@ More Complex Example
 -------
 
     import re
-    from marnadi import Header, Handler, Route as r
+    from marnadi import App, Handler, Route as r
 
 
     class MyHandler(Handler):
