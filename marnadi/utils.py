@@ -7,50 +7,43 @@ class _Lazy(type):
     def __call__(cls, path):
         if isinstance(path, cls):
             return path
-        return super(_Lazy, cls).__call__(path)
+        elif isinstance(path, basestring):
+            return super(_Lazy, cls).__call__(path)
+        return path
 
 
 class Lazy(object):
 
-    __slots__ = ('_path', '_value')
-
     __metaclass__ = _Lazy
 
     def __init__(self, path):
-        if isinstance(path, basestring):
-            self._value = None
-            self._path = path
-        else:
-            self.obj = path
+        self._value = None
+        self._value_set = False
+        self._path = path
 
     def __call__(self, *args, **kwargs):
-        return self.obj(*args, **kwargs)
+        return self._obj(*args, **kwargs)
 
     def __iter__(self):
-        return self.obj.__iter__()
+        return self._obj.__iter__()
 
     def __str__(self):
-        return str(self.obj)
+        return str(self._obj)
 
     def __getitem__(self, item):
-        return self.obj[item]
+        return self._obj[item]
 
     def __getattr__(self, attr):
-        return getattr(self.obj, attr)
+        return getattr(self._obj, attr)
 
     @property
-    def obj(self):
-        if self._value is None:
+    def _obj(self):
+        if not self._value_set:
             module_name, obj_name = self._path.rsplit('.', 1)
             module = importlib.import_module(module_name)
-            self.obj = getattr(module, obj_name)
+            self._value = getattr(module, obj_name)
+            self._value_set = True
         return self._value
-
-    @obj.setter
-    def obj(self, value):
-        if value is None:
-            raise TypeError("`obj` can't be None")
-        self._value = value
 
 
 class _Route(type):
@@ -75,28 +68,16 @@ class _Route(type):
 
 class Route(object):
 
-    __slots__ = ('path', '_handler', 'args', 'kwargs')
-
     __metaclass__ = _Route
 
     def __init__(self, path, handler, *args, **kwargs):
         self.path = path
-        self._handler = Lazy(handler)
+        self.handler = Lazy(handler)
         self.args = args
         self.kwargs = kwargs
 
-    @property
-    def handler(self):
-        return self._handler.obj
-
-    @handler.setter
-    def handler(self, value):
-        self._handler.obj = value
-
 
 class Header(object):
-
-    __slots__ = ('values', 'attributes')
 
     def __init__(self, *values, **attributes):
         self.values = values

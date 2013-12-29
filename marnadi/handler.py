@@ -1,3 +1,4 @@
+import abc
 import functools
 import logging
 
@@ -5,7 +6,7 @@ from marnadi import descriptors, Header
 from marnadi.errors import HttpError
 
 
-class HandlerType(type):
+class HandlerType(abc.ABCMeta):
 
     logger = logging.getLogger('marnadi')
 
