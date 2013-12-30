@@ -6,7 +6,7 @@ _test_tuple = ('foo', 'bar')
 
 _test_list = ['foo', 'bar']
 
-_test_set = set(('foo', 'bar'))
+_test_set = set(_test_tuple)
 
 _test_dict = {'foo': 'bar'}
 
@@ -27,23 +27,23 @@ class LazyTestCase(unittest.TestCase):
 
     def test_lazy_tuple(self):
         lazy_tuple = Lazy('%s._test_tuple' % __name__)
-        self.assertTupleEqual(tuple(lazy_tuple), ('foo', 'bar'))
+        self.assertTupleEqual(_test_tuple, tuple(lazy_tuple))
 
     def test_lazy_list(self):
         lazy_list = Lazy('%s._test_list' % __name__)
-        self.assertListEqual(list(lazy_list), ['foo', 'bar'])
+        self.assertListEqual(_test_list, list(lazy_list))
 
     def test_lazy_set(self):
         lazy_set = Lazy('%s._test_set' % __name__)
-        self.assertSetEqual(set(lazy_set), set(('foo', 'bar')))
+        self.assertSetEqual(_test_set, set(lazy_set))
 
     def test_lazy_dict(self):
         lazy_dict = Lazy('%s._test_dict' % __name__)
-        self.assertDictEqual(dict(lazy_dict), {'foo': 'bar'})
+        self.assertDictEqual(_test_dict, dict(lazy_dict))
 
     def test_lazy_str(self):
         lazy_str = Lazy('%s._test_str' % __name__)
-        self.assertEqual('foo', str(lazy_str))
+        self.assertEqual(_test_str, str(lazy_str))
 
     def test_lazy_class(self):
         lazy_class = Lazy('%s._TestClass' % __name__)
