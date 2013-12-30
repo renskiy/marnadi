@@ -57,14 +57,11 @@ class _Route(type):
             raise ValueError(
                 "`%s` needs minimum two arguments" % cls.__name__)
         _kwargs = {}
-        try:
-            _kwargs['path'] = kwargs.pop('path')
-        except KeyError:
-            pass
-        try:
-            _kwargs['handler'] = kwargs.pop('handler')
-        except KeyError:
-            pass
+        for kwarg in ('path', 'handler'):
+            try:
+                _kwargs[kwarg] = kwargs.pop(kwarg)
+            except KeyError:
+                pass
         route = super(_Route, cls).__call__(*args, **kwargs)
         route.kwargs.update(_kwargs)
         return route
