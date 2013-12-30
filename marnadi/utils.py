@@ -37,6 +37,10 @@ class Lazy(object):
         return getattr(self._obj, attr)
 
     @property
+    def __class__(self):
+        return self._obj.__class__
+
+    @property
     def _obj(self):
         if not self._value_set:
             module_name, obj_name = self._path.rsplit('.', 1)

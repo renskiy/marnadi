@@ -2,7 +2,7 @@ import mock
 import re
 import unittest
 
-from marnadi import Route, Handler, App, Lazy
+from marnadi import Route, Handler, App
 from marnadi.errors import HttpError
 from marnadi.wsgi import Environ
 
@@ -569,9 +569,7 @@ class AppTestCase(unittest.TestCase):
         self.assertEqual(1, len(app.routes))
         route = app.routes[0]
         self.assertIsInstance(route, Route)
-        self.assertIsInstance(route.handler, Lazy)
         self.assertTrue(issubclass(route.handler, Handler))
-        self.assertEqual(_test_handler, route.handler._obj)
 
     def test_compile_routes__tuple_lazy_seq(self):
         app = App(routes=(

@@ -20,6 +20,8 @@ def _test_function(*args, **kwargs):
 class _TestClass:
     pass
 
+_test_instance = _TestClass()
+
 
 class LazyTestCase(unittest.TestCase):
 
@@ -47,6 +49,10 @@ class LazyTestCase(unittest.TestCase):
         lazy_class = Lazy('%s._TestClass' % __name__)
         self.assertIsInstance(lazy_class(), _TestClass)
 
+    def test_lazy_instance(self):
+        lazy_instance = Lazy('%s._test_instance' % __name__)
+        self.assertIsInstance(lazy_instance, _TestClass)
+
     def test_lazy_function__no_args(self):
         lazy_function = Lazy('%s._test_function' % __name__)
         self.assertEqual(lazy_function(), ((), {}))
@@ -71,3 +77,31 @@ class LazyTestCase(unittest.TestCase):
             lazy_function('foo', 'bar', foo='bar'),
             (('foo', 'bar'), {'foo': 'bar'}),
         )
+
+    def test_lazy__explicit_class(self):
+        self.assertTrue(issubclass(_TestClass, Lazy(_TestClass)))
+
+    def test_lazy__explicit_function(self):
+        self.assertEqual(_test_function, Lazy(_test_function))
+
+    def test_lazy__explicit_instance(self):
+        self.assertIsInstance(Lazy(_test_instance), _TestClass)
+
+    def test_lazy__explicit_dict(self):
+        self.assertDictEqual(_test_dict, Lazy(_test_dict))
+
+    def test_lazy__explicit_list(self):
+        self.assertListEqual(_test_list, Lazy(_test_list))
+
+    def test_lazy__explicit_tuple(self):
+        self.assertTupleEqual(_test_tuple, Lazy(_test_tuple))
+
+    def test_lazy__explicit_set(self):
+        self.assertSetEqual(_test_set, Lazy(_test_set))
+
+    def test_lazy__explicit_none(self):
+        self.assertIsNone(Lazy(None))
+
+    def test_lazy__explicit_lazy(self):
+        lazy = Lazy('%s._test_instance' % __name__)
+        self.assertEqual(lazy, Lazy(lazy))
