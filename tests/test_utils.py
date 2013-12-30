@@ -17,7 +17,7 @@ def _test_function(*args, **kwargs):
     return args, kwargs
 
 
-class _TestClass:
+class _TestClass(object):
     pass
 
 _test_instance = _TestClass()
