@@ -71,8 +71,7 @@ class HandlerType(abc.ABCMeta):
             func = cls.log_exception(cls.make_string)
             chunks = itertools.imap(func, result)
         else:
-            result = cls.make_string(result)
-            chunks = (result, )
+            chunks = (cls.make_string(result), )
         status = handler.status
         headers = list(handler.headers.flush())
         start_response(status, headers)
