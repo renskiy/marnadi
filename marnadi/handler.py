@@ -63,8 +63,8 @@ class HandlerType(abc.ABCMeta):
                 except TypeError:
                     pass
             yield handler.status
-            for header, value in handler.headers.flush():
-                yield header, str(value)
+            for header in handler.headers.flush():
+                yield header
             yield  # separator between headers and body
         except HttpError:
             raise

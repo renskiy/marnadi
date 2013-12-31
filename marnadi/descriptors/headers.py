@@ -103,7 +103,7 @@ class Headers(Descriptor, UserDict.DictMixin):
         for header, values in self.response_headers.iteritems():
             self._headers_sent = True
             for value in values:
-                yield header, value
+                yield header, str(value)
 
     @property
     def response_headers(self):
