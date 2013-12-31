@@ -1,5 +1,6 @@
 import importlib
 import itertools
+import types
 
 
 class _Lazy(type):
@@ -7,7 +8,7 @@ class _Lazy(type):
     def __call__(cls, path):
         if isinstance(path, cls):
             return path
-        elif isinstance(path, basestring):
+        elif isinstance(path, types.StringTypes):
             return super(_Lazy, cls).__call__(path)
         return path
 

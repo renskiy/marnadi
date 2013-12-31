@@ -1,6 +1,7 @@
 import abc
 import functools
 import logging
+import types
 
 from marnadi import descriptors, Header
 from marnadi.errors import HttpError
@@ -43,7 +44,7 @@ class HandlerType(abc.ABCMeta):
             result = handler(*args, **kwargs or {})
             chunks, first_chunk = (), ''
             try:
-                if not isinstance(result, basestring):
+                if not isinstance(result, types.StringTypes):
                     chunks = iter(result)
                 try:
                     first_chunk = unicode(next(chunks) or '').encode('utf-8')
