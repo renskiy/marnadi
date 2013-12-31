@@ -67,9 +67,7 @@ class App(object):
             handler = self.get_handler(path)
             return handler(environ, start_response)
         except HttpError as error:
-            status = error.status
-            headers = error.headers
-            start_response(status, headers)
+            start_response(error.status, error.headers)
             return error
 
     def compile_routes(self, routes):
