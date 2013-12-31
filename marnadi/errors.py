@@ -21,7 +21,7 @@ class HttpError(Exception):
         return 1
 
     def __iter__(self):
-        yield unicode(self._data or '').encode('utf-8')
+        yield '' if self._data is None else unicode(self._data).encode('utf-8')
 
     def __str__(self):
         return "%s, exception: %s" % (self.status, self.exception)
