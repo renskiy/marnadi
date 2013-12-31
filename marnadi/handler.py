@@ -39,10 +39,10 @@ class HandlerType(abc.ABCMeta):
         )
 
     def handle(cls, environ, args=(), kwargs=None):
+        chunks, first_chunk = (), ''
         try:
             handler = super(HandlerType, cls).__call__(environ)
             result = handler(*args, **kwargs or {})
-            chunks, first_chunk = (), ''
             try:
                 if not isinstance(result, types.StringTypes):
                     chunks = iter(result)
@@ -62,15 +62,22 @@ class HandlerType(abc.ABCMeta):
             for header, value in handler.headers.flush():
                 yield header, str(value)
             yield  # separator between headers and body
-            yield first_chunk
-            for next_chunk in chunks:
-                next_chunk = unicode(next_chunk or '').encode('utf-8')
-                yield next_chunk
         except HttpError:
             raise
         except Exception as error:
             cls.logger.exception(error)
             cls.handle_exception(error, environ, args, kwargs)
+        else:
+            try:
+                # the body of the result yielded outside of main try..except due
+                # to impossibility to make changes of already started response
+                yield first_chunk
+                for next_chunk in chunks:
+                    next_chunk = unicode(next_chunk or '').encode('utf-8')
+                    yield next_chunk
+            except Exception as error:
+                cls.logger.exception(error)
+                raise
 
     def handle_exception(cls, error, environ, args, kwargs):
         raise HttpError(exception=error)
