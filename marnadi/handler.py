@@ -73,8 +73,6 @@ class HandlerType(abc.ABCMeta):
         else:
             result = cls.make_string(result)
             chunks = (result, )
-            if not handler.headers.setdefault('Content-Length'):
-                handler.headers['Content-Length'] = len(result)
         status = handler.status
         headers = list(handler.headers.flush())
         start_response(status, headers)
