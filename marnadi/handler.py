@@ -66,10 +66,10 @@ class HandlerType(abc.ABCMeta):
 
     def _handle(cls, environ, start_response, args=(), kwargs=None):
         handler = super(HandlerType, cls).__call__(environ)
-        result = chunks = handler(*args, **kwargs or {})
+        result = handler(*args, **kwargs or {})
         if isinstance(result, types.GeneratorType):
             func = cls.log_exception(cls.make_string)
-            chunks = itertools.imap(func, chunks)
+            chunks = itertools.imap(func, result)
         else:
             result = cls.make_string(result)
             chunks = (result, )
