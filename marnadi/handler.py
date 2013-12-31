@@ -2,6 +2,7 @@ import abc
 import functools
 import logging
 import types
+import itertools
 
 from marnadi import descriptors, Header
 from marnadi.errors import HttpError
@@ -42,46 +43,42 @@ class HandlerType(abc.ABCMeta):
     def make_string(entity):
         return unicode(entity or '').encode('utf-8')
 
-    def handle(cls, environ, args=(), kwargs=None):
-        chunks, first_chunk = (), ''
-        try:
-            handler = super(HandlerType, cls).__call__(environ)
-            result = handler(*args, **kwargs or {})
+    def log_exception(cls, func, exclude=None):
+        @functools.wraps(func)
+        def _func(*args, **kwargs):
             try:
-                if not isinstance(result, types.StringTypes):
-                    chunks = iter(result)
-                try:
-                    first_chunk = cls.make_string(next(chunks))
-                except StopIteration:
-                    pass
-            except TypeError:
-                first_chunk = cls.make_string(result)
-            if not handler.headers.setdefault('Content-Length'):
-                try:
-                    if not chunks or len(result) == 1:
-                        handler.headers['Content-Length'] = len(first_chunk)
-                except TypeError:
-                    pass
-            yield handler.status
-            for header in handler.headers.flush():
-                yield header
-            yield  # separator between headers and body
+                return func(*args, **kwargs)
+            except Exception as error:
+                if exclude and not isinstance(error, exclude):
+                    cls.logger.exception(error)
+                raise
+        return _func
+
+    def handle(cls, environ, start_response, args=(), kwargs=None):
+        try:
+            return cls.log_exception(cls._handle, exclude=HttpError)(
+                environ, start_response, args=args, kwargs=kwargs
+            )
         except HttpError:
             raise
         except Exception as error:
-            cls.logger.exception(error)
             cls.handle_exception(error, environ, args, kwargs)
+
+    def _handle(cls, environ, start_response, args=(), kwargs=None):
+        handler = super(HandlerType, cls).__call__(environ)
+        result = chunks = handler(*args, **kwargs or {})
+        if isinstance(result, types.GeneratorType):
+            func = cls.log_exception(cls.make_string)
+            chunks = itertools.imap(func, chunks)
         else:
-            try:
-                # the body of the result yielded outside of main try..except due
-                # to impossibility to make changes of already started response
-                yield first_chunk
-                for next_chunk in chunks:
-                    next_chunk = cls.make_string(next_chunk)
-                    yield next_chunk
-            except Exception as error:
-                cls.logger.exception(error)
-                raise
+            result = cls.make_string(result)
+            chunks = (result, )
+            if not handler.headers.setdefault('Content-Length'):
+                handler.headers['Content-Length'] = len(result)
+        status = handler.status
+        headers = list(handler.headers.flush())
+        start_response(status, headers)
+        return chunks
 
     def handle_exception(cls, error, environ, args, kwargs):
         raise HttpError(exception=error)

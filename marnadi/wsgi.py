@@ -65,21 +65,12 @@ class App(object):
             environ = Environ(environ)
             path = self.get_path(environ)
             handler = self.get_handler(path)
-            response = handler(environ)
-            response_flow = iter(response)
-            headers = []
-            status = next(response_flow)
-            next_header = next(response_flow)
-            while next_header:
-                headers.append(next_header)
-                next_header = next(response_flow)
-        except HttpError as response_flow:
-            status = response_flow.status
-            headers = response_flow.headers
-
-        start_response(status, headers)
-
-        return response_flow  # return rest of the flow as response body
+            return handler(environ, start_response)
+        except HttpError as error:
+            status = error.status
+            headers = error.headers
+            start_response(status, headers)
+            return error
 
     def compile_routes(self, routes):
         return map(self.compile_route, routes)
@@ -169,8 +160,9 @@ class App(object):
                 except HttpError:
                     pass
             if not rest_path:
-                return lambda environ: route.handler.handle(
+                return lambda environ, start_response: route.handler.handle(
                     environ,
+                    start_response,
                     args=itertools.chain(route.args, args),
                     kwargs=dict(kwargs, **route.kwargs),
                 )
