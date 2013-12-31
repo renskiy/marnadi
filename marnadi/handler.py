@@ -38,6 +38,10 @@ class HandlerType(abc.ABCMeta):
             func, updated=(),
         )
 
+    @staticmethod
+    def make_string(entity):
+        return unicode(entity or '').encode('utf-8')
+
     def handle(cls, environ, args=(), kwargs=None):
         chunks, first_chunk = (), ''
         try:
@@ -47,11 +51,11 @@ class HandlerType(abc.ABCMeta):
                 if not isinstance(result, types.StringTypes):
                     chunks = iter(result)
                 try:
-                    first_chunk = unicode(next(chunks) or '').encode('utf-8')
+                    first_chunk = cls.make_string(next(chunks))
                 except StopIteration:
                     pass
             except TypeError:
-                first_chunk = unicode(result or '').encode('utf-8')
+                first_chunk = cls.make_string(result)
             if not handler.headers.setdefault('Content-Length'):
                 try:
                     if not chunks or len(result) == 1:
@@ -73,7 +77,7 @@ class HandlerType(abc.ABCMeta):
                 # to impossibility to make changes of already started response
                 yield first_chunk
                 for next_chunk in chunks:
-                    next_chunk = unicode(next_chunk or '').encode('utf-8')
+                    next_chunk = cls.make_string(next_chunk)
                     yield next_chunk
             except Exception as error:
                 cls.logger.exception(error)
