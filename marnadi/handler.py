@@ -41,7 +41,7 @@ class HandlerType(abc.ABCMeta):
 
     @staticmethod
     def make_string(entity):
-        return unicode(entity or '').encode('utf-8')
+        return '' if entity is None else unicode(entity).encode('utf-8')
 
     def log_exception(cls, func, exclude=None):
         @functools.wraps(func)
