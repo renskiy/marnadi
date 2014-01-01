@@ -53,8 +53,8 @@ class Headers(Descriptor, UserDict.DictMixin):
     @property
     def request_headers(self):
         if self._request_headers is None:
-            self._request_headers = dict(
-                (name.title().replace('_', '-'), value)
+            self._request_headers = {
+                name.title().replace('_', '-'): value
                 for name, value in
                 itertools.chain(
                     (
@@ -73,7 +73,7 @@ class Headers(Descriptor, UserDict.DictMixin):
                         if name.startswith('HTTP_')
                     )
                 )
-            )
+            }
         return self._request_headers
 
     def pop(self, key, *args):

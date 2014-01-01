@@ -6,14 +6,14 @@ class Data(Descriptor):
 
     def __init__(self, *content_decoders):
         super(Data, self).__init__()
-        self.content_decoders = dict(
-            (content_type, Lazy(content_decoder))
+        self.content_decoders = {
+            content_type: Lazy(content_decoder)
             for content_type, content_decoder in (
                 content_decoders.iteritems()
                 if isinstance(content_decoders, dict) else
                 content_decoders
             )
-        )
+        }
 
     def get_value(self, handler):
         stream = handler.environ['wsgi.input']
