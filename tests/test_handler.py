@@ -39,7 +39,6 @@ class HandlerTestCase(unittest.TestCase):
             environ=environ,
             expected_result='hello',
             expected_headers=(
-                ('Content-Length', '5'),
                 ('Content-Type', 'text/plain; charset=utf-8'),
             ),
         )
@@ -60,7 +59,6 @@ class HandlerTestCase(unittest.TestCase):
             environ=environ,
             expected_result='hello',
             expected_headers=(
-                ('Content-Length', '5'),
                 ('Content-Type', 'text/plain; charset=utf-8'),
             ),
         )
