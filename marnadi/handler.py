@@ -39,11 +39,11 @@ class HandlerType(abc.ABCMeta):
             func, updated=(),
         )
 
-    def make_string(cls, entity, log_exceptions=True):
+    def make_string(cls, entity, log_exception=True):
         try:
             return '' if entity is None else unicode(entity).encode('utf-8')
         except Exception as error:
-            log_exceptions and cls.logger.exception(error)
+            log_exception and cls.logger.exception(error)
             raise
 
     def handle(cls, environ, start_response, args=(), kwargs=None):
@@ -53,7 +53,7 @@ class HandlerType(abc.ABCMeta):
             if isinstance(result, types.GeneratorType):
                 chunks = itertools.imap(cls.make_string, result)
             else:
-                chunks = (cls.make_string(result, log_exceptions=False), )
+                chunks = (cls.make_string(result, log_exception=False), )
             status = handler.status
             headers = list(handler.headers.flush())
             start_response(status, headers)
