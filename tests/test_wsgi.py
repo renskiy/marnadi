@@ -59,9 +59,7 @@ class AppTestCase(unittest.TestCase):
         expected_args=None,
         expected_kwargs=None,
     ):
-        def side_effect(environ, start_response, args, kwargs):
-            self.assertEqual('environ', environ)
-            self.assertEqual('start_response', start_response)
+        def side_effect(*args, **kwargs):
             self.assertListEqual(expected_args or [], list(args))
             self.assertDictEqual(expected_kwargs or {}, kwargs)
 
@@ -73,7 +71,7 @@ class AppTestCase(unittest.TestCase):
             )),
         )
         app = App(routes=routes)
-        app.get_handler(requested_path)('environ', 'start_response')
+        app.get_handler(requested_path)
         self.assertEqual(1, handler.handle.call_count)
 
     def test_get_handler_args__no_args(self):
@@ -207,16 +205,14 @@ class AppTestCase(unittest.TestCase):
         expected_args=None,
         expected_kwargs=None,
     ):
-        def side_effect(environ, start_response, args, kwargs):
-            self.assertEqual('environ', environ)
-            self.assertEqual('start_response', start_response)
+        def side_effect(*args, **kwargs):
             self.assertListEqual(expected_args or [], list(args))
             self.assertDictEqual(expected_kwargs or {}, kwargs)
 
         self.expected_handler.handle = mock.Mock(side_effect=side_effect)
         self.unexpected_handler.handle = mock.Mock()
         app = App(routes=routes)
-        app.get_handler(requested_path)('environ', 'start_response')
+        app.get_handler(requested_path)
         self.assertEqual(1, self.expected_handler.handle.call_count)
         self.assertEqual(0, self.unexpected_handler.handle.call_count)
 

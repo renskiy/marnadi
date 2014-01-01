@@ -65,7 +65,8 @@ class App(object):
             environ = Environ(environ)
             path = self.get_path(environ)
             handler = self.get_handler(path)
-            return handler(environ, start_response)
+            handler.send(None)  # start coroutine
+            return handler.send((environ, start_response))
         except HttpError as error:
             start_response(error.status, error.headers)
             return error
@@ -158,10 +159,7 @@ class App(object):
                 except HttpError:
                     pass
             if not rest_path:
-                return lambda environ, start_response: route.handler.handle(
-                    environ,
-                    start_response,
-                    args=itertools.chain(route.args, args),
-                    kwargs=dict(kwargs, **route.kwargs),
-                )
+                args = itertools.chain(route.args, args)
+                kwargs = dict(kwargs, **route.kwargs)
+                return route.handler.handle(*args, **kwargs)
         raise HttpError('404 Not Found')

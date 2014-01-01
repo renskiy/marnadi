@@ -46,18 +46,19 @@ class HandlerType(abc.ABCMeta):
             log_exception and cls.logger.exception(error)
             raise
 
-    def handle(cls, environ, start_response, args=(), kwargs=None):
+    def handle(cls, *args, **kwargs):
+        environ, start_response = yield
         try:
             handler = super(HandlerType, cls).__call__(environ)
-            result = handler(*args, **kwargs or {})
+            result = handler(*args, **kwargs)
             if isinstance(result, types.GeneratorType):
-                chunks = itertools.imap(cls.make_string, result)
+                result = itertools.imap(cls.make_string, result)
             else:
-                chunks = (cls.make_string(result, log_exception=False), )
+                result = (cls.make_string(result, log_exception=False), )
             status = handler.status
             headers = list(handler.headers.flush())
             start_response(status, headers)
-            return chunks
+            yield result
         except HttpError:
             raise
         except Exception as error:
