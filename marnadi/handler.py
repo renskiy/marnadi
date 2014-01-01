@@ -39,43 +39,30 @@ class HandlerType(abc.ABCMeta):
             func, updated=(),
         )
 
-    @staticmethod
-    def make_string(entity):
-        return '' if entity is None else unicode(entity).encode('utf-8')
-
-    def log_exception(cls, func, exclude=None):
-        @functools.wraps(func)
-        def _func(*args, **kwargs):
-            try:
-                return func(*args, **kwargs)
-            except Exception as error:
-                if exclude and not isinstance(error, exclude):
-                    cls.logger.exception(error)
-                raise
-        return _func
+    def make_string(cls, entity, log_exceptions=True):
+        try:
+            return '' if entity is None else unicode(entity).encode('utf-8')
+        except Exception as error:
+            log_exceptions and cls.logger.exception(error)
+            raise
 
     def handle(cls, environ, start_response, args=(), kwargs=None):
         try:
-            return cls.log_exception(cls._handle, exclude=HttpError)(
-                environ, start_response, args=args, kwargs=kwargs
-            )
+            handler = super(HandlerType, cls).__call__(environ)
+            result = handler(*args, **kwargs or {})
+            if isinstance(result, types.GeneratorType):
+                chunks = itertools.imap(cls.make_string, result)
+            else:
+                chunks = (cls.make_string(result, log_exceptions=False), )
+            status = handler.status
+            headers = list(handler.headers.flush())
+            start_response(status, headers)
+            return chunks
         except HttpError:
             raise
         except Exception as error:
+            cls.logger.exception(error)
             cls.handle_exception(error, environ, args, kwargs)
-
-    def _handle(cls, environ, start_response, args=(), kwargs=None):
-        handler = super(HandlerType, cls).__call__(environ)
-        result = handler(*args, **kwargs or {})
-        if isinstance(result, types.GeneratorType):
-            func = cls.log_exception(cls.make_string)
-            chunks = itertools.imap(func, result)
-        else:
-            chunks = (cls.make_string(result), )
-        status = handler.status
-        headers = list(handler.headers.flush())
-        start_response(status, headers)
-        return chunks
 
     def handle_exception(cls, error, environ, args, kwargs):
         raise HttpError(exception=error)
