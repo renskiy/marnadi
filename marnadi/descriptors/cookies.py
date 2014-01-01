@@ -6,7 +6,7 @@ import UserDict
 from marnadi.descriptors import Descriptor
 
 
-class Cookies(Descriptor, UserDict.DictMixin):
+class Cookies(UserDict.DictMixin, Descriptor):
     """Cookies - dict-like object allowing to get/set HTTP cookies"""
 
     def __init__(self, domain=None, path=None, expires=None,

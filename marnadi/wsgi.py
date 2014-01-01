@@ -6,7 +6,7 @@ from marnadi import Route, Handler
 from marnadi.errors import HttpError
 
 
-class Environ(object, UserDict.DictMixin):
+class Environ(UserDict.DictMixin, object):
     """WSGI environ object class.
 
     Standard WSGI environ dict wrapped by class additionally allowing
@@ -30,9 +30,6 @@ class Environ(object, UserDict.DictMixin):
 
     def __getitem__(self, key):
         return self._environ[key]
-
-    def __iter__(self):  # native implementation is better
-        return self._environ.__iter__()
 
     def keys(self):
         return self._environ.keys()

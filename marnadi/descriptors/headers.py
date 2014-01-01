@@ -5,7 +5,7 @@ import UserDict
 from marnadi.descriptors import Descriptor
 
 
-class Headers(Descriptor, UserDict.DictMixin):
+class Headers(UserDict.DictMixin, Descriptor):
     """Headers - dict-like object which allow to read request
     and set response headers.
 
@@ -32,9 +32,6 @@ class Headers(Descriptor, UserDict.DictMixin):
 
     def __getitem__(self, request_header):
         return self.request_headers[request_header]
-
-    def __repr__(self):
-        return repr(self.request_headers)
 
     def keys(self):
         return self.request_headers.keys()
