@@ -157,6 +157,6 @@ class App(object):
                     pass
             if not rest_path:
                 args = itertools.chain(route.args, args)
-                kwargs = dict(kwargs, **route.kwargs)
+                kwargs.update(route.kwargs)
                 return route.handler.handle(*args, **kwargs)
         raise HttpError('404 Not Found')
