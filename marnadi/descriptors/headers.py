@@ -37,13 +37,28 @@ class Headers(UserDict.DictMixin, Descriptor):
         return self.request_headers.keys()
 
     def get_parsed(self, request_header, default=None):
-        """Returns value and params of complex request header"""
+        """Parses value and params of complex request headers.
+
+        Args:
+            request_header (str): header name.
+
+        Kwargs:
+            default: default header value.
+
+        Returns:
+            (str, dict). Header value and params dict.
+
+        .. warning::
+            Beware of using header params as kwargs since these params
+            may be used for data injection into your callable entities.
+            E.g. `some_function(**params)`.
+        """
 
         try:
-            unparsed_value = self[request_header]
+            raw_value = self[request_header]
         except KeyError:
             return default, {}
-        parts = iter(unparsed_value.split(';'))
+        parts = iter(raw_value.split(';'))
         value = parts.next()
         return value, dict(
             (lambda p, v='': (p, v.strip('"')))(*param.split('=', 1))
