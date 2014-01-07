@@ -1,3 +1,4 @@
+import types
 import unittest
 
 from marnadi import Lazy
@@ -105,3 +106,8 @@ class LazyTestCase(unittest.TestCase):
     def test_lazy__explicit_lazy(self):
         lazy = Lazy('%s._test_instance' % __name__)
         self.assertEqual(lazy, Lazy(lazy))
+
+    def test_lazy__module(self):
+        lazy = Lazy(__name__)
+        self.assertIsInstance(lazy, types.ModuleType)
+        self.assertEqual(__name__, lazy.__name__)

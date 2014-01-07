@@ -44,9 +44,12 @@ class Lazy(object):
     @property
     def _obj(self):
         if not self._value_set:
-            module_name, obj_name = self._path.rsplit('.', 1)
+            try:
+                module_name, obj_name = self._path.rsplit('.', 1)
+            except ValueError:
+                module_name, obj_name = self._path, None
             module = importlib.import_module(module_name)
-            self._value = getattr(module, obj_name)
+            self._value = obj_name and getattr(module, obj_name) or module
             self._value_set = True
         return self._value
 
