@@ -624,3 +624,12 @@ class AppTestCase(unittest.TestCase):
         self.assertIsInstance(route_b, Route)
         self.assertEqual(_test_handler, route_a.handler)
         self.assertEqual(_test_handler, route_b.handler)
+
+    def test_compile_routes__typeerror(self):
+        wrong_handler = 123
+        routes = (
+            ('path', wrong_handler),
+        )
+        with self.assertRaises(TypeError) as context:
+            App(routes=routes)
+        self.assertIn('subclass of Handler', str(context.exception))
