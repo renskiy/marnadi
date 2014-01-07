@@ -633,3 +633,17 @@ class AppTestCase(unittest.TestCase):
         with self.assertRaises(TypeError) as context:
             App(routes=routes)
         self.assertIn('subclass of Handler', str(context.exception))
+
+    @mock.patch.object(Handler, 'handle')
+    def test_route(self, handle):
+        def side_effect(*args, **kwargs):
+            self.assertTupleEqual(('arg', ), args)
+            self.assertDictEqual(
+                dict(kwarg='kwarg', path='conflict_name'),
+                kwargs,
+            )
+        handle.side_effect = side_effect
+        app = App()
+        app.route('/', 'arg', kwarg='kwarg', path='conflict_name')(Handler)
+        app.get_handler('/')
+        self.assertEqual(1, handle.call_count)
