@@ -30,7 +30,7 @@ class HandlerType(abc.ABCMeta):
     def decorator(cls, func):
         method = staticmethod(func)
         attributes = dict(func=method)
-        for supported_method in cls.SUPPORTED_HTTP_METHODS:
+        for supported_method in cls.supported_http_methods:
             supported_method = supported_method.lower()
             if getattr(cls, supported_method, NotImplemented) is NotImplemented:
                 attributes[supported_method] = method
@@ -82,7 +82,7 @@ class Handler(object):
 
     __metaclass__ = HandlerType
 
-    SUPPORTED_HTTP_METHODS = (
+    supported_http_methods = (
         'OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',
     )
 
@@ -109,7 +109,7 @@ class Handler(object):
 
     def __call__(self, *args, **kwargs):
         request_method = self.environ.request_method
-        if request_method not in self.SUPPORTED_HTTP_METHODS:
+        if request_method not in self.supported_http_methods:
             raise HttpError(
                 '501 Not Implemented',
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
@@ -124,7 +124,7 @@ class Handler(object):
 
     @property
     def allowed_http_methods(self):
-        for method in self.SUPPORTED_HTTP_METHODS:
+        for method in self.supported_http_methods:
             if getattr(self, method.lower(), NotImplemented) is NotImplemented:
                 continue
             yield method
