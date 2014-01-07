@@ -41,7 +41,11 @@ class HandlerType(abc.ABCMeta):
 
     def make_string(cls, entity, log_exception=True):
         try:
-            return '' if entity is None else unicode(entity).encode('utf-8')
+            if isinstance(entity, unicode):
+                return entity.encode('utf-8')
+            elif entity is None:
+                return ''
+            return str(entity)
         except Exception as error:
             log_exception and cls.logger.exception(error)
             raise
