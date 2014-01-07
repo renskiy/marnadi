@@ -51,8 +51,10 @@ class EnvironTestCase(unittest.TestCase):
 
 class AppTestCase(unittest.TestCase):
 
+    @mock.patch.object(Handler, 'handle')
     def _get_handler_args_parametrized_test_case(
         self,
+        mocked,
         handler_path,
         requested_path='/foo/bar',
         nested_handler_path=None,
@@ -63,16 +65,15 @@ class AppTestCase(unittest.TestCase):
             self.assertListEqual(expected_args or [], list(args))
             self.assertDictEqual(expected_kwargs or {}, kwargs)
 
-        handler = Handler.decorator(lambda *args, **kwargs: None)
-        handler.handle = mock.Mock(side_effect=side_effect)
+        mocked.side_effect = side_effect
         routes = (
-            (handler_path, nested_handler_path is None and handler or (
-                (nested_handler_path, handler),
+            (handler_path, nested_handler_path is None and Handler or (
+                (nested_handler_path, Handler),
             )),
         )
         app = App(routes=routes)
         app.get_handler(requested_path)
-        self.assertEqual(1, handler.handle.call_count)
+        self.assertEqual(1, mocked.call_count)
 
     def test_get_handler_args__no_args(self):
         self._get_handler_args_parametrized_test_case(
@@ -198,8 +199,12 @@ class AppTestCase(unittest.TestCase):
     def unexpected_handler(self, *args, **kwargs):
         pass
 
+    @mock.patch.object(unexpected_handler, 'handle')
+    @mock.patch.object(expected_handler, 'handle')
     def _get_handler_parametrized_test_case(
         self,
+        expected,
+        unexpected,
         routes,
         requested_path,
         expected_args=None,
@@ -209,12 +214,11 @@ class AppTestCase(unittest.TestCase):
             self.assertListEqual(expected_args or [], list(args))
             self.assertDictEqual(expected_kwargs or {}, kwargs)
 
-        self.expected_handler.handle = mock.Mock(side_effect=side_effect)
-        self.unexpected_handler.handle = mock.Mock()
+        expected.side_effect = side_effect
         app = App(routes=routes)
         app.get_handler(requested_path)
-        self.assertEqual(1, self.expected_handler.handle.call_count)
-        self.assertEqual(0, self.unexpected_handler.handle.call_count)
+        self.assertEqual(1, expected.call_count)
+        self.assertEqual(0, unexpected.call_count)
 
     def test_get_handler__expected_unexpected(self):
         self._get_handler_parametrized_test_case(
@@ -635,15 +639,16 @@ class AppTestCase(unittest.TestCase):
         self.assertIn('subclass of Handler', str(context.exception))
 
     @mock.patch.object(Handler, 'handle')
-    def test_route(self, handle):
+    def test_route(self, mocked):
         def side_effect(*args, **kwargs):
             self.assertTupleEqual(('arg', ), args)
             self.assertDictEqual(
                 dict(kwarg='kwarg', path='conflict_name'),
                 kwargs,
             )
-        handle.side_effect = side_effect
+
+        mocked.side_effect = side_effect
         app = App()
         app.route('/', 'arg', kwarg='kwarg', path='conflict_name')(Handler)
         app.get_handler('/')
-        self.assertEqual(1, handle.call_count)
+        self.assertEqual(1, mocked.call_count)
