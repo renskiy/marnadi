@@ -17,7 +17,6 @@ class Data(Descriptor):
 
     def get_value(self, handler):
         stream = handler.environ['wsgi.input']
-        content_type, content_params = \
-            handler.headers.get_parsed('Content-Type')
+        content_type = handler.environ.get('CONTENT_TYPE', '').split(';', 1)[0]
         decoder = self.content_decoders.get(content_type, mime.Decoder)
-        return decoder(stream, **content_params)
+        return decoder(stream, handler.headers)
