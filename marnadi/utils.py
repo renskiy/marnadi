@@ -3,19 +3,19 @@ import itertools
 import types
 
 
-class _Lazy(type):
+class LazyType(type):
 
     def __call__(cls, path):
         if isinstance(path, cls):
             return path
         elif isinstance(path, types.StringTypes):
-            return super(_Lazy, cls).__call__(path)
+            return super(LazyType, cls).__call__(path)
         return path
 
 
 class Lazy(object):
 
-    __metaclass__ = _Lazy
+    __metaclass__ = LazyType
 
     def __init__(self, path):
         self._value = None
@@ -54,7 +54,7 @@ class Lazy(object):
         return self._value
 
 
-class _Route(type):
+class RouteType(type):
 
     def __call__(cls, *args, **kwargs):
         if len(args) < 2:
@@ -66,14 +66,14 @@ class _Route(type):
                 _kwargs[kwarg] = kwargs.pop(kwarg)
             except KeyError:
                 pass
-        route = super(_Route, cls).__call__(*args, **kwargs)
+        route = super(RouteType, cls).__call__(*args, **kwargs)
         route.kwargs.update(_kwargs)
         return route
 
 
 class Route(object):
 
-    __metaclass__ = _Route
+    __metaclass__ = RouteType
 
     def __init__(self, path, handler, *args, **kwargs):
         self.path = path
