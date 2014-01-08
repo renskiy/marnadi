@@ -107,6 +107,10 @@ class LazyTestCase(unittest.TestCase):
         lazy = Lazy('%s._test_instance' % __name__)
         self.assertEqual(lazy, Lazy(lazy))
 
+    def test_lazy__explicit_lazy_str(self):
+        lazy_str = Lazy('%s._test_str' % __name__)
+        self.assertEqual(lazy_str, Lazy(lazy_str))
+
     def test_lazy__module(self):
         lazy = Lazy(__name__)
         self.assertIsInstance(lazy, types.ModuleType)
