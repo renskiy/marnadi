@@ -1,13 +1,13 @@
-class DataStreamer(type):
+class DecoderType(type):
 
     def __call__(cls, stream, headers):
-        decoder = super(DataStreamer, cls).__call__()
+        decoder = super(DecoderType, cls).__call__()
         return decoder(stream, headers)
 
 
 class Decoder(object):
 
-    __metaclass__ = DataStreamer
+    __metaclass__ = DecoderType
 
     def __call__(self, stream, headers):
         return ''.join(stream)
