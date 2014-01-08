@@ -111,3 +111,18 @@ class LazyTestCase(unittest.TestCase):
         lazy = Lazy(__name__)
         self.assertIsInstance(lazy, types.ModuleType)
         self.assertEqual(__name__, lazy.__name__)
+
+    def test_lazy__module_from_package(self):
+        lazy = Lazy('marnadi.wsgi')
+        self.assertIsInstance(lazy, types.ModuleType)
+        self.assertEqual('marnadi.wsgi', lazy.__name__)
+
+    def test_lazy__package(self):
+        lazy = Lazy('marnadi')
+        self.assertIsInstance(lazy, types.ModuleType)
+        self.assertEqual('marnadi', lazy.__name__)
+
+    def test_lazy__package_from_package(self):
+        lazy = Lazy('marnadi.descriptors')
+        self.assertIsInstance(lazy, types.ModuleType)
+        self.assertEqual('marnadi.descriptors', lazy.__name__)
