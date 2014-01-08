@@ -7,4 +7,5 @@ from marnadi import mime
 class Decoder(mime.Decoder):
 
     def __call__(self, stream, headers):
-        return json.load(stream)
+        encoding = headers.get_parsed('Content-Type')[1].get('charset', 'utf-8')
+        return json.load(stream, encoding=encoding)
