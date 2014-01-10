@@ -256,6 +256,16 @@ class AppTestCase(unittest.TestCase):
             requested_path='/',
         )
 
+    def test_get_handler__regexp_unexpected_expected_args_kwargs(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                Route(re.compile(r'/foo'),
+                      self.unexpected_handler, 'foo', bar='baz'),
+                (re.compile(r'/'), self.expected_handler),
+            ),
+            requested_path='/',
+        )
+
     def test_get_handler__foo_unexpected_expected(self):
         self._get_handler_parametrized_test_case(
             routes=(
@@ -406,6 +416,21 @@ class AppTestCase(unittest.TestCase):
             requested_path='/foo/baz',
         )
 
+    def test_get_handler__nested_foobaz_unexpected_expected_args_kwargs(self):
+        self._get_handler_parametrized_test_case(
+            routes=(
+                (re.compile(r'/(foo)/(?P<kwarg1>kwarg)'), (
+                    ('/bar', self.unexpected_handler),
+                )),
+                (re.compile(r'/(foo)/(?P<kwarg2>kwarg)'), (
+                    ('/baz', self.expected_handler),
+                )),
+            ),
+            requested_path='/foo/kwarg/baz',
+            expected_args=['foo'],
+            expected_kwargs=dict(kwarg2='kwarg'),
+        )
+
     def test_get_handler__nested_regexp_foobaz_expected_unexpected(self):
         self._get_handler_parametrized_test_case(
             routes=(
@@ -522,7 +547,7 @@ class AppTestCase(unittest.TestCase):
                       self.expected_handler, key_baz='baz'),
             ),
             requested_path='/bar',
-            expected_kwargs={'key_baz': 'baz'},
+            expected_kwargs={'key_baz': 'bar'},
         )
 
     def test_get_handler_predefined__regexp_route_complex(self):
@@ -651,4 +676,22 @@ class AppTestCase(unittest.TestCase):
         app = App()
         app.route('/', 'arg', kwarg='kwarg', path='conflict_name')(Handler)
         app.get_handler('/')
+        self.assertEqual(1, mocked.call_count)
+
+    @mock.patch.object(Handler, 'handle')
+    def test_route__routes(self, mocked):
+        def side_effect(*args, **kwargs):
+            self.assertTupleEqual(('arg1', 'arg2'), args)
+            self.assertDictEqual(
+                dict(kwarg1='kwarg1', kwarg2='kwarg2', kwarg=2),
+                kwargs,
+            )
+
+        mocked.side_effect = side_effect
+        app = App()
+        routes = (
+            Route('path', Handler, 'arg2', kwarg2='kwarg2', kwarg=2),
+        )
+        app.route('/', 'arg1', kwarg1='kwarg1', kwarg=1)(routes)
+        app.get_handler('/path')
         self.assertEqual(1, mocked.call_count)

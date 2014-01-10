@@ -1,5 +1,5 @@
+from copy import copy
 import functools
-import itertools
 import UserDict
 
 from marnadi import Route, Handler
@@ -138,25 +138,27 @@ class App(object):
                 if not match:
                     continue
                 match_args, match_kwargs = self.get_match_subgroups(match)
-                args.extend(match_args)
-                kwargs.update(match_kwargs)
                 rest_path = path[match.end(0):]
             elif path.startswith(route.path):
                 rest_path = path[len(route.path):]
+                match_args, match_kwargs = (), ()
             else:
                 continue
+            _args, _kwargs = copy(args), copy(kwargs)
+            _args.extend(route.args)
+            _args.extend(match_args)
+            _kwargs.update(route.kwargs)
+            _kwargs.update(match_kwargs)
             if isinstance(route.handler, list):
                 try:
                     return self.get_handler(
                         rest_path,
                         routes=route.handler,
-                        args=args,
-                        kwargs=kwargs,
+                        args=_args,
+                        kwargs=_kwargs,
                     )
                 except HttpError:
                     pass
             if not rest_path:
-                args = itertools.chain(route.args, args)
-                kwargs.update(route.kwargs)
-                return route.handler.handle(*args, **kwargs)
+                return route.handler.handle(*_args, **_kwargs)
         raise HttpError('404 Not Found')
