@@ -31,6 +31,9 @@ class Lazy(object):
     def __str__(self):
         return str(self._obj)
 
+    def __unicode__(self):
+        return unicode(self._obj)
+
     def __getitem__(self, item):
         return self._obj[item]
 
