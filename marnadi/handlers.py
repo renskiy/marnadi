@@ -1,8 +1,8 @@
 import abc
 import functools
+import itertools
 import logging
 import types
-import itertools
 
 from marnadi import descriptors, Header
 from marnadi.errors import HttpError
