@@ -70,8 +70,10 @@ class Cookies(UserDict.DictMixin, Descriptor):
             except KeyError:
                 pass
 
-    def remove(self, cookie, **kwargs):
-        self.set(cookie, '', expires=datetime.datetime(1980, 1, 1), **kwargs)
+    def remove(self, cookie, domain=None, path=None, secure=None,
+               http_only=None):
+        self.set(cookie, '', expires=datetime.datetime(1980, 1, 1),
+                 domain=domain, path=path, secure=secure, http_only=http_only)
 
     def set(self, cookie, value, expires=None, domain=None, path=None,
             secure=None, http_only=None):
