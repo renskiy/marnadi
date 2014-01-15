@@ -85,13 +85,12 @@ class Cookies(UserDict.DictMixin, Descriptor):
         http_only = self.http_only if http_only is None else http_only
 
         cookie_params = ['%s=%s' % (cookie, value)]
-        if domain is not None:
-            cookie_params.append("Domain=%s" % domain)
-        if path is not None:
-            cookie_params.append("Path=%s" % path)
+        domain is not None and cookie_params.append("Domain=%s" % domain)
+        path is not None and cookie_params.append("Path=%s" % path)
         if expires is not None:
             try:
-                expires = datetime.datetime.now() + expires
+                # try to use `expires` as timedelta
+                expires += datetime.datetime.now()
             except TypeError:
                 pass
             if isinstance(expires, datetime.datetime):
@@ -103,8 +102,6 @@ class Cookies(UserDict.DictMixin, Descriptor):
                 expires = time.strftime("%a, %d %b %Y %H:%M:%S GMT",
                                         struct_time)
             cookie_params.append("Expires=%s" % expires)
-        if secure:
-            cookie_params.append("Secure")
-        if http_only:
-            cookie_params.append("HttpOnly")
+        secure and cookie_params.append("Secure")
+        http_only and cookie_params.append("HttpOnly")
         self._headers.append('Set-Cookie', '; '.join(cookie_params))
