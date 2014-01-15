@@ -64,11 +64,11 @@ class Cookies(UserDict.DictMixin, Descriptor):
         return self._cookies
 
     def clear(self, *cookies):
-        for cookie in cookies or list(self.cookies.keys()):
-            try:
-                del self[cookie]
-            except KeyError:
-                pass
+        if cookies:
+            for cookie in cookies:
+                self.pop(cookie, None)
+        else:
+            super(Cookies, self).clear()
 
     def remove(self, cookie, domain=None, path=None, secure=None,
                http_only=None):
