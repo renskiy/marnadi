@@ -130,8 +130,7 @@ class App(object):
 
     def get_handler(self, path, routes=None, args=None, kwargs=None):
         routes = routes or self.routes
-        args = args or []
-        kwargs = kwargs or {}
+        args, kwargs = args or [], kwargs or {}
         for route in routes:
             if hasattr(route.path, 'match'):  # assume it's compiled regexp
                 match = route.path.match(path)
