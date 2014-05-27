@@ -87,8 +87,7 @@ class App(object):
         except TypeError:
             raise TypeError(
                 "Route's handler must be either subclass of Handler "
-                "or sequence of nested subroutes"
-            )
+                "or sequence of nested subroutes")
         return route
 
     def _route(self, *args, **kwargs):
@@ -102,8 +101,7 @@ class App(object):
         except IndexError:
             raise ValueError(
                 "Requires path as first argument "
-                "(it must be an arg, not kwarg)"
-            )
+                "(it must be an arg, not kwarg)")
         return _decorator
 
     @functools.partial(lambda real, dummy: functools.wraps(dummy)(real), _route)
