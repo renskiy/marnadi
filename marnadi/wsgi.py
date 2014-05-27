@@ -1,12 +1,12 @@
-from copy import copy
+import collections
+import copy
 import functools
-import UserDict
 
 from marnadi import Route, Handler
 from marnadi.errors import HttpError
 
 
-class Environ(UserDict.DictMixin, object):
+class Environ(collections.Mapping):
     """WSGI environ object class.
 
     Standard WSGI environ dict wrapped by class additionally allowing
@@ -31,8 +31,11 @@ class Environ(UserDict.DictMixin, object):
     def __getitem__(self, key):
         return self._environ[key]
 
-    def keys(self):
-        return self._environ.keys()
+    def __iter__(self):
+        return iter(self._environ)
+
+    def __len__(self):
+        return len(self._environ)
 
     @property
     def http_content_type(self):
@@ -143,7 +146,7 @@ class App(object):
                 match_args, match_kwargs = (), ()
             else:
                 continue
-            _args, _kwargs = copy(args), copy(kwargs)
+            _args, _kwargs = copy.copy(args), copy.copy(kwargs)
             _args.extend(route.args)
             _args.extend(match_args)
             _kwargs.update(route.kwargs)

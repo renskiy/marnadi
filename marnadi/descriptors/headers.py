@@ -1,11 +1,10 @@
 import collections
 import itertools
-import UserDict
 
 from marnadi.descriptors import Descriptor
 
 
-class Headers(UserDict.DictMixin, Descriptor):
+class Headers(collections.MutableMapping, Descriptor):
     """Headers - dict-like object which allow to read request
     and set response headers.
 
@@ -33,8 +32,11 @@ class Headers(UserDict.DictMixin, Descriptor):
     def __getitem__(self, request_header):
         return self.request_headers[request_header]
 
-    def keys(self):
-        return self.request_headers.keys()
+    def __iter__(self):
+        return iter(self.request_headers)
+
+    def __len__(self):
+        return len(self.request_headers)
 
     def get_parsed(self, request_header, default=None):
         """Parses value and params of complex request headers.

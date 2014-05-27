@@ -1,12 +1,12 @@
+import collections
 import copy
 import datetime
 import time
-import UserDict
 
 from marnadi.descriptors import Descriptor
 
 
-class Cookies(UserDict.DictMixin, Descriptor):
+class Cookies(collections.MutableMapping, Descriptor):
     """Cookies - dict-like object allowing to get/set HTTP cookies"""
 
     def __init__(self, domain=None, path=None, expires=None,
@@ -48,8 +48,11 @@ class Cookies(UserDict.DictMixin, Descriptor):
     def __getitem__(self, cookie):
         return self.cookies[cookie]
 
-    def keys(self):
-        return self.cookies.keys()
+    def __iter__(self):
+        return iter(self.cookies)
+
+    def __len__(self):
+        return len(self.cookies)
 
     @property
     def cookies(self):
