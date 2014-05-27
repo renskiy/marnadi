@@ -141,7 +141,7 @@ class App(object):
                 rest_path = path[match.end(0):]
             elif path.startswith(route.path):
                 rest_path = path[len(route.path):]
-                match_args, match_kwargs = (), ()
+                match_args = match_kwargs = ()
             else:
                 continue
             _args, _kwargs = copy.copy(args), copy.copy(kwargs)
