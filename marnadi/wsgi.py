@@ -72,7 +72,7 @@ class App(object):
             return error
 
     def compile_routes(self, routes):
-        return map(self.compile_route, routes)
+        return list(map(self.compile_route, routes))
 
     def compile_route(self, route):
         if not isinstance(route, Route):
