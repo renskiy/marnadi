@@ -1,5 +1,4 @@
 import abc
-import functools
 import itertools
 import logging
 import types
@@ -122,15 +121,16 @@ class Handler(object):
     @classmethod
     def decorator(cls, func):
         method = staticmethod(func)
-        attributes = dict(func=method)
+        attributes = dict(
+            func=method,
+            __module__=func.__module__,
+            __doc__=func.__doc__,
+        )
         for supported_method in cls.supported_http_methods:
             supported_method = supported_method.lower()
             if getattr(cls, supported_method, NotImplemented) is NotImplemented:
                 attributes[supported_method] = method
-        return functools.update_wrapper(
-            type(cls)('', (cls, ), attributes),
-            func, updated=(),
-        )
+        return type(cls)(func.__name__, (cls, ), attributes)
 
     def options(self, *args, **kwargs):
         self.headers['Allow'] = ', '.join(self.allowed_http_methods)
