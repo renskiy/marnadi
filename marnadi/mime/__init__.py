@@ -1,3 +1,6 @@
+from marnadi.utils import metaclass
+
+
 class DecoderType(type):
 
     def __call__(cls, stream, headers):
@@ -5,9 +8,8 @@ class DecoderType(type):
         return decoder(stream, headers)
 
 
+@metaclass(DecoderType)
 class Decoder(object):
-
-    __metaclass__ = DecoderType
 
     def __call__(self, stream, headers):
         return ''.join(stream)

@@ -6,6 +6,7 @@ import types
 
 from marnadi import descriptors, Header
 from marnadi.errors import HttpError
+from marnadi.utils import metaclass
 
 
 class HandlerType(abc.ABCMeta):
@@ -78,9 +79,8 @@ class HandlerType(abc.ABCMeta):
             descriptor.attr_name = attr_name
 
 
+@metaclass(HandlerType)
 class Handler(object):
-
-    __metaclass__ = HandlerType
 
     supported_http_methods = (
         'OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',

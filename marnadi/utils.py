@@ -3,6 +3,18 @@ import itertools
 import types
 
 
+def metaclass(mcs):
+    def _decorator(cls):
+        attrs = dict(cls.__dict__)
+        for prop in ('__weakref__', '__dict__'):
+            try:
+                del attrs[prop]
+            except KeyError:
+                pass
+        return mcs(cls.__name__, cls.__bases__, attrs)
+    return _decorator
+
+
 class LazyType(type):
 
     def __call__(cls, path):
@@ -13,9 +25,8 @@ class LazyType(type):
         return path
 
 
+@metaclass(LazyType)
 class Lazy(object):
-
-    __metaclass__ = LazyType
 
     def __init__(self, path):
         self._value = None
@@ -74,9 +85,8 @@ class RouteType(type):
         return route
 
 
+@metaclass(RouteType)
 class Route(object):
-
-    __metaclass__ = RouteType
 
     def __init__(self, path, handler, *args, **kwargs):
         self.path = path
