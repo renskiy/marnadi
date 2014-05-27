@@ -61,7 +61,7 @@ class Headers(collections.MutableMapping, Descriptor):
         except KeyError:
             return default, {}
         parts = iter(raw_value.split(';'))
-        value = parts.next()
+        value = next(parts)
         return value, dict(
             (lambda p, v='': (p, v.strip('"')))(*param.split('=', 1))
             for param in itertools.ifilter(str.strip, parts)
