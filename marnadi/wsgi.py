@@ -158,7 +158,7 @@ class App(object):
                         kwargs=_kwargs,
                     )
                 except HttpError:
-                    pass
+                    continue
             if not rest_path:
                 return route.handler.handle(*_args, **_kwargs)
         raise HttpError('404 Not Found')
