@@ -24,21 +24,11 @@ class HandlerType(abc.ABCMeta):
         cls.set_descriptor_name(attr_value, attr_name)
 
     def __call__(cls, *args, **kwargs):
-        if cls.func is not None:
-            return cls.func(*args, **kwargs)
+        if issubclass(cls, Handler):
+            func = getattr(cls, 'func')
+            if callable(func):
+                return func(*args, **kwargs)
         return super(HandlerType, cls).__call__(*args, **kwargs)
-
-    def decorator(cls, func):
-        method = staticmethod(func)
-        attributes = dict(func=method)
-        for supported_method in cls.supported_http_methods:
-            supported_method = supported_method.lower()
-            if getattr(cls, supported_method, NotImplemented) is NotImplemented:
-                attributes[supported_method] = method
-        return functools.update_wrapper(
-            type('', (cls, ), attributes),
-            func, updated=(),
-        )
 
     def make_string(cls, entity, log_exception=True):
         try:
@@ -128,6 +118,19 @@ class Handler(object):
             if getattr(self, method.lower(), NotImplemented) is NotImplemented:
                 continue
             yield method
+
+    @classmethod
+    def decorator(cls, func):
+        method = staticmethod(func)
+        attributes = dict(func=method)
+        for supported_method in cls.supported_http_methods:
+            supported_method = supported_method.lower()
+            if getattr(cls, supported_method, NotImplemented) is NotImplemented:
+                attributes[supported_method] = method
+        return functools.update_wrapper(
+            type(cls)('', (cls, ), attributes),
+            func, updated=(),
+        )
 
     def options(self, *args, **kwargs):
         self.headers['Allow'] = ', '.join(self.allowed_http_methods)
