@@ -11,6 +11,11 @@ try:
 except ImportError:
     pass
 
+try:
+    str = unicode
+except NameError:
+    pass
+
 
 class HandlerType(abc.ABCMeta):
 
@@ -33,11 +38,11 @@ class HandlerType(abc.ABCMeta):
 
     def make_string(cls, entity, log_exception=True):
         try:
-            if isinstance(entity, unicode):
+            if entity is None:
+                return b''
+            if isinstance(entity, str):
                 return entity.encode('utf-8')
-            elif entity is None:
-                return ''
-            return str(entity)
+            return bytes(entity)
         except Exception as error:
             log_exception and cls.logger.exception(error)
             raise
