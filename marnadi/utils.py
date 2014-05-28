@@ -1,6 +1,5 @@
 import importlib
 import itertools
-import types
 
 
 def metaclass(mcs):
@@ -20,7 +19,7 @@ class LazyType(type):
     def __call__(cls, path):
         if isinstance(path, cls):
             return path
-        elif isinstance(path, types.StringTypes):
+        elif isinstance(path, str):
             return super(LazyType, cls).__call__(path)
         return path
 
@@ -44,6 +43,9 @@ class Lazy(object):
 
     def __unicode__(self):
         return unicode(self._obj)
+
+    def __bytes__(self):
+        return bytes(self._obj)
 
     def __getitem__(self, item):
         return self._obj[item]
@@ -110,6 +112,6 @@ class Header(object):
             values,
             (
                 '%s=%s' % (attr_name, attr_value)
-                for attr_name, attr_value in attributes.iteritems()
+                for attr_name, attr_value in attributes.items()
             ),
-        ))
+        )).encode()

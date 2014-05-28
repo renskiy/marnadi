@@ -4,6 +4,11 @@ import unittest
 
 from marnadi import Lazy
 
+try:
+    str = unicode
+except NameError:
+    pass
+
 _test_tuple = ('foo', 'bar')
 
 _test_list = ['foo', 'bar']
@@ -12,7 +17,7 @@ _test_set = set(_test_tuple)
 
 _test_dict = {'foo': 'bar'}
 
-_test_str = 'foo'
+_test_str = b'foo'
 
 _test_unicode = u'вася'
 
@@ -49,9 +54,9 @@ class LazyTestCase(unittest.TestCase):
         lazy_str = Lazy('%s._test_str' % __name__)
         self.assertEqual(_test_str, str(lazy_str))
 
-    def test_lazy_unicode(self):
-        lazy_str = Lazy('%s._test_unicode' % __name__)
-        self.assertEqual(_test_unicode, unicode(lazy_str))
+    def test_lazy_bytes(self):
+        lazy_bytes = Lazy('%s._test_str' % __name__)
+        self.assertEqual(_test_str, bytes(lazy_bytes))
 
     def test_lazy_class(self):
         lazy_class = Lazy('%s._TestClass' % __name__)
