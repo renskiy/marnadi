@@ -61,7 +61,8 @@ class HandlerType(abc.ABCMeta):
             cls.logger.exception(error)
             cls.handle_exception(error, environ, args, kwargs)
 
-    def handle_exception(cls, error, environ, args, kwargs):
+    @staticmethod
+    def handle_exception(error, environ, args, kwargs):
         raise HttpError(exception=error)
 
     @staticmethod
