@@ -1,11 +1,15 @@
 import abc
-import itertools
 import logging
 import types
 
 from marnadi import descriptors, Header
 from marnadi.errors import HttpError
 from marnadi.utils import metaclass
+
+try:
+    from itertools import imap as map
+except ImportError:
+    pass
 
 
 class HandlerType(abc.ABCMeta):
@@ -44,7 +48,7 @@ class HandlerType(abc.ABCMeta):
             handler = super(HandlerType, cls).__call__(environ)
             result = handler(*args, **kwargs)
             if isinstance(result, types.GeneratorType):
-                result = itertools.imap(cls.make_string, result)
+                result = map(cls.make_string, result)
             else:
                 result = (cls.make_string(result, log_exception=False), )
             status = handler.status

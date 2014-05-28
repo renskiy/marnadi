@@ -3,6 +3,11 @@ import itertools
 
 from marnadi.descriptors import Descriptor
 
+try:
+    from itertools import ifilter as filter
+except ImportError:
+    pass
+
 
 class Headers(collections.MutableMapping, Descriptor):
     """Headers - dict-like object which allow to read request
@@ -64,7 +69,7 @@ class Headers(collections.MutableMapping, Descriptor):
         value = next(parts)
         return value, dict(
             (lambda p, v='': (p, v.strip('"')))(*param.split('=', 1))
-            for param in itertools.ifilter(str.strip, parts)
+            for param in filter(str.strip, parts)
         )
 
     @property
