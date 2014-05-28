@@ -23,10 +23,8 @@ class HandlerType(abc.ABCMeta):
         cls.set_descriptor_name(attr_value, attr_name)
 
     def __call__(cls, *args, **kwargs):
-        if issubclass(cls, Handler):
-            func = getattr(cls, 'func')
-            if callable(func):
-                return func(*args, **kwargs)
+        if issubclass(cls, Handler) and cls.func is not None:
+            return cls.func(*args, **kwargs)
         return super(HandlerType, cls).__call__(*args, **kwargs)
 
     def make_string(cls, entity, log_exception=True):
@@ -91,7 +89,7 @@ class Handler(object):
             'marnadi.mime.application.x_www_form_urlencoded.Decoder'),
     )
 
-    func = None  # function decorated by this class
+    func = None  # function decorated by `Handler.decorator`
 
     def __init__(self, environ):
         self.environ = environ
