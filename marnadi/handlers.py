@@ -41,7 +41,7 @@ class HandlerType(abc.ABCMeta):
             if entity is None:
                 return b''
             if isinstance(entity, str):
-                return entity.encode('utf-8')
+                return entity.encode()
             return bytes(entity)
         except Exception as error:
             log_exception and cls.logger.exception(error)
