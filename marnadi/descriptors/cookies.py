@@ -6,7 +6,7 @@ import time
 from marnadi.descriptors import Descriptor
 
 
-class Cookies(collections.MutableMapping, Descriptor):
+class Cookies(Descriptor, collections.MutableMapping):
     """Cookies - dict-like object allowing to get/set HTTP cookies"""
 
     def __init__(self, domain=None, path=None, expires=None,

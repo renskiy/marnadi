@@ -9,7 +9,7 @@ except ImportError:
     pass
 
 
-class Headers(collections.MutableMapping, Descriptor):
+class Headers(Descriptor, collections.MutableMapping):
     """Headers - dict-like object which allow to read request
     and set response headers.
 
