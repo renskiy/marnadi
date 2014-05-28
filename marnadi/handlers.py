@@ -53,13 +53,13 @@ class HandlerType(abc.ABCMeta):
             handler = super(HandlerType, cls).__call__(environ)
             result = handler(*args, **kwargs)
             if isinstance(result, types.GeneratorType):
-                result = map(cls.make_string, result)
+                body = map(cls.make_string, result)
             else:
-                result = (cls.make_string(result, log_exception=False), )
+                body = (cls.make_string(result, log_exception=False), )
             status = handler.status
             headers = list(handler.headers.flush())
             start_response(status, headers)
-            yield result
+            yield body
         except HttpError:
             raise
         except Exception as error:
