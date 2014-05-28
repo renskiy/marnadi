@@ -114,4 +114,4 @@ class Header(object):
                 '%s=%s' % (attr_name, attr_value)
                 for attr_name, attr_value in attributes.items()
             ),
-        )).encode()
+        ))
