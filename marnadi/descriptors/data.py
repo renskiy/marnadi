@@ -1,7 +1,8 @@
 import itertools
 
-from marnadi import mime, Lazy
+from marnadi import mime
 from marnadi.descriptors import Descriptor
+from marnadi.utils import Lazy
 
 
 class Data(Descriptor):

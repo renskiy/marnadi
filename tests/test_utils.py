@@ -2,7 +2,7 @@
 import types
 import unittest
 
-from marnadi import Lazy
+from marnadi.utils import Lazy
 
 try:
     str = unicode

@@ -1,7 +1,7 @@
 import unittest
 
-from marnadi import App, Handler
-from marnadi.wsgi import Environ
+from marnadi import Handler
+from marnadi.wsgi import Environ, App
 
 
 class HandlerTestCase(unittest.TestCase):

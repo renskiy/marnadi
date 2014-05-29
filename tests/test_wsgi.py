@@ -2,9 +2,9 @@ import mock
 import re
 import unittest
 
-from marnadi import Route, Handler, App
+from marnadi import Route, Handler
 from marnadi.errors import HttpError
-from marnadi.wsgi import Environ
+from marnadi.wsgi import Environ, App
 
 _test_handler = Handler
 
