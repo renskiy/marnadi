@@ -2,9 +2,9 @@ from copy import copy
 
 
 class Descriptor(object):
-    """Base class for managers.
+    """Base class for descriptors.
 
-    All custom managers should be inherited from this class.
+    All descriptors should inherit this class.
     """
 
     def __init__(self):
@@ -16,8 +16,7 @@ class Descriptor(object):
             return self  # static access
         if self.attr_name is None:
             raise ValueError("Descriptor's `attr_name` can't be None")
-        value = self.get_value(handler)
-        setattr(handler, self.attr_name, value)
+        value = handler.__dict__[self.attr_name] = self.get_value(handler)
         return value
 
     def get_value(self, handler):
