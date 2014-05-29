@@ -119,15 +119,33 @@ class Header(object):
 
 class cached_property(object):
 
-    def __init__(self, getter):
-        self.getter = getter
+    def __init__(self, fget=None, fset=None, fdel=None, doc=None):
+        self.get = fget
+        self.set = fset
+        self.delete = fdel
+        self.__doc__ = doc
 
     def __get__(self, instance, instance_type=None):
-        result = instance.__dict__[self.getter.__name__] = self.getter(instance)
+        if self.get is None:
+            raise AttributeError('unreadable attribute')
+        result = instance.__dict__[self.get.__name__] = self.get(instance)
         return result
 
     def __set__(self, instance, value):
-        raise AttributeError('can\'t set attribute')
+        if self.set is None:
+            raise AttributeError('can\'t set attribute')
+        self.set(instance, value)
 
     def __delete__(self, instance):
-        raise AttributeError('can\'t delete attribute')
+        if self.delete is None:
+            raise AttributeError('can\'t delete attribute')
+        self.delete(instance)
+
+    def getter(self, getter):
+        self.get = getter
+
+    def setter(self, setter):
+        self.set = setter
+
+    def deleter(self, deleter):
+        self.delete = deleter
