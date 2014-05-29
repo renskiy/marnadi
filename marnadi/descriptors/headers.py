@@ -2,6 +2,7 @@ import collections
 import itertools
 
 from marnadi.descriptors import Descriptor
+from marnadi.utils import cached_property
 
 try:
     from itertools import ifilter as filter
@@ -21,15 +22,16 @@ class Headers(Descriptor, collections.MutableMapping):
 
     def __init__(self, *default_headers):
         super(Headers, self).__init__()
-        self._next = None
-        self._headers_sent = False
-        self._request_headers = None
-        self._response_headers = collections.defaultdict(list)
+        self.response_headers = collections.defaultdict(list)
         self.extend(*default_headers)
 
     def __copy__(self):
-        value = self.__class__()
-        value._response_headers = self._response_headers.copy()
+        value = Descriptor()
+        value.__class__ = self.__class__
+        try:
+            value.response_headers = self.response_headers.copy()
+        except ValueError:
+            pass
         return value
 
     ### request headers ###
@@ -72,31 +74,29 @@ class Headers(Descriptor, collections.MutableMapping):
             for param in filter(str.strip, parts)
         )
 
-    @property
+    @cached_property
     def request_headers(self):
-        if self._request_headers is None:
-            self._request_headers = {
-                name.title().replace('_', '-'): value
-                for name, value in
-                itertools.chain(
-                    (
-                        self.environ.get('CONTENT_TYPE', ())
-                        and
-                        (('CONTENT_TYPE', self.environ['CONTENT_TYPE']), )
-                    ),
-                    (
-                        self.environ.get('CONTENT_LENGTH', ())
-                        and
-                        (('CONTENT_LENGTH', self.environ['CONTENT_LENGTH']), )
-                    ),
-                    (
-                        (name[5:], value)
-                        for name, value in self.environ.iteritems()
-                        if name.startswith('HTTP_')
-                    )
+        return {
+            name.title().replace('_', '-'): value
+            for name, value in
+            itertools.chain(
+                (
+                    self.environ.get('CONTENT_TYPE', ())
+                    and
+                    (('CONTENT_TYPE', self.environ['CONTENT_TYPE']), )
+                ),
+                (
+                    self.environ.get('CONTENT_LENGTH', ())
+                    and
+                    (('CONTENT_LENGTH', self.environ['CONTENT_LENGTH']), )
+                ),
+                (
+                    (name[5:], value)
+                    for name, value in self.environ.iteritems()
+                    if name.startswith('HTTP_')
                 )
-            }
-        return self._request_headers
+            )
+        }
 
     def pop(self, key, *args):
         raise NotImplementedError
@@ -115,23 +115,28 @@ class Headers(Descriptor, collections.MutableMapping):
         else:
             self.response_headers[response_header.title()] = [value]
 
-    def flush(self):
+    @cached_property
+    def ready_for_response(self):
         """
-        Returns list of response headers as generator after getting
-        first element of which there will be no ability to modify
-        response headers anymore.
+        Returns sequence of response headers. Accessing first header is cause
+        of inability to modify response headers after.
         """
 
-        for header, values in self.response_headers.iteritems():
-            self._headers_sent = True
+        response_headers = self.__dict__.pop('response_headers')
+        for header, values in response_headers.iteritems():
             for value in values:
                 yield header, str(value)
 
     @property
     def response_headers(self):
-        if self._headers_sent:
+        try:
+            return self.__dict__['response_headers']
+        except KeyError:
             raise ValueError("Headers been already sent")
-        return self._response_headers
+
+    @response_headers.setter
+    def response_headers(self, value):
+        self.__dict__['response_headers'] = value
 
     def append(self, response_header, value):
         if value is not None:

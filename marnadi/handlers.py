@@ -57,7 +57,7 @@ class HandlerType(abc.ABCMeta):
             else:
                 body = (cls.make_string(result, log_exception=False), )
             status = handler.status
-            headers = list(handler.headers.flush())
+            headers = list(handler.headers.ready_for_response)
             start_response(status, headers)
             yield body
         except HttpError:
