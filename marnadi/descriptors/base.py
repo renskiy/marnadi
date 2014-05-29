@@ -1,6 +1,3 @@
-from copy import copy
-
-
 class Descriptor(object):
     """Base class for descriptors.
 
@@ -20,6 +17,15 @@ class Descriptor(object):
         return value
 
     def get_value(self, handler):
-        value = copy(self)
-        value.environ = handler.environ
-        return value
+        return self.clone(environ=handler.environ)
+
+    def clone(self, *copy_properties, **set_properties):
+        clone = type('', (), {})()
+        clone.__class__ = self.__class__
+        for prop_name in copy_properties:
+            try:
+                clone.__dict__[prop_name] = self.__dict__[prop_name]
+            except KeyError:
+                pass
+        clone.__dict__.update(set_properties)
+        return clone

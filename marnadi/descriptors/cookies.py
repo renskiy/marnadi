@@ -21,18 +21,13 @@ class Cookies(Descriptor, collections.MutableMapping):
         self.http_only = http_only
 
     def get_value(self, handler):
-        value = super(Cookies, self).get_value(handler)
-        value._headers = handler.headers
-        return value
-
-    def __copy__(self):
-        return self.__class__(
-            domain=self.domain,
-            path=self.path,
-            expires=copy.copy(self.expires),
-            secure=self.secure,
-            http_only=self.http_only,
+        value = self.clone(
+            'domain', 'path', 'secure', 'http_only',
+            environ=handler.environ,
+            _headers=handler.headers,
         )
+        value.expires = copy.copy(self.expires)
+        return value
 
     def __setitem__(self, cookie, value):
         self.set(cookie, value)

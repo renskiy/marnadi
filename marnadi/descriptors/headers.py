@@ -25,9 +25,8 @@ class Headers(Descriptor, collections.MutableMapping):
         self.response_headers = collections.defaultdict(list)
         self.extend(*default_headers)
 
-    def __copy__(self):
-        value = Descriptor()
-        value.__class__ = self.__class__
+    def get_value(self, handler):
+        value = super(Headers, self).get_value(handler)
         try:
             value.response_headers = self.response_headers.copy()
         except ValueError:
