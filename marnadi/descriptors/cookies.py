@@ -4,6 +4,7 @@ import datetime
 import time
 
 from marnadi.descriptors import Descriptor
+from marnadi.utils import cached_property
 
 
 class Cookies(Descriptor, collections.MutableMapping):
@@ -13,7 +14,6 @@ class Cookies(Descriptor, collections.MutableMapping):
                  secure=False, http_only=True):
         super(Cookies, self).__init__()
         self._headers = None
-        self._cookies = None
         self.domain = domain
         self.path = path
         self.expires = expires
@@ -54,17 +54,15 @@ class Cookies(Descriptor, collections.MutableMapping):
     def __len__(self):
         return len(self.cookies)
 
-    @property
+    @cached_property
     def cookies(self):
-        if self._cookies is None:
-            try:
-                self._cookies = dict(
-                    cookie.strip().split('=', 1)
-                    for cookie in self._headers['Cookie'].split(';')
-                )
-            except KeyError:
-                self._cookies = {}
-        return self._cookies
+        try:
+            return dict(
+                cookie.strip().split('=', 1)
+                for cookie in self._headers['Cookie'].split(';')
+            )
+        except KeyError:
+            return {}
 
     def clear(self, *cookies):
         if cookies:
