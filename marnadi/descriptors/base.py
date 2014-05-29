@@ -1,3 +1,6 @@
+from marnadi.utils import Empty
+
+
 class Descriptor(object):
     """Base class for descriptors.
 
@@ -20,7 +23,7 @@ class Descriptor(object):
         return self.clone(environ=handler.environ)
 
     def clone(self, *copy_properties, **set_properties):
-        clone = type('', (), {})()
+        clone = Empty()
         clone.__class__ = self.__class__
         for prop_name in copy_properties:
             try:
