@@ -80,8 +80,10 @@ class cached_property(object):
     def __get__(self, instance, instance_type=None):
         if self.get is None:
             raise AttributeError('unreadable attribute')
-        if self.get.__name__ in instance.__dict__:
+        try:
             return instance.__dict__[self.get.__name__]
+        except KeyError:
+            pass
         result = instance.__dict__[self.get.__name__] = self.get(instance)
         return result
 
