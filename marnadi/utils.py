@@ -115,3 +115,19 @@ class Header(object):
                 for attr_name, attr_value in attributes.items()
             ),
         ))
+
+
+class cached_property(object):
+
+    def __init__(self, getter):
+        self.getter = getter
+
+    def __get__(self, instance, instance_type=None):
+        result = instance.__dict__[self.getter.__name__] = self.getter(instance)
+        return result
+
+    def __set__(self, instance, value):
+        raise AttributeError('can\'t set attribute')
+
+    def __delete__(self, instance):
+        raise AttributeError('can\'t delete attribute')
