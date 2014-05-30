@@ -8,15 +8,15 @@ class Descriptor(object):
     """
 
     def __init__(self):
-        self.attr_name = None
+        self.name = None
         self.environ = None
 
     def __get__(self, handler, handler_class):
         if handler is None:
             return self  # static access
-        if self.attr_name is None:
+        if self.name is None:
             raise ValueError("Descriptor's `attr_name` can't be None")
-        value = handler.__dict__[self.attr_name] = self.get_value(handler)
+        value = handler.__dict__[self.name] = self.get_value(handler)
         return value
 
     def get_value(self, handler):

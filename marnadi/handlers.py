@@ -24,12 +24,14 @@ class HandlerType(abc.ABCMeta):
     def __new__(mcs, name, bases, attributes):
         cls = super(HandlerType, mcs).__new__(mcs, name, bases, attributes)
         for attr_name, attr_value in attributes.iteritems():
-            cls.set_descriptor_name(attr_value, attr_name)
+            if isinstance(attr_value, descriptors.Descriptor):
+                cls.set_descriptor_name(descriptor=attr_value, name=attr_name)
         return cls
 
     def __setattr__(cls, attr_name, attr_value):
         super(HandlerType, cls).__setattr__(attr_name, attr_value)
-        cls.set_descriptor_name(attr_value, attr_name)
+        if isinstance(attr_value, descriptors.Descriptor):
+            cls.set_descriptor_name(descriptor=attr_value, name=attr_name)
 
     def __call__(cls, *args, **kwargs):
         if issubclass(cls, Handler) and cls.func is not None:
@@ -71,9 +73,8 @@ class HandlerType(abc.ABCMeta):
         raise HttpError(exception=error)
 
     @staticmethod
-    def set_descriptor_name(descriptor, attr_name):
-        if isinstance(descriptor, descriptors.Descriptor):
-            descriptor.attr_name = attr_name
+    def set_descriptor_name(descriptor, name):
+        descriptor.name = name
 
 
 @metaclass(HandlerType)
