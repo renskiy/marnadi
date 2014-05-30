@@ -14,8 +14,7 @@ class Descriptor(object):
     def __get__(self, handler, handler_class):
         if handler is None:
             return self  # static access
-        if self.name is None:
-            raise ValueError("Descriptor's `attr_name` can't be None")
+        assert self.name is not None
         value = handler.__dict__[self.name] = self.get_value(handler)
         return value
 
