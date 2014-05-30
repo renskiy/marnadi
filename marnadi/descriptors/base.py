@@ -24,6 +24,7 @@ class Descriptor(object):
     def clone(self, *copy_properties, **set_properties):
         clone = Empty()
         clone.__class__ = self.__class__
+        clone.name = self.name
         for prop_name in copy_properties:
             try:
                 clone.__dict__[prop_name] = self.__dict__[prop_name]
