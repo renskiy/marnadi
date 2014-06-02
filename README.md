@@ -5,7 +5,8 @@ Yet another WSGI Web Framework, the simplest and fastest ever written.
 
 Hello World
 -------
-    from marnadi import App, Handler
+    from marnadi.wsgi import App
+    from marnadi import Handler
 
     application = App()
 
@@ -23,7 +24,8 @@ More Complex Example
 -------
 
     import re
-    from marnadi import App, Handler, Route as r
+    from marnadi.wsgi import App
+    from marnadi import Handler, Route as r
 
 
     class MyHandler(Handler):
