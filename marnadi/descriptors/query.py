@@ -1,4 +1,7 @@
-import urlparse
+try:
+    from urllib import parse
+except ImportError:
+    import urlparse as parse
 
 from marnadi.descriptors import Descriptor
 
@@ -7,7 +10,7 @@ class Query(Descriptor):
 
     def get_value(self, handler):
         try:
-            return urlparse.parse_qsl(
+            return parse.parse_qsl(
                 handler.environ.query_string,
                 keep_blank_values=True,
             )
