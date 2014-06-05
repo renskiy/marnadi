@@ -34,14 +34,15 @@ class MyHandler(Handler):
 
     supported_http_methods = ('OPTIONS', 'GET', 'POST')
 
-    # handler of HTTP "GET" requests
+    # "GET" request handler
     def get(self, receiver, sender=None):
         return 'receiver is %s, sender is %s' % (receiver, sender)
 
 
-# handler of HTTP "POST" requests
-# ("GET" and "OPTIONS" already implemented and the rest are restricted
-# by overriding `supported_http_methods`)
+# "POST" request handler
+# (that is because `get` and `options` are defined in MyHandler and Handler,
+# thus and because of MyHandler's `supported_http_methods` it will handle
+# only "POST" requests)
 @MyHandler.decorator
 def who_is_foo(foo):
     return "foo is %s" % foo

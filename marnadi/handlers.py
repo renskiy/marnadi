@@ -23,7 +23,7 @@ class HandlerType(abc.ABCMeta):
 
     def __new__(mcs, name, bases, attributes):
         cls = super(HandlerType, mcs).__new__(mcs, name, bases, attributes)
-        for attr_name, attr_value in attributes.iteritems():
+        for attr_name, attr_value in attributes.items():
             if isinstance(attr_value, descriptors.Descriptor):
                 cls.set_descriptor_name(descriptor=attr_value, name=attr_name)
         return cls
