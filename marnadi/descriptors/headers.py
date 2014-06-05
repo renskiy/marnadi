@@ -91,7 +91,7 @@ class Headers(Descriptor, collections.MutableMapping):
                 ),
                 (
                     (name[5:], value)
-                    for name, value in self.environ.iteritems()
+                    for name, value in self.environ.items()
                     if name.startswith('HTTP_')
                 )
             )
@@ -122,7 +122,7 @@ class Headers(Descriptor, collections.MutableMapping):
         """
 
         response_headers = self.__dict__.pop('response_headers')
-        for header, values in response_headers.iteritems():
+        for header, values in response_headers.items():
             for value in values:
                 yield header, str(value)
 

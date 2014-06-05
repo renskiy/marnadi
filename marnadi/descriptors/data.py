@@ -13,7 +13,7 @@ class Data(Descriptor):
             content_type: Lazy(content_decoder)
             for content_type, content_decoder in itertools.chain(
                 content_decoders,
-                kw_content_decoders.iteritems(),
+                kw_content_decoders.items(),
             )
         }
 
