@@ -100,8 +100,6 @@ class Handler(object):
             'marnadi.mime.application.x_www_form_urlencoded.Decoder'),
     )
 
-    func = None  # function decorated by `Handler.decorator`
-
     def __init__(self, environ):
         self.environ = environ
 
@@ -155,3 +153,5 @@ class Handler(object):
     patch = NotImplemented
 
     delete = NotImplemented
+
+    func = None  # function decorated by `Handler.decorator`
