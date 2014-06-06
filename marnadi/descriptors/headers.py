@@ -4,11 +4,6 @@ import itertools
 from marnadi.descriptors import Descriptor
 from marnadi.utils import cached_property, to_bytes
 
-try:
-    from itertools import ifilter as filter
-except ImportError:
-    pass
-
 
 class Headers(Descriptor, collections.MutableMapping):
     """Headers - dict-like object which allow to read request
