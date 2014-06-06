@@ -1,5 +1,10 @@
 import importlib
 
+try:
+    unicode_str = unicode
+except NameError:
+    unicode_str = str
+
 
 class Empty(object):
 
@@ -110,3 +115,19 @@ class cached_property(object):
 
     def deleter(self, deleter):
         self.delete = deleter
+
+
+def to_bytes(obj, encoding='utf-8', error_callback=None):
+    try:
+        if isinstance(obj, (bytes, bytearray)):
+            return obj
+        if obj is None:
+            return b''
+        try:
+            return obj.__bytes__()
+        except AttributeError:
+            return unicode_str(obj).encode(encoding=encoding)
+    except Exception as error:
+        if error_callback is not None:
+            error_callback(error)
+        raise
