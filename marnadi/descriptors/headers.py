@@ -2,7 +2,7 @@ import collections
 import itertools
 
 from marnadi.descriptors import Descriptor
-from marnadi.utils import cached_property
+from marnadi.utils import cached_property, to_bytes
 
 try:
     from itertools import ifilter as filter
@@ -109,22 +109,20 @@ class Headers(Descriptor, collections.MutableMapping):
         del self.response_headers[response_header.title()]
 
     def __setitem__(self, response_header, value):
-        if value is None:
-            self.clear(response_header)
-        else:
-            self.response_headers[response_header.title()] = [value]
+        self.response_headers[response_header.title()] = [value]
 
     @cached_property
     def ready_for_response(self):
-        """
-        Returns sequence of response headers. Accessing first header is cause
+        """Returns sequence of response headers.
+
+        Accessing first header is cause
         of inability to modify response headers after.
         """
 
         response_headers = self.__dict__.pop('response_headers')
         for header, values in response_headers.items():
             for value in values:
-                yield header, str(value)
+                yield header, to_bytes(value, encoding='latin1')
 
     @property
     def response_headers(self):
@@ -146,11 +144,10 @@ class Headers(Descriptor, collections.MutableMapping):
             self.append(*header)
 
     def setdefault(self, response_header, default=None):
-        response_header = response_header.title()
-        values = self.response_headers[response_header]
-        if not values and default is not None:
-            self[response_header] = default
-        return self.response_headers[response_header]
+        return self.response_headers.setdefault(
+            response_header.title(),
+            [default],
+        )
 
     def clear(self, *response_headers):
         if response_headers:
