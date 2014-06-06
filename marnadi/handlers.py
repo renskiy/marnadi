@@ -4,17 +4,7 @@ import types
 
 from marnadi import descriptors, Header
 from marnadi.errors import HttpError
-from marnadi.utils import metaclass
-
-try:
-    from itertools import imap as map
-except ImportError:
-    pass
-
-try:
-    str = unicode
-except NameError:
-    pass
+from marnadi.utils import metaclass, to_bytes
 
 
 class HandlerType(abc.ABCMeta):
@@ -38,26 +28,19 @@ class HandlerType(abc.ABCMeta):
             return cls.func(*args, **kwargs)
         return super(HandlerType, cls).__call__(*args, **kwargs)
 
-    def make_string(cls, entity, log_exception=True):
-        try:
-            if entity is None:
-                return b''
-            if isinstance(entity, str):
-                return entity.encode()
-            return bytes(entity)
-        except Exception as error:
-            log_exception and cls.logger.exception(error)
-            raise
-
     def handle(cls, *args, **kwargs):
         environ, start_response = yield
         try:
             handler = super(HandlerType, cls).__call__(environ)
             result = handler(*args, **kwargs)
             if isinstance(result, types.GeneratorType):
-                body = map(cls.make_string, result)
+                body = (
+                    to_bytes(chunk, error_callback=cls.logger.exception)
+                    for chunk in result
+                )
             else:
-                body = (cls.make_string(result, log_exception=False), )
+                body = (to_bytes(result), )
+                handler.headers.setdefault('Content-Length', len(body[0]))
             status = handler.status
             headers = list(handler.headers.ready_for_response)
             start_response(status, headers)
@@ -66,11 +49,7 @@ class HandlerType(abc.ABCMeta):
             raise
         except Exception as error:
             cls.logger.exception(error)
-            cls.handle_exception(error, environ, args, kwargs)
-
-    @staticmethod
-    def handle_exception(error, environ, args, kwargs):
-        raise HttpError(exception=error)
+            raise HttpError(exception=error)
 
     @staticmethod
     def set_descriptor_name(descriptor, name):
