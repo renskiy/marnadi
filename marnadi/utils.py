@@ -33,7 +33,7 @@ class cached_property(object):
 
     def __get__(self, instance, instance_type=None):
         if self.get is None:
-            raise AttributeError('unreadable attribute')
+            raise AttributeError("unreadable attribute")
         try:
             return instance.__dict__[self.get.__name__]
         except KeyError:
@@ -43,12 +43,12 @@ class cached_property(object):
 
     def __set__(self, instance, value):
         if self.set is None:
-            raise AttributeError('can\'t set attribute')
+            raise AttributeError("can't set attribute")
         self.set(instance, value)
 
     def __delete__(self, instance):
         if self.delete is None:
-            raise AttributeError('can\'t delete attribute')
+            raise AttributeError("can't delete attribute")
         self.delete(instance)
 
     def getter(self, getter):
