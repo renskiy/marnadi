@@ -46,12 +46,20 @@ class cached_property(object):
     def __set__(self, instance, value):
         if self.set is None:
             raise AttributeError("can't set attribute")
+        try:
+            del instance.__dict__[self.set.__name__]
+        except KeyError:
+            pass
         self.set(instance, value)
 
     def __delete__(self, instance):
         if self.delete is None:
             raise AttributeError("can't delete attribute")
         self.delete(instance)
+        try:
+            del instance.__dict__[self.delete.__name__]
+        except KeyError:
+            pass
 
     def getter(self, getter):
         self.get = getter
