@@ -119,8 +119,8 @@ class cached_property(object):
 
 def to_bytes(obj, encoding='utf-8', error_callback=None):
     try:
-        if isinstance(obj, bytes):
-            return obj
+        if isinstance(obj, (bytes, bytearray, memoryview)):
+            return bytes(obj)
         if obj is None:
             return b''
         try:
