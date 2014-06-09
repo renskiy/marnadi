@@ -106,18 +106,21 @@ class Headers(Descriptor, collections.MutableMapping):
     def __setitem__(self, response_header, value):
         self.response_headers[response_header.title()] = [value]
 
-    @cached_property
-    def ready_for_response(self):
+    def get_headers_for_response(self):
         """Returns sequence of response headers.
 
-        Accessing first header is cause of inability to modify
-        response headers after.
+        .. warning::
+            Calling this method causes inability to modify
+            response headers further.
         """
 
-        response_headers = self.__dict__.pop('response_headers')
-        for header, values in response_headers.items():
-            for value in values:
-                yield header, to_bytes(value, encoding='latin1')
+        response_headers = self.response_headers
+        del self.response_headers
+        return (
+            (header, to_bytes(value, encoding='latin1'))
+            for header, values in response_headers.items()
+            for value in values
+        )
 
     @property
     def response_headers(self):
@@ -129,6 +132,10 @@ class Headers(Descriptor, collections.MutableMapping):
     @response_headers.setter
     def response_headers(self, value):
         self.__dict__['response_headers'] = value
+
+    @response_headers.deleter
+    def response_headers(self):
+        del self.__dict__['response_headers']
 
     def append(self, response_header, value):
         if value is not None:
