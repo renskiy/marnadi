@@ -105,6 +105,9 @@ class Lazy(object):
     def __iter__(self):
         return iter(self._obj)
 
+    def __len__(self):
+        return len(self._obj)
+
     def __str__(self):
         return str(self._obj)
 
