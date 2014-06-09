@@ -55,12 +55,15 @@ class cached_property(object):
 
     def getter(self, getter):
         self.get = getter
+        return self
 
     def setter(self, setter):
         self.set = setter
+        return self
 
     def deleter(self, deleter):
         self.delete = deleter
+        return self
 
 
 class LazyType(type):
