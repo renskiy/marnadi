@@ -81,7 +81,7 @@ class Lazy(object):
         return self._obj(*args, **kwargs)
 
     def __iter__(self):
-        return self._obj.__iter__()
+        return iter(self._obj)
 
     def __str__(self):
         return str(self._obj)
@@ -100,7 +100,7 @@ class Lazy(object):
 
     @property
     def __class__(self):
-        return self._obj.__class__
+        return type(self._obj)
 
     @cached_property
     def _obj(self):
