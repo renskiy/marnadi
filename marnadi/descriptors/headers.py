@@ -110,8 +110,8 @@ class Headers(Descriptor, collections.MutableMapping):
     def ready_for_response(self):
         """Returns sequence of response headers.
 
-        Accessing first header is cause
-        of inability to modify response headers after.
+        Accessing first header is cause of inability to modify
+        response headers after.
         """
 
         response_headers = self.__dict__.pop('response_headers')
