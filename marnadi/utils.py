@@ -14,7 +14,16 @@ class Empty(object):
 def metaclass(mcs):
     def _decorator(cls):
         attrs = dict(cls.__dict__)
-        for prop in ('__weakref__', '__dict__'):
+        try:
+            if isinstance(cls.__slots__, str):
+                slots = (cls.__slots__, )
+            else:
+                slots = cls.__slots__
+            for slot in slots:
+                del attrs[slot]
+        except AttributeError:
+            pass
+        for prop in '__weakref__', '__dict__':
             try:
                 del attrs[prop]
             except KeyError:
