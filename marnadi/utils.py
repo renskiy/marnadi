@@ -100,7 +100,7 @@ class Lazy(object):
 
     @property
     def __class__(self):
-        return type(self._obj)
+        return self._obj.__class__
 
     @cached_property
     def _obj(self):
