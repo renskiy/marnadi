@@ -32,6 +32,8 @@ class cached_property(object):
         self.__doc__ = doc
 
     def __get__(self, instance, instance_type=None):
+        if instance is None:
+            return self
         if self.get is None:
             raise AttributeError("unreadable attribute")
         try:
