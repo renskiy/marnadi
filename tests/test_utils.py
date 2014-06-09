@@ -38,6 +38,10 @@ class LazyTestCase(unittest.TestCase):
         lazy_tuple = Lazy('%s._test_tuple' % __name__)
         self.assertTupleEqual(_test_tuple, tuple(lazy_tuple))
 
+    def test_length_of_lazy_tuple(self):
+        lazy_tuple = Lazy('%s._test_tuple' % __name__)
+        self.assertEqual(2, len(lazy_tuple))
+
     def test_lazy_list(self):
         lazy_list = Lazy('%s._test_list' % __name__)
         self.assertListEqual(_test_list, list(lazy_list))
