@@ -24,10 +24,7 @@ def metaclass(mcs):
         except AttributeError:
             pass
         for prop in '__weakref__', '__dict__':
-            try:
-                del attrs[prop]
-            except KeyError:
-                pass
+            attrs.pop(prop, None)
         return mcs(cls.__name__, cls.__bases__, attrs)
     return _decorator
 
