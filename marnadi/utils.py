@@ -111,6 +111,8 @@ class LazyType(type):
 @metaclass(LazyType)
 class Lazy(object):
 
+    __slots__ = ('_path', '__weakref__')
+
     def __init__(self, path):
         self._path = path
 
