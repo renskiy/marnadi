@@ -82,10 +82,10 @@ class cached_property(object):
     def make_cache_key(instance):
         return id(instance)
 
-    def make_destructor(self, method=None):
+    def make_new_destructor(self, old_destructor=None):
         def __del__(inst):
-            if method is not None:
-                method(inst)
+            if old_destructor is not None:
+                old_destructor(inst)
             self.cache.pop(self.make_cache_key(inst), None)
         return __del__
 
@@ -93,8 +93,8 @@ class cached_property(object):
         instance_class = type(instance)
         if instance_class in self.updated_classes:
             return
-        existing_destructor = getattr(instance_class, '__del__', None)
-        instance_class.__del__ = self.make_destructor(existing_destructor)
+        old_destructor = getattr(instance_class, '__del__', None)
+        instance_class.__del__ = self.make_new_destructor(old_destructor)
         self.updated_classes.add(instance_class)
 
 
