@@ -1,4 +1,5 @@
 import importlib
+import weakref
 
 try:
     unicode_str = unicode
@@ -31,41 +32,35 @@ def metaclass(mcs):
 
 class cached_property(object):
 
-    __slots__ = ('get', 'set', 'delete', '__doc__', 'cache', 'updated_classes')
+    __slots__ = ('get', 'set', 'delete', '__doc__', 'cache')
 
     def __init__(self, fget=None, fset=None, fdel=None, doc=None):
         self.get = fget
         self.set = fset
         self.delete = fdel
         self.__doc__ = doc
-        self.cache = {}
-        self.updated_classes = set()
+        self.cache = weakref.WeakKeyDictionary()
 
     def __get__(self, instance, instance_type=None):
         if instance is None:
             return self
         if self.get is None:
             raise AttributeError("unreadable attribute")
-        cache_key = self.make_cache_key(instance)
         try:
-            return self.cache[cache_key]
+            return self.cache[instance]
         except KeyError:
-            result = self.cache[cache_key] = self.get(instance)
-            self.update_instance_destructor(instance)
+            result = self.cache[instance] = self.get(instance)
         return result
 
     def __set__(self, instance, value):
-        cache_key = self.make_cache_key(instance)
         if self.set is None:
-            self.cache[cache_key] = value
-            self.update_instance_destructor(instance)
+            self.cache[instance] = value
         else:
-            self.cache.pop(cache_key, None)
+            self.cache.pop(instance, None)
             self.set(instance, value)
 
     def __delete__(self, instance):
-        cache_key = self.make_cache_key(instance)
-        self.cache.pop(cache_key, None)
+        self.cache.pop(instance, None)
         if self.delete is not None:
             self.delete(instance)
 
@@ -80,25 +75,6 @@ class cached_property(object):
     def deleter(self, deleter):
         self.delete = deleter
         return self
-
-    @staticmethod
-    def make_cache_key(instance):
-        return id(instance)
-
-    def make_new_destructor(self, old_destructor=None):
-        def __del__(inst):
-            if old_destructor is not None:
-                old_destructor(inst)
-            self.cache.pop(self.make_cache_key(inst), None)
-        return __del__
-
-    def update_instance_destructor(self, instance):
-        instance_class = type(instance)
-        if instance_class in self.updated_classes:
-            return
-        old_destructor = getattr(instance_class, '__del__', None)
-        instance_class.__del__ = self.make_new_destructor(old_destructor)
-        self.updated_classes.add(instance_class)
 
 
 class LazyType(type):
