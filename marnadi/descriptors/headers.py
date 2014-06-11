@@ -122,20 +122,9 @@ class Headers(Descriptor, collections.MutableMapping):
             for value in values
         )
 
-    @property
+    @cached_property
     def response_headers(self):
-        try:
-            return self.__dict__['response_headers']
-        except KeyError:
-            raise ValueError("Headers been already sent")
-
-    @response_headers.setter
-    def response_headers(self, value):
-        self.__dict__['response_headers'] = value
-
-    @response_headers.deleter
-    def response_headers(self):
-        del self.__dict__['response_headers']
+        raise ValueError("Headers been already sent")
 
     def append(self, response_header, value):
         if value is not None:
