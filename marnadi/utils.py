@@ -16,7 +16,7 @@ def metaclass(mcs):
         attrs = dict(cls.__dict__)
         try:
             if isinstance(cls.__slots__, str):
-                slots = (cls.__slots__, )
+                slots = cls.__slots__,
             else:
                 slots = cls.__slots__
             for slot in slots:

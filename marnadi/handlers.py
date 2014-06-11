@@ -39,7 +39,7 @@ class HandlerType(abc.ABCMeta):
                     for chunk in result
                 )
             else:
-                body = (to_bytes(result), )
+                body = to_bytes(result),
                 handler.headers.setdefault('Content-Length', len(body[0]))
             status = handler.status
             headers = list(handler.headers.get_headers_for_response())

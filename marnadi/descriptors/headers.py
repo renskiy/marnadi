@@ -77,12 +77,12 @@ class Headers(Descriptor, collections.MutableMapping):
                 (
                     self.environ.get('CONTENT_TYPE', ())
                     and
-                    (('CONTENT_TYPE', self.environ['CONTENT_TYPE']), )
+                    ('CONTENT_TYPE', self.environ['CONTENT_TYPE']),
                 ),
                 (
                     self.environ.get('CONTENT_LENGTH', ())
                     and
-                    (('CONTENT_LENGTH', self.environ['CONTENT_LENGTH']), )
+                    ('CONTENT_LENGTH', self.environ['CONTENT_LENGTH']),
                 ),
                 (
                     (name[5:], value)
