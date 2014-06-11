@@ -51,20 +51,23 @@ class cached_property(object):
             return self.cache[cache_key]
         except KeyError:
             result = self.cache[cache_key] = self.get(instance)
-            self.update_destructor(instance)
+            self.update_instance_destructor(instance)
         return result
 
     def __set__(self, instance, value):
+        cache_key = self.make_cache_key(instance)
         if self.set is None:
-            raise AttributeError("can't set attribute")
-        self.cache.pop(self.make_cache_key(instance), None)
-        self.set(instance, value)
+            self.cache[cache_key] = value
+            self.update_instance_destructor(instance)
+        else:
+            self.cache.pop(cache_key, None)
+            self.set(instance, value)
 
     def __delete__(self, instance):
-        if self.delete is None:
-            raise AttributeError("can't delete attribute")
-        self.delete(instance)
-        self.cache.pop(self.make_cache_key(instance), None)
+        cache_key = self.make_cache_key(instance)
+        self.cache.pop(cache_key, None)
+        if self.delete is not None:
+            self.delete(instance)
 
     def getter(self, getter):
         self.get = getter
@@ -89,7 +92,7 @@ class cached_property(object):
             self.cache.pop(self.make_cache_key(inst), None)
         return __del__
 
-    def update_destructor(self, instance):
+    def update_instance_destructor(self, instance):
         instance_class = type(instance)
         if instance_class in self.updated_classes:
             return
