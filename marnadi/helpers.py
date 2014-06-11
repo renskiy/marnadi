@@ -23,6 +23,8 @@ class RouteType(type):
 @metaclass(RouteType)
 class Route(object):
 
+    __slots__ = ('path', 'handler', 'args', 'kwargs')
+
     def __init__(self, path, handler, *args, **kwargs):
         self.path = path
         self.handler = Lazy(handler)
@@ -31,6 +33,8 @@ class Route(object):
 
 
 class Header(object):
+
+    __slots__ = ('values', 'attributes')
 
     def __init__(self, *values, **attributes):
         self.values = values
