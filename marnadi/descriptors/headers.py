@@ -28,6 +28,14 @@ class Headers(Descriptor, collections.MutableMapping):
             pass
         return value
 
+    __hash__ = Descriptor.__hash__
+
+    def __eq__(self, other):
+        return NotImplemented
+
+    def __ne__(self, other):
+        return NotImplemented
+
     ### request headers ###
 
     def __getitem__(self, request_header):

@@ -29,6 +29,14 @@ class Cookies(Descriptor, collections.MutableMapping):
         value.expires = copy.copy(self.expires)
         return value
 
+    __hash__ = Descriptor.__hash__
+
+    def __eq__(self, other):
+        return NotImplemented
+
+    def __ne__(self, other):
+        return NotImplemented
+
     def __setitem__(self, cookie, value):
         self.set(cookie, value)
         if value is None:
