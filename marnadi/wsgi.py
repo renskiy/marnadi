@@ -16,6 +16,8 @@ class Environ(collections.Mapping):
         environ (dict): original WSGI dict.
     """
 
+    __slots__ = '_environ',
+
     def __init__(self, environ):
         self._environ = environ
 
@@ -56,6 +58,8 @@ class App(object):
         routes (iterable): routes list each element of which can be either
             instance of :class:`Route` or sequence of one's arguments.
     """
+
+    __slots__ = 'routes',
 
     def __init__(self, routes=()):
         self.routes = self.compile_routes(routes)
