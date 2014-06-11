@@ -37,14 +37,19 @@ class Header(object):
         self.attributes = attributes
 
     def __str__(self):
-        return self.make_value(*self.values, **self.attributes)
+        return self.make_value()
 
-    @staticmethod
-    def make_value(*values, **attributes):
+    def __bytes__(self):
+        value = self.make_value()
+        if isinstance(value, bytes):  # python 2.x
+            return value
+        return value.encode(encoding='latin1')
+
+    def make_value(self):
         return '; '.join(itertools.chain(
-            values,
+            self.values,
             (
                 '%s=%s' % (attr_name, attr_value)
-                for attr_name, attr_value in attributes.items()
+                for attr_name, attr_value in self.attributes.items()
             ),
         ))
