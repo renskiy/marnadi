@@ -30,11 +30,9 @@ class Headers(Descriptor, collections.MutableMapping):
 
     __hash__ = Descriptor.__hash__
 
-    def __eq__(self, other):
-        return NotImplemented
+    __eq__ = Descriptor.__eq__
 
-    def __ne__(self, other):
-        return NotImplemented
+    __ne__ = Descriptor.__ne__
 
     ### request headers ###
 
