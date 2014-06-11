@@ -59,6 +59,8 @@ class HandlerType(abc.ABCMeta):
 @metaclass(HandlerType)
 class Handler(object):
 
+    __slots__ = 'environ',
+
     supported_http_methods = (
         'OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',
     )
