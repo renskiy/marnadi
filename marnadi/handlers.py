@@ -11,28 +11,16 @@ class HandlerType(abc.ABCMeta):
 
     logger = logging.getLogger('marnadi')
 
-    def __new__(mcs, name, bases, attributes):
-        cls = super(HandlerType, mcs).__new__(mcs, name, bases, attributes)
-        for attr_name, attr_value in attributes.items():
-            if isinstance(attr_value, descriptors.Descriptor):
-                cls.set_descriptor_name(descriptor=attr_value, name=attr_name)
-        return cls
-
-    def __setattr__(cls, attr_name, attr_value):
-        super(HandlerType, cls).__setattr__(attr_name, attr_value)
-        if isinstance(attr_value, descriptors.Descriptor):
-            cls.set_descriptor_name(descriptor=attr_value, name=attr_name)
-
     def __call__(cls, *args, **kwargs):
         if issubclass(cls, Handler) and cls.func is not None:
             return cls.func(*args, **kwargs)
         return super(HandlerType, cls).__call__(*args, **kwargs)
 
     def handle(cls, *args, **kwargs):
-        environ, start_response = yield
+        request, start_response = yield
         try:
-            handler = super(HandlerType, cls).__call__(environ)
-            result = handler(*args, **kwargs)
+            response = super(HandlerType, cls).__call__(request)
+            result = response(*args, **kwargs)
             if isinstance(result, types.GeneratorType):
                 body = (
                     to_bytes(chunk, error_callback=cls.logger.exception)
@@ -40,9 +28,12 @@ class HandlerType(abc.ABCMeta):
                 )
             else:
                 body = to_bytes(result),
-                handler.headers.setdefault('Content-Length', len(body[0]))
-            status = handler.status
-            headers = list(handler.headers.get_headers_for_response())
+                response.headers.setdefault('Content-Length', len(body[0]))
+            status = response.status
+            headers = [
+                (header, to_bytes(value, encoding='latin1'))
+                for header, value in response.headers.items()
+            ]
             start_response(status, headers)
             yield body
         except HttpError:
@@ -51,15 +42,11 @@ class HandlerType(abc.ABCMeta):
             cls.logger.exception(error)
             raise HttpError(exception=error)
 
-    @staticmethod
-    def set_descriptor_name(descriptor, name):
-        descriptor.name = name
-
 
 @metaclass(HandlerType)
 class Handler(object):
 
-    __slots__ = 'environ',
+    __slots__ = 'request',
 
     supported_http_methods = (
         'OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',
@@ -73,19 +60,11 @@ class Handler(object):
 
     cookies = descriptors.Cookies()
 
-    query = descriptors.Query()
-
-    data = descriptors.Data(
-        ('application/json', 'marnadi.mime.application.json.Decoder'),
-        ('application/x-www-form-urlencoded',
-            'marnadi.mime.application.x_www_form_urlencoded.Decoder'),
-    )
-
-    def __init__(self, environ):
-        self.environ = environ
+    def __init__(self, request):
+        self.request = request
 
     def __call__(self, *args, **kwargs):
-        request_method = self.environ.request_method
+        request_method = self.request.method
         if request_method not in self.supported_http_methods:
             raise HttpError(
                 '501 Not Implemented',

@@ -1,10 +1,10 @@
 import importlib
 json = importlib.import_module('json')  # import built-in module 'json'
 
-from marnadi import mime
+from .. import Decoder as BaseDecoder
 
 
-class Decoder(mime.Decoder):
+class Decoder(BaseDecoder):
 
     def __call__(self, stream, headers):
         encoding = headers.get_parsed('Content-Type')[1].get('charset', 'utf-8')

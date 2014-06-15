@@ -1,16 +1,19 @@
 import collections
 import copy
 import functools
+import itertools
+try:
+    from urllib import parse
+except ImportError:
+    import urlparse as parse
 
-from marnadi import Route, Handler
+from marnadi import Route, Handler, descriptors
 from marnadi.errors import HttpError
+from marnadi.utils import cached_property
 
 
-class Environ(collections.Mapping):
-    """WSGI environ object class.
-
-    Standard WSGI environ dict wrapped by class additionally allowing
-    access to dict values using instance attributes.
+class Request(collections.Mapping):
+    """WSGI request.
 
     Args:
         environ (dict): original WSGI dict.
@@ -20,15 +23,6 @@ class Environ(collections.Mapping):
 
     def __init__(self, environ):
         self._environ = environ
-
-    def __getattr__(self, attr_name):
-        try:
-            attr_value = self._environ.get(attr_name)
-            if attr_value is None:
-                return self._environ[attr_name.upper()]
-            return attr_value
-        except KeyError:
-            raise AttributeError
 
     def __getitem__(self, key):
         return self._environ[key]
@@ -40,12 +34,57 @@ class Environ(collections.Mapping):
         return len(self._environ)
 
     @property
-    def http_content_type(self):
-        return self.content_type
+    def input(self):
+        return self['wsgi.input']
 
     @property
-    def http_content_length(self):
-        return self.content_length
+    def method(self):
+        return self['REQUEST_METHOD']
+
+    @property
+    def path(self):
+        return self['PATH_INFO']
+
+    @cached_property
+    def headers(self):
+        return {
+            name.title().replace('_', '-'): value
+            for name, value in
+            itertools.chain(
+                (
+                    (env_key, self[env_key])
+                    for env_key in ('CONTENT_TYPE', 'CONTENT_LENGTH')
+                    if env_key in self
+                ),
+                (
+                    (env_key[5:], env_value)
+                    for env_key, env_value in self.items()
+                    if env_key.startswith('HTTP_')
+                ),
+            )
+        }
+
+    @cached_property
+    def query(self):
+        try:
+            return parse.parse_qsl(
+                self['QUERY_STRING'],
+                keep_blank_values=True,
+            )
+        except KeyError:
+            return ()
+
+    data = descriptors.Data(
+        (
+            'application/json',
+            'marnadi.descriptors.data.decoders.application.json.Decoder',
+        ),
+        (
+            'application/x-www-form-urlencoded',
+            'marnadi.descriptors.data.decoders' +
+            '.application.x_www_form_urlencoded.Decoder',
+        ),
+    )
 
 
 class App(object):
@@ -59,18 +98,18 @@ class App(object):
             instance of :class:`Route` or sequence of one's arguments.
     """
 
-    __slots__ = 'routes',
+    __slots__ = 'routes', 'request_wrapper'
 
-    def __init__(self, routes=()):
+    def __init__(self, routes=(), request_wrapper=Request):
         self.routes = self.compile_routes(routes)
+        self.request_wrapper = request_wrapper
 
     def __call__(self, environ, start_response):
         try:
-            environ = Environ(environ)
-            path = self.get_path(environ)
-            handler = self.get_handler(path)
+            request = self.request_wrapper(environ)
+            handler = self.get_handler(request.path)
             handler.send(None)  # start coroutine
-            return handler.send((environ, start_response))
+            return handler.send((request, start_response))
         except HttpError as error:
             start_response(error.status, error.headers)
             return error
@@ -111,10 +150,6 @@ class App(object):
     @functools.partial(lambda real, dummy: functools.wraps(dummy)(real), _route)
     def route(self, path, *args, **kwargs):
         pass  # this method is dummy, the real one is `_route`
-
-    @staticmethod
-    def get_path(environ):
-        return environ.path_info
 
     @staticmethod
     def get_match_subgroups(match_object):

@@ -2,65 +2,64 @@ import collections
 import copy
 import datetime
 import time
+import weakref
 
-from marnadi.descriptors import Descriptor
-from marnadi.utils import cached_property
+from marnadi.utils import cached_property, CachedDescriptor
 
 
-class Cookies(Descriptor, collections.MutableMapping):
+class CookieJar(collections.MutableMapping):
     """Cookies - dict-like object allowing to get/set HTTP cookies"""
 
-    def __init__(self, domain=None, path=None, expires=None,
-                 secure=False, http_only=True):
-        super(Cookies, self).__init__()
-        self._headers = None
+    __slots__ = ('_response', 'domain', 'path', 'expires', 'secure',
+                 'http_only')
+
+    def __init__(self, response, domain=None, path=None, expires=None,
+                 secure=False, http_only=True, ):
+        self._response = weakref.ref(response)
         self.domain = domain
         self.path = path
         self.expires = expires
         self.secure = secure
         self.http_only = http_only
 
-    def get_value(self, handler):
-        value = self.clone(
-            'domain', 'path', 'secure', 'http_only',
-            environ=handler.environ,
-            _headers=handler.headers,
-        )
-        value.expires = copy.copy(self.expires)
-        return value
+    __eq__ = object.__eq__
 
-    __hash__ = Descriptor.__hash__
-
-    __eq__ = Descriptor.__eq__
-
-    __ne__ = Descriptor.__ne__
+    __ne__ = object.__ne__
 
     def __setitem__(self, cookie, value):
         self.set(cookie, value)
         if value is None:
-            self.cookies.pop(cookie, None)
+            self.request_cookies.pop(cookie, None)
         else:
-            self.cookies[cookie] = value
+            self.request_cookies[cookie] = value
 
     def __delitem__(self, cookie):
         self.remove(cookie)
-        del self.cookies[cookie]
+        del self.request_cookies[cookie]
 
     def __getitem__(self, cookie):
-        return self.cookies[cookie]
+        return self.request_cookies[cookie]
 
     def __iter__(self):
-        return iter(self.cookies)
+        return iter(self.request_cookies)
 
     def __len__(self):
-        return len(self.cookies)
+        return len(self.request_cookies)
+
+    @property
+    def response(self):
+        response = self._response()
+        if response is not None:
+            return response
+        raise ValueError(
+            "CookieJar was attempted to use outside of response scope")
 
     @cached_property
-    def cookies(self):
+    def request_cookies(self):
         try:
             return dict(
                 cookie.strip().split('=', 1)
-                for cookie in self._headers['Cookie'].split(';')
+                for cookie in self.response.request.headers['Cookie'].split(';')
             )
         except KeyError:
             return {}
@@ -70,7 +69,7 @@ class Cookies(Descriptor, collections.MutableMapping):
             for cookie in cookies:
                 self.pop(cookie, None)
         else:
-            super(Cookies, self).clear()
+            super(CookieJar, self).clear()
 
     def remove(self, cookie, domain=None, path=None, secure=None,
                http_only=None):
@@ -108,4 +107,28 @@ class Cookies(Descriptor, collections.MutableMapping):
             cookie_params.append("Expires=%s" % expires)
         secure and cookie_params.append("Secure")
         http_only and cookie_params.append("HttpOnly")
-        self._headers.append('Set-Cookie', '; '.join(cookie_params))
+        self.response.headers.append('Set-Cookie', '; '.join(cookie_params))
+
+
+class Cookies(CachedDescriptor):
+
+    __slots__ = 'domain', 'path', 'expires', 'secure', 'http_only'
+
+    def __init__(self, domain=None, path=None, expires=None, secure=False,
+                 http_only=True):
+        super(Cookies, self).__init__()
+        self.domain = domain
+        self.path = path
+        self.expires = expires
+        self.secure = secure
+        self.http_only = http_only
+
+    def get_value(self, response):
+        return CookieJar(
+            response=response,
+            domain=self.domain,
+            path=self.path,
+            expires=copy.copy(self.expires),
+            secure=self.secure,
+            http_only=self.http_only,
+        )

@@ -4,7 +4,7 @@ import unittest
 
 from marnadi import Route, Handler
 from marnadi.errors import HttpError
-from marnadi.wsgi import Environ, App
+from marnadi.wsgi import Request, App
 
 _test_handler = Handler
 
@@ -19,34 +19,20 @@ _test_handler_seq_routes = (
 )
 
 
-class EnvironTestCase(unittest.TestCase):
+class RequestTestCase(unittest.TestCase):
 
     def test_attribute_getter(self):
-        original_environ = {
-            'input': 'input',
-            'CONTENT_TYPE': 'content_type',
-            'CONTENT_LENGTH': 'content_length',
-            'HTTP_COOKIES': 'cookies',
+        environ = {
+            'wsgi.input': 'input',
         }
-        environ = Environ(original_environ)
+        request = Request(environ)
 
-        self.assertEqual(getattr(environ, 'input'), 'input')
-        self.assertEqual(environ['input'], 'input')
-
-        self.assertEqual(environ.http_content_type, 'content_type')
-        self.assertEqual(environ.content_type, 'content_type')
-        self.assertEqual(environ['CONTENT_TYPE'], 'content_type')
-
-        self.assertEqual(environ.http_content_length, 'content_length')
-        self.assertEqual(environ.content_length, 'content_length')
-        self.assertEqual(environ['CONTENT_LENGTH'], 'content_length')
-
-        self.assertEqual(environ.http_cookies, 'cookies')
-        self.assertEqual(environ['HTTP_COOKIES'], 'cookies')
+        self.assertEqual(request.input, 'input')
+        self.assertEqual(request['wsgi.input'], 'input')
 
         with self.assertRaises(AttributeError):
-            getattr(environ, 'unknown_wsgi_key')
-        self.assertNotIn('unknown_wsgi_key', environ)
+            getattr(request, 'unknown_wsgi_key')
+        self.assertNotIn('unknown_wsgi_key', request)
 
 
 class AppTestCase(unittest.TestCase):
