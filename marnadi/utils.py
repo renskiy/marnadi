@@ -7,11 +7,6 @@ except NameError:
     unicode_str = str
 
 
-class Empty(object):
-
-    pass
-
-
 def metaclass(mcs):
     def _decorator(cls):
         attrs = dict(cls.__dict__)
@@ -30,39 +25,57 @@ def metaclass(mcs):
     return _decorator
 
 
-class cached_property(object):
+class CachedDescriptor(object):
+
+    __slots__ = 'cache'
+
+    def __init__(self):
+        self.cache = self.init_cache()
+
+    def __get__(self, instance, instance_type=None):
+        if instance is None:
+            return self  # static access
+        try:
+            return self.cache[instance]
+        except KeyError:
+            value = self.cache[instance] = self.get_value(instance)
+            return value
+
+    @staticmethod
+    def init_cache():
+        return weakref.WeakKeyDictionary()
+
+    def get_value(self, instance):
+        raise NotImplementedError
+
+
+class cached_property(CachedDescriptor):
 
     __slots__ = ('get', 'set', 'delete', '__doc__', 'cache')
 
     def __init__(self, fget=None, fset=None, fdel=None, doc=None):
+        super(cached_property, self).__init__()
         self.get = fget
         self.set = fset
         self.delete = fdel
         self.__doc__ = doc
-        self.cache = weakref.WeakKeyDictionary()
 
-    def __get__(self, instance, instance_type=None):
-        if instance is None:
-            return self
+    def get_value(self, instance):
         if self.get is None:
             raise AttributeError("unreadable attribute")
-        try:
-            return self.cache[instance]
-        except KeyError:
-            result = self.cache[instance] = self.get(instance)
-        return result
+        return self.get(instance)
 
     def __set__(self, instance, value):
         if self.set is None:
             self.cache[instance] = value
         else:
-            self.cache.pop(instance, None)
             self.set(instance, value)
+            self.cache.pop(instance, None)
 
     def __delete__(self, instance):
-        self.cache.pop(instance, None)
         if self.delete is not None:
             self.delete(instance)
+        self.cache.pop(instance, None)
 
     def getter(self, getter):
         self.get = getter
