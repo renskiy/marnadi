@@ -27,7 +27,7 @@ def metaclass(mcs):
 
 class CachedDescriptor(object):
 
-    __slots__ = 'cache'
+    __slots__ = 'cache',
 
     def __init__(self):
         self.cache = self.init_cache()
@@ -51,7 +51,7 @@ class CachedDescriptor(object):
 
 class cached_property(CachedDescriptor):
 
-    __slots__ = ('get', 'set', 'delete', '__doc__', 'cache')
+    __slots__ = 'get', 'set', 'delete', '__doc__'
 
     def __init__(self, fget=None, fset=None, fdel=None, doc=None):
         super(cached_property, self).__init__()
@@ -103,7 +103,7 @@ class LazyType(type):
 @metaclass(LazyType)
 class Lazy(object):
 
-    __slots__ = ('_path', '__weakref__')
+    __slots__ = '_path', '__weakref__'
 
     def __init__(self, path):
         self._path = path
