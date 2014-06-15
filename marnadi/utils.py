@@ -30,7 +30,7 @@ class CachedDescriptor(object):
     __slots__ = 'cache',
 
     def __init__(self):
-        self.cache = self.init_cache()
+        self.cache = weakref.WeakKeyDictionary()
 
     def __get__(self, instance, instance_type=None):
         if instance is None:
@@ -40,10 +40,6 @@ class CachedDescriptor(object):
         except KeyError:
             value = self.cache[instance] = self.get_value(instance)
             return value
-
-    @staticmethod
-    def init_cache():
-        return weakref.WeakKeyDictionary()
 
     def get_value(self, instance):
         raise NotImplementedError
