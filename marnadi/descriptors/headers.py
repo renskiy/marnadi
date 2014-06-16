@@ -5,7 +5,39 @@ import itertools
 from marnadi.utils import cached_property, CachedDescriptor
 
 
-class ResponseHeaders(collections.MutableMapping):
+class _Headers(collections.Mapping):
+
+    @cached_property
+    def _headers(self):
+        raise ValueError("This property must be set before using")
+
+    def __getitem__(self, header):
+        return self._headers[header.title()]
+
+    def __len__(self):
+        return len(self._headers)
+
+    def __iter__(self):
+        return iter(self._headers)
+
+    __hash__ = object.__hash__
+
+    __eq__ = object.__eq__
+
+    __ne__ = object.__ne__
+
+    def items(self):
+        for header, values in self._headers.items():
+            for value in values:
+                yield header, value
+
+    def values(self):
+        for values in self._headers.values():
+            for value in values:
+                yield value
+
+
+class ResponseHeaders(_Headers):
     """Headers - dict-like object which allow to read request
     and set response headers.
 
@@ -21,28 +53,9 @@ class ResponseHeaders(collections.MutableMapping):
         self._headers = default_headers
 
     @cached_property
-    def _headers(self):
-        raise ValueError("This property must be set before using")
-
-    @cached_property
     def _modified_headers(self):
         modified_headers = self._headers = copy.copy(self._headers)
         return modified_headers
-
-    __hash__ = object.__hash__
-
-    __eq__ = object.__eq__
-
-    __ne__ = object.__ne__
-
-    def __getitem__(self, header):
-        return self._headers[header.title()]
-
-    def __iter__(self):
-        return iter(self._headers)
-
-    def __len__(self):
-        return len(self._headers)
 
     def __delitem__(self, header):
         del self._modified_headers[header.title()]
@@ -69,11 +82,6 @@ class ResponseHeaders(collections.MutableMapping):
                     pass
         else:
             self._modified_headers.clear()
-
-    def items(self):
-        for header, values in self._headers.items():
-            for value in values:
-                yield header, value
 
     # def get_parsed(self, request_header, default=None):
     #     """Parses value and params of complex request headers.
@@ -105,27 +113,18 @@ class ResponseHeaders(collections.MutableMapping):
     #     )
 
 
-class Headers(CachedDescriptor, collections.Mapping):
+class Headers(CachedDescriptor, _Headers):
 
-    __slots__ = '_default_headers',
+    __slots__ = ()
 
     def __init__(self, *default_headers, **kw_default_headers):
         super(Headers, self).__init__()
-        self._default_headers = collections.defaultdict(list)
+        self._headers = collections.defaultdict(list)
         for header, value in itertools.chain(
             default_headers,
             kw_default_headers.items(),
         ):
-            self._default_headers[header.title()].append(value)
-
-    def __getitem__(self, header):
-        return self._default_headers[header.title()]
-
-    def __len__(self):
-        return len(self._default_headers)
-
-    def __iter__(self):
-        return iter(self._default_headers)
+            self._headers[header.title()].append(value)
 
     def get_value(self, instance):
-        return ResponseHeaders(self._default_headers)
+        return ResponseHeaders(default_headers=self._headers)
