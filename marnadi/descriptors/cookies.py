@@ -22,6 +22,8 @@ class CookieJar(collections.MutableMapping):
         self.secure = secure
         self.http_only = http_only
 
+    __hash__ = object.__hash__
+
     __eq__ = object.__eq__
 
     __ne__ = object.__ne__
