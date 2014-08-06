@@ -27,7 +27,7 @@ class Handler(object):
     cookies = descriptors.Cookies()
 
     def __new__(cls, *args, **kwargs):
-        if callable(cls.func):
+        if cls.func is not None:
             return cls.func(*args, **kwargs)
         return super(Handler, cls).__new__(cls, *args, **kwargs)
 
