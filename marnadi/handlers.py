@@ -7,19 +7,63 @@ from marnadi.errors import HttpError
 from marnadi.utils import metaclass, to_bytes
 
 
-class HandlerType(abc.ABCMeta):
+@metaclass(abc.ABCMeta)
+class Handler(object):
+
+    __slots__ = 'request',
 
     logger = logging.getLogger('marnadi')
 
-    def __call__(cls, *args, **kwargs):
-        if issubclass(cls, Handler) and cls.func is not None:
-            return cls.func(*args, **kwargs)
-        return super(HandlerType, cls).__call__(*args, **kwargs)
+    supported_http_methods = (
+        'OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',
+    )
 
+    status = '200 OK'
+
+    headers = descriptors.Headers(
+        ('Content-Type', Header('text/plain', charset='utf-8')),
+    )
+
+    cookies = descriptors.Cookies()
+
+    def __new__(cls, *args, **kwargs):
+        if callable(cls.func):
+            return cls.func(*args, **kwargs)
+        return super(Handler, cls).__new__(cls, *args, **kwargs)
+
+    def __init__(self, request):
+        self.request = request
+
+    def __call__(self, *args, **kwargs):
+        request_method = self.request.method
+        if request_method not in self.supported_http_methods:
+            raise HttpError(
+                '501 Not Implemented',
+                headers=(('Allow', ', '.join(self.allowed_http_methods)), )
+            )
+        callback = getattr(self, request_method.lower(), NotImplemented)
+        if callback is NotImplemented:
+            raise HttpError(
+                '405 Method Not Allowed',
+                headers=(('Allow', ', '.join(self.allowed_http_methods)), )
+            )
+        return callback(*args, **kwargs)
+
+    @classmethod
+    def get_instance(cls, *args, **kwargs):
+        if cls.func is None:
+            return cls(*args, **kwargs)
+        return type(
+            cls.__name__,
+            (cls, ),
+            dict(__new__=super(Handler, cls).__new__),
+        )(*args, **kwargs)
+
+    @classmethod
     def handle(cls, *args, **kwargs):
         request, start_response = yield
         try:
-            response = super(HandlerType, cls).__call__(request)
+            response = cls.get_instance(request)
             result = response(*args, **kwargs)
             if isinstance(result, types.GeneratorType):
                 body = (
@@ -41,42 +85,6 @@ class HandlerType(abc.ABCMeta):
         except Exception as error:
             cls.logger.exception(error)
             raise HttpError(exception=error)
-
-
-@metaclass(HandlerType)
-class Handler(object):
-
-    __slots__ = 'request',
-
-    supported_http_methods = (
-        'OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',
-    )
-
-    status = '200 OK'
-
-    headers = descriptors.Headers(
-        ('Content-Type', Header('text/plain', charset='utf-8')),
-    )
-
-    cookies = descriptors.Cookies()
-
-    def __init__(self, request):
-        self.request = request
-
-    def __call__(self, *args, **kwargs):
-        request_method = self.request.method
-        if request_method not in self.supported_http_methods:
-            raise HttpError(
-                '501 Not Implemented',
-                headers=(('Allow', ', '.join(self.allowed_http_methods)), )
-            )
-        callback = getattr(self, request_method.lower(), NotImplemented)
-        if callback is NotImplemented:
-            raise HttpError(
-                '405 Method Not Allowed',
-                headers=(('Allow', ', '.join(self.allowed_http_methods)), )
-            )
-        return callback(*args, **kwargs)
 
     @property
     def allowed_http_methods(self):
@@ -114,4 +122,4 @@ class Handler(object):
 
     delete = NotImplemented
 
-    func = None  # function decorated by `Handler.decorator`
+    func = None  # function decorated by `cls.decorator`
