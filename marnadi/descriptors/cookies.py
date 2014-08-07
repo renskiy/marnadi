@@ -10,9 +10,6 @@ from marnadi.utils import cached_property, CachedDescriptor
 class CookieJar(collections.MutableMapping):
     """Cookies - dict-like object allowing to get/set HTTP cookies"""
 
-    __slots__ = ('_response', 'domain', 'path', 'expires', 'secure',
-                 'http_only')
-
     def __init__(self, response, domain=None, path=None, expires=None,
                  secure=False, http_only=True, ):
         self._response = weakref.ref(response)

@@ -47,8 +47,6 @@ class ResponseHeaders(_Headers):
     particular method description.
     """
 
-    __slots__ = ()
-
     def __init__(self, default_headers):
         self._headers = default_headers
 
@@ -114,8 +112,6 @@ class ResponseHeaders(_Headers):
 
 
 class Headers(CachedDescriptor, _Headers):
-
-    __slots__ = ()
 
     def __init__(self, *default_headers, **kw_default_headers):
         super(Headers, self).__init__()

@@ -10,7 +10,7 @@ from marnadi.utils import metaclass, to_bytes
 @metaclass(abc.ABCMeta)
 class Handler(object):
 
-    __slots__ = 'request',
+    __slots__ = 'request', '__weakref__'
 
     logger = logging.getLogger('marnadi')
 
