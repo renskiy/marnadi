@@ -60,6 +60,14 @@ class Handler(object):
 
     @classmethod
     def handle(cls, *args, **kwargs):
+        """Handle request
+
+        Note:
+            Error responses can be customized by overriding this method.
+            For example your version may catch HttpError from original
+            implementation and reraise it with necessary content data
+            (which may be a HTML containing formatted stack trace).
+        """
         request, start_response = yield
         try:
             response = cls.get_instance(request)
