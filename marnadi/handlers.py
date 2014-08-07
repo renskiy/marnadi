@@ -10,7 +10,7 @@ from marnadi.utils import metaclass, to_bytes
 @metaclass(abc.ABCMeta)
 class Handler(object):
 
-    __slots__ = ()
+    __slots__ = 'request',
 
     logger = logging.getLogger('marnadi')
 
@@ -31,13 +31,16 @@ class Handler(object):
             return cls.func(*args, **kwargs)
         return super(Handler, cls).__new__(cls, *args, **kwargs)
 
-    def get_result(self, method, method_args, method_kwargs):
-        if method not in self.supported_http_methods:
+    def __init__(self, request):
+        self.request = request
+
+    def get_result(self, *method_args, **method_kwargs):
+        if self.request.method not in self.supported_http_methods:
             raise HttpError(
                 '501 Not Implemented',
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
             )
-        callback = getattr(self, method.lower(), NotImplemented)
+        callback = getattr(self, self.request.method.lower(), NotImplemented)
         if callback is NotImplemented:
             raise HttpError(
                 '405 Method Not Allowed',
@@ -59,12 +62,8 @@ class Handler(object):
     def handle(cls, *args, **kwargs):
         request, start_response = yield
         try:
-            response = cls.get_instance()
-            result = response.get_result(
-                request.method,
-                method_args=args,
-                method_kwargs=kwargs,
-            )
+            response = cls.get_instance(request)
+            result = response.get_result(*args, **kwargs)
             if isinstance(result, types.GeneratorType):
                 body = (
                     to_bytes(chunk, error_callback=cls.logger.exception)
