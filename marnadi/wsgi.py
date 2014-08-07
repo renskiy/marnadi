@@ -16,7 +16,7 @@ class Request(collections.Mapping):
     """WSGI request.
 
     Args:
-        environ (dict): original WSGI dict.
+        environ (dict): PEP-3333 WSGI environ dict.
     """
 
     __slots__ = '_environ',
@@ -98,15 +98,14 @@ class App(object):
             instance of :class:`Route` or sequence of one's arguments.
     """
 
-    __slots__ = 'routes', 'request_wrapper'
+    __slots__ = 'routes',
 
-    def __init__(self, routes=(), request_wrapper=Request):
+    def __init__(self, routes=()):
         self.routes = self.compile_routes(routes)
-        self.request_wrapper = request_wrapper
 
     def __call__(self, environ, start_response):
         try:
-            request = self.request_wrapper(environ)
+            request = Request(environ)
             handler = self.get_handler(request.path)
             handler.send(None)  # start coroutine
             return handler.send((request, start_response))
