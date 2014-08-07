@@ -29,7 +29,7 @@ class Handler(object):
     def __new__(cls, *args, **kwargs):
         if cls.func is not None:
             return cls.func(*args, **kwargs)
-        return super(Handler, cls).__new__(cls, *args, **kwargs)
+        return super(Handler, cls).__new__(cls)
 
     def __init__(self, request):
         self.request = request
