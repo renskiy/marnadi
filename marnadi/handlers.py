@@ -31,7 +31,7 @@ class Handler(object):
             return cls.func(*args, **kwargs)
         return super(Handler, cls).__new__(cls, *args, **kwargs)
 
-    def get_callback(self, method):
+    def get_result(self, method, method_args, method_kwargs):
         if method not in self.supported_http_methods:
             raise HttpError(
                 '501 Not Implemented',
@@ -43,7 +43,7 @@ class Handler(object):
                 '405 Method Not Allowed',
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
             )
-        return callback
+        return callback(*method_args, **method_kwargs)
 
     @classmethod
     def get_instance(cls, *args, **kwargs):
@@ -60,8 +60,11 @@ class Handler(object):
         request, start_response = yield
         try:
             response = cls.get_instance()
-            callback = response.get_callback(request.method)
-            result = callback(*args, **kwargs)
+            result = response.get_result(
+                request.method,
+                method_args=args,
+                method_kwargs=kwargs,
+            )
             if isinstance(result, types.GeneratorType):
                 body = (
                     to_bytes(chunk, error_callback=cls.logger.exception)
