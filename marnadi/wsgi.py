@@ -71,6 +71,21 @@ class Request(collections.Mapping):
             )
         }
 
+    def split_header(self, header):
+        """Splits header into value and options."""
+        try:
+            full_value = self.headers[header]
+            parts = iter(full_value.split(';'))
+            value = next(parts)
+            return value, dict(
+                (lambda p, v='': (p.strip(), v.strip('"')))(
+                    *param.split('=', 1)
+                )
+                for param in parts
+            )
+        except KeyError:
+            return None, {}
+
     @cached_property
     def query(self):
         try:

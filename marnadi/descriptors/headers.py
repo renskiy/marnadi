@@ -86,35 +86,6 @@ class ResponseHeaders(_Headers):
         else:
             self._modified_headers.clear()
 
-    # def get_parsed(self, request_header, default=None):
-    #     """Parses value and params of complex request headers.
-    #
-    #     Args:
-    #         request_header (str): header name.
-    #
-    #     Kwargs:
-    #         default: default header value.
-    #
-    #     Returns:
-    #         (str, dict). Header value and params dict.
-    #
-    #     .. warning::
-    #         Beware of using header params as kwargs since these params
-    #         may be used for data injection into your callable entities.
-    #         E.g. `some_function(**params)`.
-    #     """
-    #
-    #     try:
-    #         raw_value = self[request_header]
-    #     except KeyError:
-    #         return default, {}
-    #     parts = iter(raw_value.split(';'))
-    #     value = next(parts)
-    #     return value, dict(
-    #         (lambda p, v='': (p, v.strip('"')))(*param.split('=', 1))
-    #         for param in filter(str.strip, parts)
-    #     )
-
 
 class Headers(CachedDescriptor, _Headers):
 
