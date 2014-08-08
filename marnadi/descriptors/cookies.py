@@ -10,6 +10,10 @@ from marnadi.utils import cached_property, CachedDescriptor
 class CookieJar(collections.MutableMapping):
     """Cookies - dict-like object allowing to get/set HTTP cookies"""
 
+    if hasattr(collections.MutableMapping, '__slots__'):
+        __slots__ = ('_response', 'domain', 'path', 'expires', 'secure',
+                     'http_only', '__weakref__')
+
     def __init__(self, response, domain=None, path=None, expires=None,
                  secure=False, http_only=True, ):
         self._response = weakref.ref(response)
@@ -50,8 +54,7 @@ class CookieJar(collections.MutableMapping):
         response = self._response()
         if response is not None:
             return response
-        raise ValueError(
-            "CookieJar was attempted to use outside of response scope")
+        raise ValueError("CookieJar used outside of response scope")
 
     @cached_property
     def request_cookies(self):

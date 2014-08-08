@@ -19,6 +19,9 @@ class Request(collections.Mapping):
         environ (dict): PEP-3333 WSGI environ dict.
     """
 
+    if hasattr(collections.Mapping, '__slots__'):
+        __slots__ = '_environ', '__weakref__'
+
     __hash__ = object.__hash__
 
     __eq__ = object.__eq__

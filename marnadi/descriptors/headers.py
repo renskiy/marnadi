@@ -7,6 +7,9 @@ from marnadi.utils import cached_property, CachedDescriptor
 
 class _Headers(collections.Mapping):
 
+    if hasattr(collections.Mapping, '__slots__'):
+        __slots__ = '__weakref__',
+
     @cached_property
     def _headers(self):
         raise ValueError("This property must be set before using")
@@ -46,6 +49,8 @@ class ResponseHeaders(_Headers):
     allow to modify response headers. For more information see
     particular method description.
     """
+
+    __slots__ = ()
 
     def __init__(self, default_headers):
         self._headers = default_headers
@@ -112,6 +117,8 @@ class ResponseHeaders(_Headers):
 
 
 class Headers(CachedDescriptor, _Headers):
+
+    __slots__ = ()
 
     def __init__(self, *default_headers, **kw_default_headers):
         super(Headers, self).__init__()
