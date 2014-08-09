@@ -30,7 +30,6 @@ class Data(CachedDescriptor, collections.Mapping):
         return len(self._content_decoders)
 
     def get_value(self, request):
-        stream = request.input
-        content_type = request.get('CONTENT_TYPE', '').split(';', 1)[0]
-        decoder = self._content_decoders.get(content_type, decoders.Decoder)
-        return decoder(stream, request.headers)
+        content_type, _ = request.split_header('Content-Type')
+        decoder = self.get(content_type, decoders.Decoder)
+        return decoder(request)

@@ -104,7 +104,7 @@ class Request(collections.Mapping):
         (
             'application/x-www-form-urlencoded',
             'marnadi.descriptors.data.decoders' +
-            '.application.x_www_form_urlencoded.Decoder',
+            '.application.x_www_form_urlencoded.decoder',
         ),
     )
 
