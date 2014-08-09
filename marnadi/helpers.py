@@ -7,8 +7,7 @@ class RouteType(type):
 
     def __call__(cls, *args, **kwargs):
         if len(args) < 2:
-            raise ValueError(
-                "`%s` needs minimum two arguments" % cls.__name__)
+            raise TypeError("needs two arguments")
         _kwargs = {}
         for kwarg in ('path', 'handler'):
             try:

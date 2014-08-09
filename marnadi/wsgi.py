@@ -150,7 +150,7 @@ class App(object):
             route.handler = self.compile_routes(route.handler)
         except TypeError:
             raise TypeError(
-                "Route's handler must be either subclass of Handler "
+                "Route's handler must be either subclass of Handler " +
                 "or sequence of nested subroutes")
         return route
 
@@ -163,8 +163,8 @@ class App(object):
         try:
             path, args = args[0], args[1:]
         except IndexError:
-            raise ValueError(
-                "Requires path as first argument "
+            raise TypeError(
+                "Requires path as first argument " +
                 "(it must be an arg, not kwarg)")
         return _decorator
 
