@@ -127,13 +127,17 @@ class App(object):
 
     def __call__(self, environ, start_response):
         try:
-            request = Request(environ)
+            request = self.make_request_object(environ)
             handler = self.get_handler(request.path)
             handler.send(None)  # start coroutine
             return handler.send((request, start_response))
         except HttpError as error:
             start_response(error.status, error.headers)
             return error
+
+    @staticmethod
+    def make_request_object(environ):
+        return Request(environ)
 
     def compile_routes(self, routes):
         return list(map(self.compile_route, routes))
