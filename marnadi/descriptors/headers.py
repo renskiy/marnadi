@@ -5,14 +5,10 @@ import itertools
 from marnadi.utils import cached_property, CachedDescriptor
 
 
-class _Headers(collections.Mapping):
+class HeadersMixin(collections.Mapping):
 
     if hasattr(collections.Mapping, '__slots__'):
         __slots__ = '__weakref__',
-
-    @cached_property
-    def _headers(self):
-        raise ValueError("This property must be set before using")
 
     def __getitem__(self, header):
         return self._headers[header.title()]
@@ -29,6 +25,10 @@ class _Headers(collections.Mapping):
 
     __ne__ = object.__ne__
 
+    @cached_property
+    def _headers(self):
+        raise ValueError("This property must be set before using")
+
     def items(self):
         for header, values in self._headers.items():
             for value in values:
@@ -40,15 +40,7 @@ class _Headers(collections.Mapping):
                 yield value
 
 
-class ResponseHeaders(_Headers):
-    """Headers - dict-like object which allow to read request
-    and set response headers.
-
-    All methods are divided into two groups: getters and setters where
-    getters usually provide access to request headers and setters
-    allow to modify response headers. For more information see
-    particular method description.
-    """
+class ResponseHeaders(HeadersMixin, collections.MutableMapping):
 
     __slots__ = ()
 
@@ -87,7 +79,7 @@ class ResponseHeaders(_Headers):
             self._modified_headers.clear()
 
 
-class Headers(CachedDescriptor, _Headers):
+class Headers(CachedDescriptor, HeadersMixin):
 
     __slots__ = ()
 
