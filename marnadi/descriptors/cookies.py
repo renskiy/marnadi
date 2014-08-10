@@ -63,7 +63,7 @@ class CookieJar(collections.MutableMapping):
                 cookie.strip().split('=', 1)
                 for cookie in self.response.request.headers['Cookie'].split(';')
             )
-        except KeyError:
+        except (KeyError, ValueError):
             return {}
 
     def clear(self, *cookies):
