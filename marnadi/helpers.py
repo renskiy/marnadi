@@ -1,30 +1,13 @@
-from marnadi.utils import metaclass, Lazy
+from marnadi.utils import Lazy
 
 
-class RouteType(type):
-
-    def __call__(cls, *args, **kwargs):
-        if len(args) < 2:
-            raise TypeError("needs two arguments")
-        _kwargs = {}
-        for kwarg in ('path', 'handler'):
-            try:
-                _kwargs[kwarg] = kwargs.pop(kwarg)
-            except KeyError:
-                pass
-        route = super(RouteType, cls).__call__(*args, **kwargs)
-        route.kwargs.update(_kwargs)
-        return route
-
-
-@metaclass(RouteType)
 class Route(object):
 
     __slots__ = 'path', 'handler', 'args', 'kwargs'
 
-    def __init__(self, path, handler, *args, **kwargs):
-        self.path = path
-        self.handler = Lazy(handler)
+    def __init__(self, _path, _handler, *args, **kwargs):
+        self.path = _path
+        self.handler = Lazy(_handler)
         self.args = args
         self.kwargs = kwargs
 

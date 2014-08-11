@@ -161,23 +161,13 @@ class App(object):
                 "or sequence of nested subroutes")
         return route
 
-    def _route(self, *args, **kwargs):
+    def route(self, _path, *args, **kwargs):
         def _decorator(handler):
-            route = Route(path, handler, *args, **kwargs)
+            route = Route(_path, handler, *args, **kwargs)
             compiled_route = self.compile_route(route)
             self.routes.append(compiled_route)
             return handler
-        try:
-            path, args = args[0], args[1:]
-        except IndexError:
-            raise TypeError(
-                "Requires path as first argument " +
-                "(it must be an arg, not kwarg)")
         return _decorator
-
-    @functools.partial(lambda real, dummy: functools.wraps(dummy)(real), _route)
-    def route(self, path, *args, **kwargs):
-        pass  # this method is dummy, the real one is `_route`
 
     @staticmethod
     def get_match_subgroups(match_object):
