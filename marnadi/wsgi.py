@@ -7,7 +7,7 @@ try:
 except ImportError:
     import urlparse as parse
 
-from marnadi import Route, Handler, descriptors
+from marnadi import Route, Handler, descriptors, Header
 from marnadi.errors import HttpError
 from marnadi.utils import cached_property
 
@@ -53,6 +53,24 @@ class Request(collections.Mapping):
         return self['PATH_INFO']
 
     @cached_property
+    def content_type(self):
+        try:
+            parts = iter(self['CONTENT_TYPE'].split(';'))
+            return Header(next(parts).strip(), **dict(
+                map(str.strip, option.split('='))
+                for option in parts
+            ))
+        except KeyError:
+            raise AttributeError("content_type not provided")
+
+    @property
+    def content_length(self):
+        try:
+            return int(self['CONTENT_LENGTH'])
+        except KeyError:
+            raise AttributeError("content_length not provided")
+
+    @cached_property
     def headers(self):
         return {
             name.title().replace('_', '-'): value
@@ -70,21 +88,6 @@ class Request(collections.Mapping):
                 ),
             )
         }
-
-    def split_header(self, header):
-        """Splits header into value and options."""
-        try:
-            full_value = self.headers[header]
-            parts = iter(full_value.split(';'))
-            value = next(parts)
-            return value, dict(
-                (lambda p, v='': (p.strip(), v.strip('"')))(
-                    *param.split('=', 1)
-                )
-                for param in parts
-            )
-        except KeyError:
-            return None, {}
 
     @cached_property
     def query(self):

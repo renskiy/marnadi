@@ -9,9 +9,8 @@ class Decoder(BaseDecoder):
     __slots__ = ('stream', 'encoding')
 
     def __call__(self, request):
-        _, options = request.split_header('Content-Type')
+        self.encoding = request.content_type.params.get('charset', 'utf-8')
         self.stream = request.input
-        self.encoding = options.get('charset', 'utf-8')
         return json.load(self)
 
     def read(self, *args, **kwargs):
