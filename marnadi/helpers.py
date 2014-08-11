@@ -33,11 +33,13 @@ class Route(object):
 
 class Header(object):
 
-    __slots__ = 'values', 'attributes'
+    __slots__ = 'value', 'params'
 
-    def __init__(self, *values, **attributes):
-        self.values = values
-        self.attributes = attributes
+    def __init__(self, *value, **params):
+        if len(value) != 1:
+            raise TypeError("single header should contain single value")
+        self.value = value[0]
+        self.params = params
 
     def __str__(self):
         return self.make_value()
@@ -49,10 +51,12 @@ class Header(object):
         return value.encode(encoding='latin1')
 
     def make_value(self):
-        return '; '.join(itertools.chain(
-            self.values,
-            (
+        if not self.params:
+            return str(self.value)
+        return '{value}; {params}'.format(
+            value=self.value,
+            params='; '.join(
                 '%s=%s' % (attr_name, attr_value)
-                for attr_name, attr_value in self.attributes.items()
+                for attr_name, attr_value in self.params.items()
             ),
-        ))
+        )
