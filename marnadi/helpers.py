@@ -33,10 +33,8 @@ class Header(object):
 
     __slots__ = 'value', 'params'
 
-    def __init__(self, *value, **params):
-        if len(value) != 1:
-            raise TypeError("single header should contain single value")
-        self.value = value[0]
+    def __init__(self, _value, **params):
+        self.value = _value
         self.params = params
 
     def __str__(self):
