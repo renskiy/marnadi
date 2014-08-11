@@ -61,14 +61,14 @@ class Request(collections.Mapping):
                 for option in parts
             ))
         except KeyError:
-            raise AttributeError("content_type not provided")
+            raise AttributeError("content_type is not provided")
 
     @property
     def content_length(self):
         try:
             return int(self['CONTENT_LENGTH'])
         except KeyError:
-            raise AttributeError("content_length not provided")
+            raise AttributeError("content_length is not provided")
 
     @cached_property
     def headers(self):
