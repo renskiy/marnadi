@@ -19,22 +19,6 @@ _test_handler_seq_routes = (
 )
 
 
-class RequestTestCase(unittest.TestCase):
-
-    def test_attribute_getter(self):
-        environ = {
-            'wsgi.input': 'input',
-        }
-        request = Request(environ)
-
-        self.assertEqual(request.input, 'input')
-        self.assertEqual(request['wsgi.input'], 'input')
-
-        with self.assertRaises(AttributeError):
-            getattr(request, 'unknown_wsgi_key')
-        self.assertNotIn('unknown_wsgi_key', request)
-
-
 class AppTestCase(unittest.TestCase):
 
     @mock.patch.object(Response, 'handle')
