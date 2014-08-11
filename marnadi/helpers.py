@@ -1,5 +1,3 @@
-import itertools
-
 from marnadi.utils import metaclass, Lazy
 
 
