@@ -2,20 +2,20 @@ import mock
 import re
 import unittest
 
-from marnadi import Route, Handler
+from marnadi import Route, Response
 from marnadi.errors import HttpError
 from marnadi.wsgi import Request, App
 
-_test_handler = Handler
+_test_handler = Response
 
 _test_handler_seq = (
-    ('a', Handler),
-    ('b', Handler),
+    ('a', Response),
+    ('b', Response),
 )
 
 _test_handler_seq_routes = (
-    Route('a', Handler),
-    Route('b', Handler),
+    Route('a', Response),
+    Route('b', Response),
 )
 
 
@@ -37,7 +37,7 @@ class RequestTestCase(unittest.TestCase):
 
 class AppTestCase(unittest.TestCase):
 
-    @mock.patch.object(Handler, 'handle')
+    @mock.patch.object(Response, 'handle')
     def _get_handler_args_parametrized_test_case(
         self,
         mocked,
@@ -53,8 +53,8 @@ class AppTestCase(unittest.TestCase):
 
         mocked.side_effect = side_effect
         routes = (
-            (handler_path, nested_handler_path is None and Handler or (
-                (nested_handler_path, Handler),
+            (handler_path, nested_handler_path is None and Response or (
+                (nested_handler_path, Response),
             )),
         )
         app = App(routes=routes)
@@ -177,11 +177,11 @@ class AppTestCase(unittest.TestCase):
         error = context.exception
         self.assertEqual('404 Not Found', error.status)
 
-    @Handler.decorator
+    @Response.decorator
     def expected_handler(self, *args, **kwargs):
         pass
 
-    @Handler.decorator
+    @Response.decorator
     def unexpected_handler(self, *args, **kwargs):
         pass
 
@@ -582,7 +582,7 @@ class AppTestCase(unittest.TestCase):
         self.assertEqual(1, len(app.routes))
         route = app.routes[0]
         self.assertIsInstance(route, Route)
-        self.assertTrue(issubclass(route.handler, Handler))
+        self.assertTrue(issubclass(route.handler, Response))
 
     def test_compile_routes__tuple_lazy_seq(self):
         app = App(routes=(
@@ -649,7 +649,7 @@ class AppTestCase(unittest.TestCase):
             App(routes=routes)
         self.assertIn('subclass of Handler', str(context.exception))
 
-    @mock.patch.object(Handler, 'handle')
+    @mock.patch.object(Response, 'handle')
     def test_route(self, mocked):
         def side_effect(*args, **kwargs):
             self.assertTupleEqual(('arg', ), args)
@@ -660,11 +660,11 @@ class AppTestCase(unittest.TestCase):
 
         mocked.side_effect = side_effect
         app = App()
-        app.route('/', 'arg', kwarg='kwarg', path='conflict_name')(Handler)
+        app.route('/', 'arg', kwarg='kwarg', path='conflict_name')(Response)
         app.get_handler('/')
         self.assertEqual(1, mocked.call_count)
 
-    @mock.patch.object(Handler, 'handle')
+    @mock.patch.object(Response, 'handle')
     def test_route__routes(self, mocked):
         def side_effect(*args, **kwargs):
             self.assertTupleEqual(('arg1', 'arg2'), args)
@@ -676,7 +676,7 @@ class AppTestCase(unittest.TestCase):
         mocked.side_effect = side_effect
         app = App()
         routes = (
-            Route('path', Handler, 'arg2', kwarg2='kwarg2', kwarg=2),
+            Route('path', Response, 'arg2', kwarg2='kwarg2', kwarg=2),
         )
         app.route('/', 'arg1', kwarg1='kwarg1', kwarg=1)(routes)
         app.get_handler('/path')

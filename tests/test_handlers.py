@@ -1,6 +1,6 @@
 import unittest
 
-from marnadi import Handler
+from marnadi import Response
 from marnadi.wsgi import Request, App
 
 
@@ -28,7 +28,7 @@ class HandlerTestCase(unittest.TestCase):
 
     def test_handler_as_function(self):
         routes = (
-            ('/', Handler.decorator(lambda: 'hello')),
+            ('/', Response.decorator(lambda: 'hello')),
         )
         environ = Request(dict(
             REQUEST_METHOD='GET',
@@ -44,7 +44,7 @@ class HandlerTestCase(unittest.TestCase):
         )
 
     def test_handler_as_class(self):
-        MyHadler = type('MyHandler', (Handler, ), dict(
+        MyHadler = type('MyHandler', (Response, ), dict(
             get=lambda *args: 'hello'
         ))
         routes = (

@@ -8,7 +8,7 @@ from marnadi.utils import metaclass, to_bytes
 
 
 @metaclass(abc.ABCMeta)
-class Handler(object):
+class Response(object):
 
     __slots__ = 'request', '__weakref__'
 
@@ -29,7 +29,7 @@ class Handler(object):
     def __new__(cls, *args, **kwargs):
         if cls.func is not None:
             return cls.func(*args, **kwargs)
-        return super(Handler, cls).__new__(cls)
+        return super(Response, cls).__new__(cls)
 
     def __init__(self, request):
         self.request = request
@@ -55,12 +55,12 @@ class Handler(object):
         return type(
             cls.__name__,
             (cls, ),
-            dict(__new__=super(Handler, cls).__new__),
+            dict(__new__=super(Response, cls).__new__),
         )(*args, **kwargs)
 
     @classmethod
     def handle(cls, *args, **kwargs):
-        """Handle request
+        """Handle request.
 
         Note:
             Error responses can be customized by overriding this method.
