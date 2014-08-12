@@ -181,7 +181,7 @@ class App(object):
                 # use it only if you're sure
                 # (see tests.test_wsgi.test_get_handler__non_trivial_situation)
                 args = list(args)
-                for kwarg in kwargs.itervalues():
+                for kwarg in kwargs.values():
                     args.remove(kwarg)
         return args, kwargs
 
