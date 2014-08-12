@@ -83,7 +83,7 @@ class Response(object):
             start_response(
                 response.status,
                 [
-                    (header, to_bytes(value, encoding='latin1'))
+                    (header, str(value))
                     for header, value in response.headers.items()
                 ],
             )
