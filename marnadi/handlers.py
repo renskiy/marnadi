@@ -34,7 +34,7 @@ class Response(object):
     def __init__(self, request):
         self.request = request
 
-    def get_result(self, *method_args, **method_kwargs):
+    def __call__(self, *method_args, **method_kwargs):
         if self.request.method not in self.supported_http_methods:
             raise HttpError(
                 '501 Not Implemented',
@@ -59,33 +59,34 @@ class Response(object):
         )(*args, **kwargs)
 
     @classmethod
-    def handle(cls, *args, **kwargs):
-        """Handle request.
+    def start(cls, *args, **kwargs):
+        """Start response with given params.
 
         Note:
             Error responses can be customized by overriding this method.
-            For example your version may catch HttpError from original
+            For example your version may catch `HttpError` from original
             implementation and reraise it with necessary content data
             (which may be a HTML containing formatted stack trace).
         """
         request, start_response = yield
         try:
             response = cls.get_instance(request)
-            result = response.get_result(*args, **kwargs)
+            result = response(*args, **kwargs)
             if isinstance(result, types.GeneratorType):
                 body = (
                     to_bytes(chunk, error_callback=cls.logger.exception)
                     for chunk in result
                 )
             else:
-                body = to_bytes(result),
+                body = (to_bytes(result), )
                 response.headers.setdefault('Content-Length', len(body[0]))
-            status = response.status
-            headers = [
-                (header, to_bytes(value, encoding='latin1'))
-                for header, value in response.headers.items()
-            ]
-            start_response(status, headers)
+            start_response(
+                response.status,
+                [
+                    (header, to_bytes(value, encoding='latin1'))
+                    for header, value in response.headers.items()
+                ],
+            )
             yield body
         except HttpError:
             raise

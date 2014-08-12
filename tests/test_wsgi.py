@@ -21,7 +21,7 @@ _test_handler_seq_routes = (
 
 class AppTestCase(unittest.TestCase):
 
-    @mock.patch.object(Response, 'handle')
+    @mock.patch.object(Response, 'start')
     def _get_handler_args_parametrized_test_case(
         self,
         mocked,
@@ -169,8 +169,8 @@ class AppTestCase(unittest.TestCase):
     def unexpected_handler(self, *args, **kwargs):
         pass
 
-    @mock.patch.object(unexpected_handler, 'handle')
-    @mock.patch.object(expected_handler, 'handle')
+    @mock.patch.object(unexpected_handler, 'start')
+    @mock.patch.object(expected_handler, 'start')
     def _get_handler_parametrized_test_case(
         self,
         expected,
@@ -633,7 +633,7 @@ class AppTestCase(unittest.TestCase):
             App(routes=routes)
         self.assertIn('subclass of Handler', str(context.exception))
 
-    @mock.patch.object(Response, 'handle')
+    @mock.patch.object(Response, 'start')
     def test_route(self, mocked):
         def side_effect(*args, **kwargs):
             self.assertTupleEqual(('arg', ), args)
@@ -648,7 +648,7 @@ class AppTestCase(unittest.TestCase):
         app.get_handler('/')
         self.assertEqual(1, mocked.call_count)
 
-    @mock.patch.object(Response, 'handle')
+    @mock.patch.object(Response, 'start')
     def test_route__routes(self, mocked):
         def side_effect(*args, **kwargs):
             self.assertTupleEqual(('arg1', 'arg2'), args)

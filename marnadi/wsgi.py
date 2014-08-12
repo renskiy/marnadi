@@ -1,6 +1,5 @@
 import collections
 import copy
-import functools
 import itertools
 try:
     from urllib import parse
@@ -217,5 +216,5 @@ class App(object):
                 except HttpError:
                     continue
             if not rest_path:
-                return route.handler.handle(*_args, **_kwargs)
+                return route.handler.start(*_args, **_kwargs)
         raise HttpError('404 Not Found')
