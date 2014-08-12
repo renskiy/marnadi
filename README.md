@@ -7,13 +7,13 @@ Hello World
 -------
 ```python
 from marnadi.wsgi import App
-from marnadi import Handler
+from marnadi import Response
 
 application = App()
 
 
 @application.route('/')
-@Handler.decorator
+@Response.decorator
 def hello():
     return "Hello World"
 
@@ -27,32 +27,21 @@ More Complex Example
 ```python
 import re
 from marnadi.wsgi import App
-from marnadi import Handler, Route as r
+from marnadi import Response
 
 
-class MyHandler(Handler):
+class MyResponse(Response):
 
     supported_http_methods = ('OPTIONS', 'GET', 'POST')
 
     # "GET" request handler
-    def get(self, receiver, sender=None):
-        return 'receiver is %s, sender is %s' % (receiver, sender)
-
-
-# "POST" request handler
-# (that is because `get` and `options` are defined in MyHandler and Handler,
-# thus and because of MyHandler's `supported_http_methods` it will handle
-# only "POST" requests)
-@MyHandler.decorator
-def who_is_foo(foo):
-    return "foo is %s" % foo
+    def get(self, foo, bar=None):
+        return 'foo is {foo}, bar is {bar}'.format(foo=foo, bar=bar)
 
 routes=(
-    ('/', Handler),  # base handler implements only "OPTIONS" method
-    r('/foo', who_is_foo, foo='bar'),
-    (re.compile(r'/to/(?P<receiver>\w+)/?'), (
-        ('', MyHandler),
-        (re.compile(r'from/(?P<sender>\w+)$'), MyHandler),
+    (re.compile(r'/(?P<foo>\w+)/'), (
+        ('', MyResponse),
+        (re.compile(r'(?P<bar>\w+)/$'), MyResponse),
     )),
 )
 
