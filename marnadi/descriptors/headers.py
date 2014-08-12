@@ -1,157 +1,96 @@
 import collections
+import copy
 import itertools
 
-from marnadi.descriptors import Descriptor
-from marnadi.utils import cached_property, to_bytes
+from marnadi.utils import cached_property, CachedDescriptor
 
 
-class Headers(Descriptor, collections.MutableMapping):
-    """Headers - dict-like object which allow to read request
-    and set response headers.
+class HeadersMixin(collections.Mapping):
 
-    All methods are divided into two groups: getters and setters where
-    getters usually provide access to request headers and setters
-    allow to modify response headers. For more information see
-    particular method description.
-    """
+    if hasattr(collections.Mapping, '__slots__'):
+        __slots__ = '__weakref__',
 
-    def __init__(self, *default_headers):
-        super(Headers, self).__init__()
-        self.response_headers = collections.defaultdict(list)
-        self.extend(*default_headers)
-
-    def get_value(self, handler):
-        value = super(Headers, self).get_value(handler)
-        try:
-            value.response_headers = self.response_headers.copy()
-        except ValueError:
-            pass
-        return value
-
-    __hash__ = Descriptor.__hash__
-
-    __eq__ = Descriptor.__eq__
-
-    __ne__ = Descriptor.__ne__
-
-    ### request headers ###
-
-    def __getitem__(self, request_header):
-        return self.request_headers[request_header]
-
-    def __iter__(self):
-        return iter(self.request_headers)
+    def __getitem__(self, header):
+        return self._headers[header.title()]
 
     def __len__(self):
-        return len(self.request_headers)
+        return len(self._headers)
 
-    def get_parsed(self, request_header, default=None):
-        """Parses value and params of complex request headers.
+    def __iter__(self):
+        return iter(self._headers)
 
-        Args:
-            request_header (str): header name.
+    __hash__ = object.__hash__
 
-        Kwargs:
-            default: default header value.
+    __eq__ = object.__eq__
 
-        Returns:
-            (str, dict). Header value and params dict.
-
-        .. warning::
-            Beware of using header params as kwargs since these params
-            may be used for data injection into your callable entities.
-            E.g. `some_function(**params)`.
-        """
-
-        try:
-            raw_value = self[request_header]
-        except KeyError:
-            return default, {}
-        parts = iter(raw_value.split(';'))
-        value = next(parts)
-        return value, dict(
-            (lambda p, v='': (p, v.strip('"')))(*param.split('=', 1))
-            for param in filter(str.strip, parts)
-        )
+    __ne__ = object.__ne__
 
     @cached_property
-    def request_headers(self):
-        return {
-            name.title().replace('_', '-'): value
-            for name, value in
-            itertools.chain(
-                (
-                    self.environ.get('CONTENT_TYPE', ())
-                    and
-                    ('CONTENT_TYPE', self.environ['CONTENT_TYPE']),
-                ),
-                (
-                    self.environ.get('CONTENT_LENGTH', ())
-                    and
-                    ('CONTENT_LENGTH', self.environ['CONTENT_LENGTH']),
-                ),
-                (
-                    (name[5:], value)
-                    for name, value in self.environ.items()
-                    if name.startswith('HTTP_')
-                )
-            )
-        }
+    def _headers(self):
+        raise ValueError("This property must be set before using")
 
-    def pop(self, key, *args):
-        raise NotImplementedError
+    def items(self):
+        for header, values in self._headers.items():
+            for value in values:
+                yield header, value
 
-    def popitem(self):
-        raise NotImplementedError
+    def values(self):
+        for values in self._headers.values():
+            for value in values:
+                yield value
 
-    ### response headers ###
 
-    def __delitem__(self, response_header):
-        del self.response_headers[response_header.title()]
+class ResponseHeaders(HeadersMixin, collections.MutableMapping):
 
-    def __setitem__(self, response_header, value):
-        self.response_headers[response_header.title()] = [value]
+    __slots__ = ()
 
-    def get_headers_for_response(self):
-        """Returns sequence of response headers.
-
-        .. warning::
-            Calling this method causes inability to modify
-            response headers further.
-        """
-
-        response_headers = self.response_headers
-        del self.response_headers
-        return (
-            (header, to_bytes(value, encoding='latin1'))
-            for header, values in response_headers.items()
-            for value in values
-        )
+    def __init__(self, default_headers):
+        self._headers = default_headers
 
     @cached_property
-    def response_headers(self):
-        raise ValueError("Headers been already sent")
+    def _modified_headers(self):
+        modified_headers = self._headers = copy.copy(self._headers)
+        return modified_headers
 
-    def append(self, response_header, value):
-        if value is not None:
-            self.response_headers[response_header.title()].append(value)
+    def __delitem__(self, header):
+        del self._modified_headers[header.title()]
 
-    def extend(self, *response_headers):
-        for header in response_headers:
+    def __setitem__(self, header, value):
+        self._modified_headers[header.title()] = [value]
+
+    def append(self, header, value):
+        self._modified_headers[header.title()].append(value)
+
+    def extend(self, *headers):
+        for header in headers:
             self.append(*header)
 
-    def setdefault(self, response_header, default=None):
-        return self.response_headers.setdefault(
-            response_header.title(),
-            [default],
-        )
+    def setdefault(self, header, default=None):
+        return self._modified_headers.setdefault(header.title(), [default])
 
-    def clear(self, *response_headers):
-        if response_headers:
-            for response_header in response_headers:
+    def clear(self, *headers):
+        if headers:
+            for header in headers:
                 try:
-                    del self[response_header]
+                    del self[header]
                 except KeyError:
                     pass
         else:
-            self.response_headers.clear()
+            self._modified_headers.clear()
+
+
+class Headers(CachedDescriptor, HeadersMixin):
+
+    __slots__ = ()
+
+    def __init__(self, *default_headers, **kw_default_headers):
+        super(Headers, self).__init__()
+        self._headers = collections.defaultdict(list)
+        for header, value in itertools.chain(
+            default_headers,
+            kw_default_headers.items(),
+        ):
+            self._headers[header.title()].append(value)
+
+    def get_value(self, instance):
+        return ResponseHeaders(default_headers=self._headers)

@@ -1,44 +1,24 @@
-import itertools
-
-from marnadi.utils import metaclass, Lazy
+from marnadi.utils import Lazy
 
 
-class RouteType(type):
-
-    def __call__(cls, *args, **kwargs):
-        if len(args) < 2:
-            raise ValueError(
-                "`%s` needs minimum two arguments" % cls.__name__)
-        _kwargs = {}
-        for kwarg in ('path', 'handler'):
-            try:
-                _kwargs[kwarg] = kwargs.pop(kwarg)
-            except KeyError:
-                pass
-        route = super(RouteType, cls).__call__(*args, **kwargs)
-        route.kwargs.update(_kwargs)
-        return route
-
-
-@metaclass(RouteType)
 class Route(object):
 
-    __slots__ = ('path', 'handler', 'args', 'kwargs')
+    __slots__ = 'path', 'handler', 'args', 'kwargs'
 
-    def __init__(self, path, handler, *args, **kwargs):
-        self.path = path
-        self.handler = Lazy(handler)
+    def __init__(self, _path, _handler, *args, **kwargs):
+        self.path = _path
+        self.handler = Lazy(_handler)
         self.args = args
         self.kwargs = kwargs
 
 
 class Header(object):
 
-    __slots__ = ('values', 'attributes')
+    __slots__ = 'value', 'params'
 
-    def __init__(self, *values, **attributes):
-        self.values = values
-        self.attributes = attributes
+    def __init__(self, _value, **params):
+        self.value = _value
+        self.params = params
 
     def __str__(self):
         return self.make_value()
@@ -50,10 +30,12 @@ class Header(object):
         return value.encode(encoding='latin1')
 
     def make_value(self):
-        return '; '.join(itertools.chain(
-            self.values,
-            (
+        if not self.params:
+            return str(self.value)
+        return '{value}; {params}'.format(
+            value=self.value,
+            params='; '.join(
                 '%s=%s' % (attr_name, attr_value)
-                for attr_name, attr_value in self.attributes.items()
+                for attr_name, attr_value in self.params.items()
             ),
-        ))
+        )

@@ -1,34 +1,34 @@
 import collections
 import copy
-import functools
+import itertools
+try:
+    from urllib import parse
+except ImportError:
+    import urlparse as parse
 
-from marnadi import Route, Handler
+from marnadi import Route, Response, descriptors, Header
 from marnadi.errors import HttpError
+from marnadi.utils import cached_property
 
 
-class Environ(collections.Mapping):
-    """WSGI environ object class.
-
-    Standard WSGI environ dict wrapped by class additionally allowing
-    access to dict values using instance attributes.
+class Request(collections.Mapping):
+    """WSGI request.
 
     Args:
-        environ (dict): original WSGI dict.
+        environ (dict): PEP-3333 WSGI environ dict.
     """
 
-    __slots__ = '_environ',
+    if hasattr(collections.Mapping, '__slots__'):
+        __slots__ = '_environ', '__weakref__'
+
+    __hash__ = object.__hash__
+
+    __eq__ = object.__eq__
+
+    __ne__ = object.__ne__
 
     def __init__(self, environ):
         self._environ = environ
-
-    def __getattr__(self, attr_name):
-        try:
-            attr_value = self._environ.get(attr_name)
-            if attr_value is None:
-                return self._environ[attr_name.upper()]
-            return attr_value
-        except KeyError:
-            raise AttributeError
 
     def __getitem__(self, key):
         return self._environ[key]
@@ -40,12 +40,75 @@ class Environ(collections.Mapping):
         return len(self._environ)
 
     @property
-    def http_content_type(self):
-        return self.content_type
+    def input(self):
+        return self['wsgi.input']
 
     @property
-    def http_content_length(self):
-        return self.content_length
+    def method(self):
+        return self['REQUEST_METHOD']
+
+    @property
+    def path(self):
+        return self['PATH_INFO']
+
+    @cached_property
+    def content_type(self):
+        try:
+            parts = iter(self['CONTENT_TYPE'].split(';'))
+            return Header(next(parts).strip(), **dict(
+                map(str.strip, option.split('='))
+                for option in parts
+            ))
+        except KeyError:
+            raise AttributeError("content_type is not provided")
+
+    @property
+    def content_length(self):
+        try:
+            return int(self['CONTENT_LENGTH'])
+        except KeyError:
+            raise AttributeError("content_length is not provided")
+
+    @cached_property
+    def headers(self):
+        return {
+            name.title().replace('_', '-'): value
+            for name, value in
+            itertools.chain(
+                (
+                    (env_key, self[env_key])
+                    for env_key in ('CONTENT_TYPE', 'CONTENT_LENGTH')
+                    if env_key in self
+                ),
+                (
+                    (env_key[5:], env_value)
+                    for env_key, env_value in self.items()
+                    if env_key.startswith('HTTP_')
+                ),
+            )
+        }
+
+    @cached_property
+    def query(self):
+        try:
+            return parse.parse_qsl(
+                self['QUERY_STRING'],
+                keep_blank_values=True,
+            )
+        except KeyError:
+            return ()
+
+    data = descriptors.Data(
+        (
+            'application/json',
+            'marnadi.descriptors.data.decoders.application.json.Decoder',
+        ),
+        (
+            'application/x-www-form-urlencoded',
+            'marnadi.descriptors.data.decoders' +
+            '.application.x_www_form_urlencoded.decoder',
+        ),
+    )
 
 
 class App(object):
@@ -66,14 +129,17 @@ class App(object):
 
     def __call__(self, environ, start_response):
         try:
-            environ = Environ(environ)
-            path = self.get_path(environ)
-            handler = self.get_handler(path)
+            request = self.make_request_object(environ)
+            handler = self.get_handler(request.path)
             handler.send(None)  # start coroutine
-            return handler.send((environ, start_response))
+            return handler.send((request, start_response))
         except HttpError as error:
             start_response(error.status, error.headers)
             return error
+
+    @staticmethod
+    def make_request_object(environ):
+        return Request(environ)
 
     def compile_routes(self, routes):
         return list(map(self.compile_route, routes))
@@ -82,7 +148,7 @@ class App(object):
         if not isinstance(route, Route):
             route = Route(*route)
         try:
-            if issubclass(route.handler, Handler):
+            if issubclass(route.handler, Response):
                 return route
         except TypeError:
             pass
@@ -90,31 +156,17 @@ class App(object):
             route.handler = self.compile_routes(route.handler)
         except TypeError:
             raise TypeError(
-                "Route's handler must be either subclass of Handler "
+                "Route's handler must be either subclass of Handler " +
                 "or sequence of nested subroutes")
         return route
 
-    def _route(self, *args, **kwargs):
+    def route(self, _path, *args, **kwargs):
         def _decorator(handler):
-            route = Route(path, handler, *args, **kwargs)
+            route = Route(_path, handler, *args, **kwargs)
             compiled_route = self.compile_route(route)
             self.routes.append(compiled_route)
             return handler
-        try:
-            path, args = args[0], args[1:]
-        except IndexError:
-            raise ValueError(
-                "Requires path as first argument "
-                "(it must be an arg, not kwarg)")
         return _decorator
-
-    @functools.partial(lambda real, dummy: functools.wraps(dummy)(real), _route)
-    def route(self, path, *args, **kwargs):
-        pass  # this method is dummy, the real one is `_route`
-
-    @staticmethod
-    def get_path(environ):
-        return environ.path_info
 
     @staticmethod
     def get_match_subgroups(match_object):
@@ -129,7 +181,7 @@ class App(object):
                 # use it only if you're sure
                 # (see tests.test_wsgi.test_get_handler__non_trivial_situation)
                 args = list(args)
-                for kwarg in kwargs.itervalues():
+                for kwarg in kwargs.values():
                     args.remove(kwarg)
         return args, kwargs
 
@@ -164,5 +216,5 @@ class App(object):
                 except HttpError:
                     continue
             if not rest_path:
-                return route.handler.handle(*_args, **_kwargs)
+                return route.handler.start(*_args, **_kwargs)
         raise HttpError('404 Not Found')
