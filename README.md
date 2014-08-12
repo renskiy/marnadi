@@ -32,9 +32,7 @@ from marnadi import Response
 
 class MyResponse(Response):
 
-    supported_http_methods = ('OPTIONS', 'GET', 'POST')
-
-    # "GET" request handler
+    # HTTP GET request handler
     def get(self, foo, bar=None):
         return 'foo is {foo}, bar is {bar}'.format(foo=foo, bar=bar)
 
