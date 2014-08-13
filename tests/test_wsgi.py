@@ -4,7 +4,7 @@ import unittest
 
 from marnadi import Route, Response
 from marnadi.errors import HttpError
-from marnadi.wsgi import Request, App
+from marnadi.wsgi import App
 
 _test_handler = Response
 
@@ -28,11 +28,9 @@ class AppTestCase(unittest.TestCase):
         handler_path,
         requested_path='/foo/bar',
         nested_handler_path=None,
-        expected_args=None,
         expected_kwargs=None,
     ):
-        def side_effect(*args, **kwargs):
-            self.assertListEqual(expected_args or [], list(args))
+        def side_effect(**kwargs):
             self.assertDictEqual(expected_kwargs or {}, kwargs)
 
         mocked.side_effect = side_effect
@@ -50,26 +48,6 @@ class AppTestCase(unittest.TestCase):
             handler_path='/foo/bar',
         )
 
-    def test_get_handler_args__arg_kwarg_collision(self):
-        self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(foo)/(?P<key_foo>foo)'),
-            requested_path='/foo/foo',
-            expected_args=['foo'],
-            expected_kwargs={'key_foo': 'foo'},
-        )
-
-    def test_get_handler_args__arg(self):
-        self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(\w+)/bar'),
-            expected_args=['foo'],
-        )
-
-    def test_get_handler_args__arg_arg(self):
-        self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(\w+)/(\w+)'),
-            expected_args=['foo', 'bar'],
-        )
-
     def test_get_handler_args__kwarg(self):
         self._get_handler_args_parametrized_test_case(
             handler_path=re.compile(r'/(?P<key_foo>\w+)/bar'),
@@ -80,34 +58,6 @@ class AppTestCase(unittest.TestCase):
         self._get_handler_args_parametrized_test_case(
             handler_path=re.compile(r'/(?P<key_foo>\w+)/(?P<key_bar>\w+)'),
             expected_kwargs=dict(key_foo='foo', key_bar='bar'),
-        )
-
-    def test_get_handler_args__arg_kwarg(self):
-        self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(\w+)/(?P<key_bar>\w+)'),
-            expected_args=['foo'],
-            expected_kwargs=dict(key_bar='bar'),
-        )
-
-    def test_get_handler_args__kwarg_arg(self):
-        self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(?P<key_foo>\w+)/(\w+)'),
-            expected_args=['bar'],
-            expected_kwargs=dict(key_foo='foo'),
-        )
-
-    def test_get_handler_args__nested_const_arg(self):
-        self._get_handler_args_parametrized_test_case(
-            handler_path='/foo',
-            nested_handler_path=re.compile(r'/(\w+)'),
-            expected_args=['bar'],
-        )
-
-    def test_get_handler_args__nested_arg_const(self):
-        self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(\w+)'),
-            nested_handler_path='/bar',
-            expected_args=['foo'],
         )
 
     def test_get_handler_args__nested_const_kwarg(self):
@@ -124,34 +74,11 @@ class AppTestCase(unittest.TestCase):
             expected_kwargs=dict(key_foo='foo'),
         )
 
-    def test_get_handler_args__nested_arg_arg(self):
-        self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(\w+)'),
-            nested_handler_path=re.compile(r'/(\w+)'),
-            expected_args=['foo', 'bar'],
-        )
-
     def test_get_handler_args__nested_kwarg_kwarg(self):
         self._get_handler_args_parametrized_test_case(
             handler_path=re.compile(r'/(?P<key_foo>\w+)'),
             nested_handler_path=re.compile(r'/(?P<key_bar>\w+)'),
             expected_kwargs=dict(key_foo='foo', key_bar='bar'),
-        )
-
-    def test_get_handler_args__nested_arg_kwarg(self):
-        self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(\w+)'),
-            nested_handler_path=re.compile(r'/(?P<key_bar>\w+)'),
-            expected_args=['foo'],
-            expected_kwargs=dict(key_bar='bar'),
-        )
-
-    def test_get_handler_args__nested_kwarg_arg(self):
-        self._get_handler_args_parametrized_test_case(
-            handler_path=re.compile(r'/(?P<key_foo>\w+)'),
-            nested_handler_path=re.compile(r'/(\w+)'),
-            expected_args=['bar'],
-            expected_kwargs=dict(key_foo='foo'),
         )
 
     def test_get_handler__handler_not_found(self):
@@ -177,11 +104,9 @@ class AppTestCase(unittest.TestCase):
         unexpected,
         routes,
         requested_path,
-        expected_args=None,
         expected_kwargs=None,
     ):
-        def side_effect(*args, **kwargs):
-            self.assertListEqual(expected_args or [], list(args))
+        def side_effect(**kwargs):
             self.assertDictEqual(expected_kwargs or {}, kwargs)
 
         expected.side_effect = side_effect
@@ -226,11 +151,11 @@ class AppTestCase(unittest.TestCase):
             requested_path='/',
         )
 
-    def test_get_handler__regexp_unexpected_expected_args_kwargs(self):
+    def test_get_handler__regexp_unexpected_expected_kwargs(self):
         self._get_handler_parametrized_test_case(
             routes=(
                 Route(re.compile(r'/foo'),
-                      self.unexpected_handler, 'foo', bar='baz'),
+                      self.unexpected_handler, bar='baz'),
                 (re.compile(r'/'), self.expected_handler),
             ),
             requested_path='/',
@@ -386,18 +311,17 @@ class AppTestCase(unittest.TestCase):
             requested_path='/foo/baz',
         )
 
-    def test_get_handler__nested_foobaz_unexpected_expected_args_kwargs(self):
+    def test_get_handler__nested_foobaz_unexpected_expected_kwargs(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                (re.compile(r'/(foo)/(?P<kwarg1>kwarg)'), (
+                (re.compile(r'/foo/(?P<kwarg1>kwarg)'), (
                     ('/bar', self.unexpected_handler),
                 )),
-                (re.compile(r'/(foo)/(?P<kwarg2>kwarg)'), (
+                (re.compile(r'/foo/(?P<kwarg2>kwarg)'), (
                     ('/baz', self.expected_handler),
                 )),
             ),
             requested_path='/foo/kwarg/baz',
-            expected_args=['foo'],
             expected_kwargs=dict(kwarg2='kwarg'),
         )
 
@@ -435,13 +359,13 @@ class AppTestCase(unittest.TestCase):
             requested_path='/',
         )
 
-    def test_get_handler_predefined__args(self):
+    def test_get_handler_predefined__kwargs(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                ('/', self.expected_handler, 'foo', 'bar'),
+                ('/', self.expected_handler, dict(foo='foo', bar='bar')),
             ),
             requested_path='/',
-            expected_args=['foo', 'bar'],
+            expected_kwargs=dict(foo='foo', bar='bar'),
         )
 
     def test_get_handler_predefined__route(self):
@@ -452,98 +376,54 @@ class AppTestCase(unittest.TestCase):
             requested_path='/',
         )
 
-    def test_get_handler_predefined__route_args(self):
+    def test_get_handler_predefined__route_kwargs(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                Route('/', self.expected_handler, 'foo', 'bar'),
+                Route('/', self.expected_handler, foo='foo', bar='bar'),
             ),
             requested_path='/',
-            expected_args=['foo', 'bar'],
+            expected_kwargs=dict(foo='foo', bar='bar'),
         )
 
-    def test_get_handler_predefined__route_args_kwargs(self):
+    def test_get_handler_predefined__regexp_kwargs(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                Route('/', self.expected_handler, 'foo', 'bar', key_baz='baz'),
-            ),
-            requested_path='/',
-            expected_args=['foo', 'bar'],
-            expected_kwargs={'key_baz': 'baz'},
-        )
-
-    def test_get_handler_predefined__regexp_args(self):
-        self._get_handler_parametrized_test_case(
-            routes=(
-                (re.compile(r'/(baz)'), self.expected_handler, 'foo', 'bar'),
+                (
+                    re.compile(r'/(?P<baz>baz)'),
+                    self.expected_handler, dict(foo='foo', bar='bar'),
+                ),
             ),
             requested_path='/baz',
-            expected_args=['foo', 'bar', 'baz'],
+            expected_kwargs=dict(foo='foo', bar='bar', baz='baz'),
         )
 
     def test_get_handler_predefined__regexp_route(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                Route(re.compile(r'/(baz)'), self.expected_handler),
+                Route(re.compile(r'/(?P<baz>baz)'), self.expected_handler),
             ),
             requested_path='/baz',
-            expected_args=['baz'],
+            expected_kwargs=dict(baz='baz'),
         )
 
-    def test_get_handler_predefined__regexp_route_args(self):
+    def test_get_handler_predefined__regexp_route_kwargs(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                Route(re.compile(r'/(baz)'),
-                      self.expected_handler, 'foo', 'bar'),
+                Route(re.compile(r'/(?P<baz>baz)'),
+                      self.expected_handler, foo='foo', bar='bar'),
             ),
             requested_path='/baz',
-            expected_args=['foo', 'bar', 'baz'],
-        )
-
-    def test_get_handler_predefined__regexp_route_args_kwargs(self):
-        self._get_handler_parametrized_test_case(
-            routes=(
-                Route(re.compile(r'/(baz)'),
-                      self.expected_handler, 'foo', 'bar', key_baz='baz'),
-            ),
-            requested_path='/baz',
-            expected_args=['foo', 'bar', 'baz'],
-            expected_kwargs={'key_baz': 'baz'},
+            expected_kwargs=dict(foo='foo', bar='bar', baz='baz'),
         )
 
     def test_get_handler_predefined__regexp_route_kwargs_collision(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                Route(re.compile(r'/(?P<key_baz>bar)'),
-                      self.expected_handler, key_baz='baz'),
+                Route(re.compile(r'/(?P<foo>bar)'),
+                      self.expected_handler, foo='baz'),
             ),
             requested_path='/bar',
-            expected_kwargs={'key_baz': 'bar'},
-        )
-
-    def test_get_handler_predefined__regexp_route_complex(self):
-        self._get_handler_parametrized_test_case(
-            routes=(
-                Route(re.compile(r'/(?P<key_foo>foo)/(bar)'),
-                      self.expected_handler, 'foo', key_baz='baz'),
-            ),
-            requested_path='/foo/bar',
-            expected_args=['foo', 'bar'],
-            expected_kwargs={'key_baz': 'baz', 'key_foo': 'foo'},
-        )
-
-    @unittest.skip(
-        "The order of args received by handler is wrong "
-        "due to inability to determine correct one"
-    )
-    def test_get_handler__non_trivial_situation(self):
-        self._get_handler_parametrized_test_case(
-            routes=(
-                (re.compile(r'/(foo)/(bar)/(?P<key_foo>foo)'),
-                    self.expected_handler),
-            ),
-            requested_path='/foo/bar/foo',
-            expected_args=['foo', 'bar'],  # actual is ['bar', 'foo']
-            expected_kwargs={'key_foo': 'foo'},
+            expected_kwargs={'foo': 'bar'},
         )
 
     def test_compile_routes(self):
@@ -635,23 +515,21 @@ class AppTestCase(unittest.TestCase):
 
     @mock.patch.object(Response, 'start')
     def test_route(self, mocked):
-        def side_effect(*args, **kwargs):
-            self.assertTupleEqual(('arg', ), args)
+        def side_effect(**kwargs):
             self.assertDictEqual(
-                dict(kwarg='kwarg', path='conflict_name'),
+                dict(kwarg='kwarg'),
                 kwargs,
             )
 
         mocked.side_effect = side_effect
         app = App()
-        app.route('/', 'arg', kwarg='kwarg', path='conflict_name')(Response)
+        app.route('/', kwarg='kwarg')(Response)
         app.get_handler('/')
         self.assertEqual(1, mocked.call_count)
 
     @mock.patch.object(Response, 'start')
     def test_route__routes(self, mocked):
-        def side_effect(*args, **kwargs):
-            self.assertTupleEqual(('arg1', 'arg2'), args)
+        def side_effect(**kwargs):
             self.assertDictEqual(
                 dict(kwarg1='kwarg1', kwarg2='kwarg2', kwarg=2),
                 kwargs,
@@ -660,8 +538,8 @@ class AppTestCase(unittest.TestCase):
         mocked.side_effect = side_effect
         app = App()
         routes = (
-            Route('path', Response, 'arg2', kwarg2='kwarg2', kwarg=2),
+            Route('path', Response, kwarg2='kwarg2', kwarg=2),
         )
-        app.route('/', 'arg1', kwarg1='kwarg1', kwarg=1)(routes)
+        app.route('/', kwarg1='kwarg1', kwarg=1)(routes)
         app.get_handler('/path')
         self.assertEqual(1, mocked.call_count)

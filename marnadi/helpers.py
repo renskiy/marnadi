@@ -3,12 +3,11 @@ from marnadi.utils import Lazy
 
 class Route(object):
 
-    __slots__ = 'path', 'handler', 'args', 'kwargs'
+    __slots__ = 'path', 'handler', 'kwargs'
 
-    def __init__(self, _path, _handler, *args, **kwargs):
+    def __init__(self, _path, _handler, **kwargs):
         self.path = _path
         self.handler = Lazy(_handler)
-        self.args = args
         self.kwargs = kwargs
 
 

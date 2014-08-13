@@ -1,5 +1,4 @@
 import collections
-import copy
 import itertools
 try:
     from urllib import parse
@@ -146,7 +145,9 @@ class App(object):
 
     def compile_route(self, route):
         if not isinstance(route, Route):
-            route = Route(*route)
+            path, handler = route[:2]
+            kwargs = route[2] if len(route) == 3 else {}
+            route = Route(path, handler, **kwargs)
         try:
             if issubclass(route.handler, Response):
                 return route
@@ -160,64 +161,43 @@ class App(object):
                 "or sequence of nested subroutes")
         return route
 
-    def route(self, _path, *args, **kwargs):
+    def route(self, _path, **kwargs):
         def _decorator(handler):
-            route = Route(_path, handler, *args, **kwargs)
+            route = Route(_path, handler, **kwargs)
             compiled_route = self.compile_route(route)
             self.routes.append(compiled_route)
             return handler
         return _decorator
 
-    def get_handler(self, path, routes=None, args=None, kwargs=None):
+    def get_handler(self, path, routes=None, kwargs=None):
         routes = routes or self.routes
-        args, kwargs = args or [], kwargs or {}
+        kwargs = kwargs or {}
         for route in routes:
             if hasattr(route.path, 'match'):  # assume it's compiled regexp
                 match = route.path.match(path)
                 if not match:
                     continue
-                match_args, match_kwargs = self._match_subgroups(match)
+                url_kwargs = match.groupdict()
                 rest_path = path[match.end(0):]
             elif path.startswith(route.path):
                 rest_path = path[len(route.path):]
-                match_args = match_kwargs = ()
+                url_kwargs = ()
             else:
                 continue
-            _args = copy.copy(args)
-            _args.extend(route.args)
-            _args.extend(match_args)
             if isinstance(route.handler, list):
                 try:
                     return self.get_handler(
                         rest_path,
                         routes=route.handler,
-                        args=_args,
                         kwargs=self._merge_dicts(
-                            kwargs.copy(), route.kwargs, match_kwargs),
+                            kwargs.copy(), route.kwargs, url_kwargs),
                     )
                 except HttpError:
                     continue
             if not rest_path:
-                return route.handler.start(*_args, **self._merge_dicts(
-                    kwargs, route.kwargs, match_kwargs))
+                return route.handler.start(**self._merge_dicts(
+                    kwargs, route.kwargs, url_kwargs))
         raise HttpError('404 Not Found')
-
-    @staticmethod
-    def _match_subgroups(match_object):
-        args = match_object.groups()
-        kwargs = match_object.groupdict()
-        if kwargs:
-            if len(args) == len(kwargs):
-                args = ()
-            else:
-                # mixing simple and named subgroups is bad idea
-                # because of non-trivial logic of distinguishing them,
-                # use it only if you're sure
-                # (see tests.test_wsgi.test_get_handler__non_trivial_situation)
-                args = list(args)
-                for kwarg in kwargs.values():
-                    args.remove(kwarg)
-        return args, kwargs
 
     @staticmethod
     def _merge_dicts(target, *sources):
