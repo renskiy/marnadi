@@ -168,8 +168,42 @@ class App(object):
             return handler
         return _decorator
 
+    def get_handler(self, path, routes=None, args=None, kwargs=None):
+        routes = routes or self.routes
+        args, kwargs = args or [], kwargs or {}
+        for route in routes:
+            if hasattr(route.path, 'match'):  # assume it's compiled regexp
+                match = route.path.match(path)
+                if not match:
+                    continue
+                match_args, match_kwargs = self._match_subgroups(match)
+                rest_path = path[match.end(0):]
+            elif path.startswith(route.path):
+                rest_path = path[len(route.path):]
+                match_args = match_kwargs = ()
+            else:
+                continue
+            _args = copy.copy(args)
+            _args.extend(route.args)
+            _args.extend(match_args)
+            if isinstance(route.handler, list):
+                try:
+                    return self.get_handler(
+                        rest_path,
+                        routes=route.handler,
+                        args=_args,
+                        kwargs=self._merge_dicts(
+                            kwargs.copy(), route.kwargs, match_kwargs),
+                    )
+                except HttpError:
+                    continue
+            if not rest_path:
+                return route.handler.start(*_args, **self._merge_dicts(
+                    kwargs, route.kwargs, match_kwargs))
+        raise HttpError('404 Not Found')
+
     @staticmethod
-    def get_match_subgroups(match_object):
+    def _match_subgroups(match_object):
         args = match_object.groups()
         kwargs = match_object.groupdict()
         if kwargs:
@@ -185,36 +219,8 @@ class App(object):
                     args.remove(kwarg)
         return args, kwargs
 
-    def get_handler(self, path, routes=None, args=None, kwargs=None):
-        routes = routes or self.routes
-        args, kwargs = args or [], kwargs or {}
-        for route in routes:
-            if hasattr(route.path, 'match'):  # assume it's compiled regexp
-                match = route.path.match(path)
-                if not match:
-                    continue
-                match_args, match_kwargs = self.get_match_subgroups(match)
-                rest_path = path[match.end(0):]
-            elif path.startswith(route.path):
-                rest_path = path[len(route.path):]
-                match_args = match_kwargs = ()
-            else:
-                continue
-            _args, _kwargs = copy.copy(args), copy.copy(kwargs)
-            _args.extend(route.args)
-            _args.extend(match_args)
-            _kwargs.update(route.kwargs)
-            _kwargs.update(match_kwargs)
-            if isinstance(route.handler, list):
-                try:
-                    return self.get_handler(
-                        rest_path,
-                        routes=route.handler,
-                        args=_args,
-                        kwargs=_kwargs,
-                    )
-                except HttpError:
-                    continue
-            if not rest_path:
-                return route.handler.start(*_args, **_kwargs)
-        raise HttpError('404 Not Found')
+    @staticmethod
+    def _merge_dicts(target, *sources):
+        for source in sources:
+            target.update(source)
+        return target
