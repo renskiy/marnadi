@@ -168,10 +168,10 @@ class App(object):
 
         Note:
             If you wish for example automatically redirect all requests
-            without trailing slash in URL to URL with slash at the end you
-            may override this method and raise `HttpError` with 301 status
-            and necessary Location header before main implementation or
-            by catching parent `HttpError` which means route not found.
+            without trailing slash in URL to URL with persisting one you may
+            extend this method and return special redirect handler
+            (or alternatively you can raise `HttpError` with 301 status and
+            Location header with necessary URL).
         """
         routes = routes or self.routes
         params = params or {}
