@@ -39,9 +39,9 @@ class Response(object):
 
     logger = logging.getLogger('marnadi')
 
-    supported_http_methods = (
+    supported_http_methods = {
         'OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',
-    )
+    }
 
     status = '200 OK'
 
@@ -106,10 +106,10 @@ class Response(object):
 
     @property
     def allowed_http_methods(self):
+        func = self.__func__
         for method in self.supported_http_methods:
-            if getattr(self, method.lower()) is None:
-                continue
-            yield method
+            if func or getattr(self, method.lower()):
+                yield method
 
     def options(self, **kwargs):
         self.headers['Allow'] = ', '.join(self.allowed_http_methods)
