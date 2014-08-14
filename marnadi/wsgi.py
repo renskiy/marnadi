@@ -156,26 +156,26 @@ class App(object):
                 "or sequence of nested subroutes")
         return route
 
-    def route(self, _path, **kwargs):
+    def route(self, path, params=None):
         def _decorator(handler):
-            route = Route(_path, handler, **kwargs)
+            route = Route(path, handler, params)
             self.routes.append(self.compile_route(route))
             return handler
         return _decorator
 
-    def get_handler(self, path, routes=None, kwargs=None):
+    def get_handler(self, path, routes=None, params=None):
         routes = routes or self.routes
-        kwargs = kwargs or {}
+        params = params or {}
         for route in routes:
             if hasattr(route.path, 'match'):  # assume it's compiled regexp
                 match = route.path.match(path)
                 if not match:
                     continue
-                url_kwargs = match.groupdict()
+                url_params = match.groupdict()
                 rest_path = path[match.end(0):]
             elif path.startswith(route.path):
                 rest_path = path[len(route.path):]
-                url_kwargs = ()
+                url_params = ()
             else:
                 continue
             if isinstance(route.handler, list):
@@ -183,14 +183,14 @@ class App(object):
                     return self.get_handler(
                         rest_path,
                         routes=route.handler,
-                        kwargs=self._merge_dicts(
-                            kwargs.copy(), route.kwargs, url_kwargs),
+                        params=self._merge_dicts(
+                            params.copy(), route.params, url_params),
                     )
                 except HttpError:
                     continue
             if not rest_path:
                 return route.handler.start(**self._merge_dicts(
-                    kwargs, route.kwargs, url_kwargs))
+                    params, route.params, url_params))
         raise HttpError('404 Not Found')
 
     @staticmethod

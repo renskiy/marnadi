@@ -3,12 +3,12 @@ from marnadi.utils import Lazy
 
 class Route(object):
 
-    __slots__ = 'path', 'handler', 'kwargs'
+    __slots__ = 'path', 'handler', 'params'
 
-    def __init__(self, _path, _handler, **kwargs):
-        self.path = _path
-        self.handler = Lazy(_handler)
-        self.kwargs = kwargs
+    def __init__(self, path, handler, params=None):
+        self.path = path
+        self.handler = Lazy(handler)
+        self.params = params or {}
 
 
 class Header(object):

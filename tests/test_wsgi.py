@@ -150,7 +150,7 @@ class AppTestCase(unittest.TestCase):
         self._get_handler_parametrized_test_case(
             routes=(
                 Route(re.compile(r'/foo'),
-                      self.unexpected_handler, bar='baz'),
+                      self.unexpected_handler, dict(bar='baz')),
                 Route(re.compile(r'/'), self.expected_handler),
             ),
             requested_path='/',
@@ -357,7 +357,8 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler_predefined__kwargs(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                Route('/', self.expected_handler, foo='foo', bar='bar'),
+                Route('/', self.expected_handler,
+                      params=dict(foo='foo', bar='bar')),
             ),
             requested_path='/',
             expected_kwargs=dict(foo='foo', bar='bar'),
@@ -376,7 +377,7 @@ class AppTestCase(unittest.TestCase):
             routes=(
                 Route(
                     re.compile(r'/(?P<baz>baz)'),
-                    self.expected_handler, foo='foo', bar='bar',
+                    self.expected_handler, params=dict(foo='foo', bar='bar'),
                 ),
             ),
             requested_path='/baz',
@@ -387,7 +388,7 @@ class AppTestCase(unittest.TestCase):
         self._get_handler_parametrized_test_case(
             routes=(
                 Route(re.compile(r'/(?P<foo>bar)'),
-                      self.expected_handler, foo='baz'),
+                      self.expected_handler, params=dict(foo='baz')),
             ),
             requested_path='/bar',
             expected_kwargs={'foo': 'bar'},
@@ -446,7 +447,7 @@ class AppTestCase(unittest.TestCase):
 
         mocked.side_effect = side_effect
         app = App()
-        app.route('/', kwarg='kwarg')(Response)
+        app.route('/', params=dict(kwarg='kwarg'))(Response)
         app.get_handler('/')
         self.assertEqual(1, mocked.call_count)
 
@@ -461,8 +462,8 @@ class AppTestCase(unittest.TestCase):
         mocked.side_effect = side_effect
         app = App()
         routes = (
-            Route('path', Response, kwarg2='kwarg2', kwarg=2),
+            Route('path', Response, params=dict(kwarg2='kwarg2', kwarg=2)),
         )
-        app.route('/', kwarg1='kwarg1', kwarg=1)(routes)
+        app.route('/', params=dict(kwarg1='kwarg1', kwarg=1))(routes)
         app.get_handler('/path')
         self.assertEqual(1, mocked.call_count)
