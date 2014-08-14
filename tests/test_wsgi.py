@@ -4,6 +4,7 @@ import unittest
 
 from marnadi import Route, Response
 from marnadi.errors import HttpError
+from marnadi.response import Handler
 from marnadi.wsgi import Request, App
 
 _test_handler = Response
@@ -566,7 +567,7 @@ class AppTestCase(unittest.TestCase):
         self.assertEqual(1, len(app.routes))
         route = app.routes[0]
         self.assertIsInstance(route, Route)
-        self.assertTrue(issubclass(route.handler, Response))
+        self.assertIsInstance(route.handler, Handler)
 
     def test_compile_routes__tuple_lazy_seq(self):
         app = App(routes=(

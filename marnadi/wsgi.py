@@ -6,8 +6,9 @@ try:
 except ImportError:
     import urlparse as parse
 
-from marnadi import Route, Response, descriptors, Header
+from marnadi import Route, descriptors, Header
 from marnadi.errors import HttpError
+from marnadi.response import Handler
 from marnadi.utils import cached_property
 
 
@@ -147,11 +148,8 @@ class App(object):
     def compile_route(self, route):
         if not isinstance(route, Route):
             route = Route(*route)
-        try:
-            if issubclass(route.handler, Response):
-                return route
-        except TypeError:
-            pass
+        if isinstance(route.handler, Handler):
+            return route
         try:
             route.handler = self.compile_routes(route.handler)
         except TypeError:

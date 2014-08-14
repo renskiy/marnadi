@@ -1,4 +1,3 @@
-import abc
 import logging
 import types
 
@@ -7,7 +6,33 @@ from marnadi.errors import HttpError
 from marnadi.utils import metaclass, to_bytes
 
 
-@metaclass(abc.ABCMeta)
+class Handler(type):
+
+    __func__ = None
+
+    def __call__(cls, *args, **kwargs):
+        func = cls.__func__
+        if func is not None:
+            return func(*args, **kwargs)
+        return super(Handler, cls).__call__(*args, **kwargs)
+
+    def get_instance(cls, *args, **kwargs):
+        return type.__call__(cls, *args, **kwargs)
+
+    def decorator(cls, func):
+        assert callable(func)
+        attributes = dict(
+            __func__=staticmethod(func),
+            __module__=func.__module__,
+            __doc__=func.__doc__,
+        )
+        return type(cls)(func.__name__, (cls, ), attributes)
+
+    def start(cls, *args, **kwargs):
+        raise NotImplementedError
+
+
+@metaclass(Handler)
 class Response(object):
 
     __slots__ = 'request', '__weakref__'
@@ -26,11 +51,6 @@ class Response(object):
 
     cookies = descriptors.Cookies()
 
-    def __new__(cls, *args, **kwargs):
-        if cls.func is not None:
-            return cls.func(*args, **kwargs)
-        return super(Response, cls).__new__(cls)
-
     def __init__(self, request):
         self.request = request
 
@@ -40,23 +60,13 @@ class Response(object):
                 '501 Not Implemented',
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
             )
-        callback = getattr(self, self.request.method.lower(), NotImplemented)
-        if callback is NotImplemented:
+        callback = getattr(self, self.request.method.lower()) or self.__func__
+        if callback is None:
             raise HttpError(
                 '405 Method Not Allowed',
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
             )
         return callback(*method_args, **method_kwargs)
-
-    @classmethod
-    def get_instance(cls, *args, **kwargs):
-        if cls.func is None:
-            return cls(*args, **kwargs)
-        return type(
-            cls.__name__,
-            (cls, ),
-            dict(__new__=super(Response, cls).__new__),
-        )(*args, **kwargs)
 
     @classmethod
     def start(cls, *args, **kwargs):
@@ -97,37 +107,21 @@ class Response(object):
     @property
     def allowed_http_methods(self):
         for method in self.supported_http_methods:
-            if getattr(self, method.lower(), NotImplemented) is NotImplemented:
+            if getattr(self, method.lower()) is None:
                 continue
             yield method
-
-    @classmethod
-    def decorator(cls, func):
-        method = staticmethod(func)
-        attributes = dict(
-            func=method,
-            __module__=func.__module__,
-            __doc__=func.__doc__,
-        )
-        for supported_method in cls.supported_http_methods:
-            supported_method = supported_method.lower()
-            if getattr(cls, supported_method, NotImplemented) is NotImplemented:
-                attributes[supported_method] = method
-        return type(cls)(func.__name__, (cls, ), attributes)
 
     def options(self, *args, **kwargs):
         self.headers['Allow'] = ', '.join(self.allowed_http_methods)
 
-    get = NotImplemented
+    get = None
 
-    head = NotImplemented
+    head = None
 
-    post = NotImplemented
+    post = None
 
-    put = NotImplemented
+    put = None
 
-    patch = NotImplemented
+    patch = None
 
-    delete = NotImplemented
-
-    func = None  # function decorated by `cls.decorator`
+    delete = None
