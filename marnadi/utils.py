@@ -7,11 +7,6 @@ except NameError:
     unicode_str = str
 
 
-class Empty(object):
-
-    pass
-
-
 def metaclass(mcs):
     def _decorator(cls):
         attrs = dict(cls.__dict__)
