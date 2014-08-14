@@ -164,6 +164,15 @@ class App(object):
         return _decorator
 
     def get_handler(self, path, routes=None, params=None):
+        """Return handler according to the given path.
+
+        Note:
+            If you wish for example automatically redirect all requests
+            without trailing slash in URL to URL with slash at the end you
+            may override this method and raise `HttpError` with 301 status
+            and necessary Location header before main implementation or
+            by catching parent `HttpError` which means route not found.
+        """
         routes = routes or self.routes
         params = params or {}
         for route in routes:
@@ -191,7 +200,7 @@ class App(object):
             if not rest_path:
                 return route.handler.start(**self._merge_dicts(
                     params, route.params, url_params))
-        raise HttpError('404 Not Found')
+        raise HttpError('404 Not Found')  # matching route not found
 
     @staticmethod
     def _merge_dicts(target, *sources):
