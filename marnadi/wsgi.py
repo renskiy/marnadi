@@ -145,10 +145,7 @@ class App(object):
         return list(map(self.compile_route, routes))
 
     def compile_route(self, route):
-        if not isinstance(route, Route):
-            path, handler = route[:2]
-            kwargs = route[2] if len(route) == 3 else {}
-            route = Route(path, handler, **kwargs)
+        assert isinstance(route, Route)
         if isinstance(route.handler, Handler):
             return route
         try:
@@ -162,8 +159,7 @@ class App(object):
     def route(self, _path, **kwargs):
         def _decorator(handler):
             route = Route(_path, handler, **kwargs)
-            compiled_route = self.compile_route(route)
-            self.routes.append(compiled_route)
+            self.routes.append(self.compile_route(route))
             return handler
         return _decorator
 

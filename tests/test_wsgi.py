@@ -4,15 +4,9 @@ import unittest
 
 from marnadi import Route, Response
 from marnadi.errors import HttpError
-from marnadi.response import Handler
 from marnadi.wsgi import App
 
 _test_handler = Response
-
-_test_handler_seq = (
-    ('a', Response),
-    ('b', Response),
-)
 
 _test_handler_seq_routes = (
     Route('a', Response),
@@ -36,8 +30,8 @@ class AppTestCase(unittest.TestCase):
 
         mocked.side_effect = side_effect
         routes = (
-            (handler_path, nested_handler_path is None and Response or (
-                (nested_handler_path, Response),
+            Route(handler_path, nested_handler_path is None and Response or (
+                Route(nested_handler_path, Response),
             )),
         )
         app = App(routes=routes)
@@ -119,8 +113,8 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__expected_unexpected(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                ('/', self.expected_handler),
-                ('/foo', self.unexpected_handler),
+                Route('/', self.expected_handler),
+                Route('/foo', self.unexpected_handler),
             ),
             requested_path='/',
         )
@@ -128,8 +122,8 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__unexpected_expected(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                ('/foo', self.unexpected_handler),
-                ('/', self.expected_handler),
+                Route('/foo', self.unexpected_handler),
+                Route('/', self.expected_handler),
             ),
             requested_path='/',
         )
@@ -137,8 +131,8 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__regexp_expected_unexpected(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                (re.compile(r'/'), self.expected_handler),
-                (re.compile(r'/foo'), self.unexpected_handler),
+                Route(re.compile(r'/'), self.expected_handler),
+                Route(re.compile(r'/foo'), self.unexpected_handler),
             ),
             requested_path='/',
         )
@@ -146,8 +140,8 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__regexp_unexpected_expected(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                (re.compile(r'/foo'), self.unexpected_handler),
-                (re.compile(r'/'), self.expected_handler),
+                Route(re.compile(r'/foo'), self.unexpected_handler),
+                Route(re.compile(r'/'), self.expected_handler),
             ),
             requested_path='/',
         )
@@ -157,7 +151,7 @@ class AppTestCase(unittest.TestCase):
             routes=(
                 Route(re.compile(r'/foo'),
                       self.unexpected_handler, bar='baz'),
-                (re.compile(r'/'), self.expected_handler),
+                Route(re.compile(r'/'), self.expected_handler),
             ),
             requested_path='/',
         )
@@ -165,8 +159,8 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__foo_unexpected_expected(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                ('/', self.unexpected_handler),
-                ('/foo', self.expected_handler),
+                Route('/', self.unexpected_handler),
+                Route('/foo', self.expected_handler),
             ),
             requested_path='/foo',
         )
@@ -174,8 +168,8 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__foo_expected_unexpected(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                ('/foo', self.expected_handler),
-                ('/', self.unexpected_handler),
+                Route('/foo', self.expected_handler),
+                Route('/', self.unexpected_handler),
             ),
             requested_path='/foo',
         )
@@ -183,8 +177,8 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__foo_regexp_unexpected_expected(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                (re.compile(r'/'), self.unexpected_handler),
-                (re.compile(r'/foo'), self.expected_handler),
+                Route(re.compile(r'/'), self.unexpected_handler),
+                Route(re.compile(r'/foo'), self.expected_handler),
             ),
             requested_path='/foo',
         )
@@ -192,8 +186,8 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__foo_regexp_expected_unexpected(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                (re.compile(r'/foo'), self.expected_handler),
-                (re.compile(r'/'), self.unexpected_handler),
+                Route(re.compile(r'/foo'), self.expected_handler),
+                Route(re.compile(r'/'), self.unexpected_handler),
             ),
             requested_path='/foo',
         )
@@ -201,9 +195,9 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__nested_foo_unexpected_expected(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                ('/foo', (
-                    ('/bar', self.unexpected_handler),
-                    ('', self.expected_handler),
+                Route('/foo', (
+                    Route('/bar', self.unexpected_handler),
+                    Route('', self.expected_handler),
                 )),
             ),
             requested_path='/foo',
@@ -212,9 +206,9 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__nested_foo_expected_unexpected(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                ('/foo', (
-                    ('', self.expected_handler),
-                    ('/bar', self.unexpected_handler),
+                Route('/foo', (
+                    Route('', self.expected_handler),
+                    Route('/bar', self.unexpected_handler),
                 )),
             ),
             requested_path='/foo',
@@ -223,9 +217,9 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__nested_regexp_foo_unexpected_expected(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                (re.compile(r'/foo'), (
-                    ('/bar', self.unexpected_handler),
-                    ('', self.expected_handler),
+                Route(re.compile(r'/foo'), (
+                    Route('/bar', self.unexpected_handler),
+                    Route('', self.expected_handler),
                 )),
             ),
             requested_path='/foo',
@@ -234,9 +228,9 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__nested_regexp_foo_expected_unexpected(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                (re.compile(r'/foo'), (
-                    ('', self.expected_handler),
-                    ('/bar', self.unexpected_handler),
+                Route(re.compile(r'/foo'), (
+                    Route('', self.expected_handler),
+                    Route('/bar', self.unexpected_handler),
                 )),
             ),
             requested_path='/foo',
@@ -245,9 +239,9 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__nested_foobar_unexpected_expected(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                ('/foo', (
-                    ('', self.unexpected_handler),
-                    ('/bar', self.expected_handler),
+                Route('/foo', (
+                    Route('', self.unexpected_handler),
+                    Route('/bar', self.expected_handler),
                 )),
             ),
             requested_path='/foo/bar',
@@ -256,9 +250,9 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__nested_foobar_expected_unexpected(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                ('/foo', (
-                    ('/bar', self.expected_handler),
-                    ('', self.unexpected_handler),
+                Route('/foo', (
+                    Route('/bar', self.expected_handler),
+                    Route('', self.unexpected_handler),
                 )),
             ),
             requested_path='/foo/bar',
@@ -267,9 +261,9 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__nested_regexp_foobar_unexpected_expected(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                (re.compile(r'/foo'), (
-                    ('', self.unexpected_handler),
-                    (re.compile(r'/bar'), self.expected_handler),
+                Route(re.compile(r'/foo'), (
+                    Route('', self.unexpected_handler),
+                    Route(re.compile(r'/bar'), self.expected_handler),
                 )),
             ),
             requested_path='/foo/bar',
@@ -278,9 +272,9 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__nested_regexp_foobar_expected_unexpected(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                (re.compile(r'/foo'), (
-                    (re.compile(r'/bar'), self.expected_handler),
-                    ('', self.unexpected_handler),
+                Route(re.compile(r'/foo'), (
+                    Route(re.compile(r'/bar'), self.expected_handler),
+                    Route('', self.unexpected_handler),
                 )),
             ),
             requested_path='/foo/bar',
@@ -289,11 +283,11 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__nested_foobaz_expected_unexpected(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                ('/foo', (
-                    ('/baz', self.expected_handler),
+                Route('/foo', (
+                    Route('/baz', self.expected_handler),
                 )),
-                ('/foo', (
-                    ('/bar', self.unexpected_handler),
+                Route('/foo', (
+                    Route('/bar', self.unexpected_handler),
                 )),
             ),
             requested_path='/foo/baz',
@@ -302,11 +296,11 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__nested_foobaz_unexpected_expected(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                ('/foo', (
-                    ('/bar', self.unexpected_handler),
+                Route('/foo', (
+                    Route('/bar', self.unexpected_handler),
                 )),
-                ('/foo', (
-                    ('/baz', self.expected_handler),
+                Route('/foo', (
+                    Route('/baz', self.expected_handler),
                 )),
             ),
             requested_path='/foo/baz',
@@ -315,11 +309,11 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__nested_foobaz_unexpected_expected_kwargs(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                (re.compile(r'/foo/(?P<kwarg1>kwarg)'), (
-                    ('/bar', self.unexpected_handler),
+                Route(re.compile(r'/foo/(?P<kwarg1>kwarg)'), (
+                    Route('/bar', self.unexpected_handler),
                 )),
-                (re.compile(r'/foo/(?P<kwarg2>kwarg)'), (
-                    ('/baz', self.expected_handler),
+                Route(re.compile(r'/foo/(?P<kwarg2>kwarg)'), (
+                    Route('/baz', self.expected_handler),
                 )),
             ),
             requested_path='/foo/kwarg/baz',
@@ -329,11 +323,11 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__nested_regexp_foobaz_expected_unexpected(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                (re.compile(r'/foo'), (
-                    (re.compile(r'/baz'), self.expected_handler),
+                Route(re.compile(r'/foo'), (
+                    Route(re.compile(r'/baz'), self.expected_handler),
                 )),
-                (re.compile(r'/foo'), (
-                    (re.compile(r'/bar'), self.unexpected_handler),
+                Route(re.compile(r'/foo'), (
+                    Route(re.compile(r'/bar'), self.unexpected_handler),
                 )),
             ),
             requested_path='/foo/baz',
@@ -342,11 +336,11 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__nested_regexp_foobaz_unexpected_expected(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                (re.compile(r'/foo'), (
-                    (re.compile(r'/bar'), self.unexpected_handler),
+                Route(re.compile(r'/foo'), (
+                    Route(re.compile(r'/bar'), self.unexpected_handler),
                 )),
-                (re.compile(r'/foo'), (
-                    (re.compile(r'/baz'), self.expected_handler),
+                Route(re.compile(r'/foo'), (
+                    Route(re.compile(r'/baz'), self.expected_handler),
                 )),
             ),
             requested_path='/foo/baz',
@@ -355,7 +349,7 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler_predefined(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                ('/', self.expected_handler),
+                Route('/', self.expected_handler),
             ),
             requested_path='/',
         )
@@ -363,7 +357,7 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler_predefined__kwargs(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                ('/', self.expected_handler, dict(foo='foo', bar='bar')),
+                Route('/', self.expected_handler, foo='foo', bar='bar'),
             ),
             requested_path='/',
             expected_kwargs=dict(foo='foo', bar='bar'),
@@ -377,47 +371,19 @@ class AppTestCase(unittest.TestCase):
             requested_path='/',
         )
 
-    def test_get_handler_predefined__route_kwargs(self):
-        self._get_handler_parametrized_test_case(
-            routes=(
-                Route('/', self.expected_handler, foo='foo', bar='bar'),
-            ),
-            requested_path='/',
-            expected_kwargs=dict(foo='foo', bar='bar'),
-        )
-
     def test_get_handler_predefined__regexp_kwargs(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                (
+                Route(
                     re.compile(r'/(?P<baz>baz)'),
-                    self.expected_handler, dict(foo='foo', bar='bar'),
+                    self.expected_handler, foo='foo', bar='bar',
                 ),
             ),
             requested_path='/baz',
             expected_kwargs=dict(foo='foo', bar='bar', baz='baz'),
         )
 
-    def test_get_handler_predefined__regexp_route(self):
-        self._get_handler_parametrized_test_case(
-            routes=(
-                Route(re.compile(r'/(?P<baz>baz)'), self.expected_handler),
-            ),
-            requested_path='/baz',
-            expected_kwargs=dict(baz='baz'),
-        )
-
-    def test_get_handler_predefined__regexp_route_kwargs(self):
-        self._get_handler_parametrized_test_case(
-            routes=(
-                Route(re.compile(r'/(?P<baz>baz)'),
-                      self.expected_handler, foo='foo', bar='bar'),
-            ),
-            requested_path='/baz',
-            expected_kwargs=dict(foo='foo', bar='bar', baz='baz'),
-        )
-
-    def test_get_handler_predefined__regexp_route_kwargs_collision(self):
+    def test_get_handler_predefined__regexp_kwargs_collision(self):
         self._get_handler_parametrized_test_case(
             routes=(
                 Route(re.compile(r'/(?P<foo>bar)'),
@@ -427,66 +393,17 @@ class AppTestCase(unittest.TestCase):
             expected_kwargs={'foo': 'bar'},
         )
 
-    def test_compile_routes(self):
+    def test_compile_routes__empty(self):
         app = App()
         self.assertListEqual([], app.routes)
 
-    def test_compile_routes__tuple(self):
-        app = App(routes=(
-            ('/', _test_handler),
-        ))
-        self.assertEqual(1, len(app.routes))
-        route = app.routes[0]
-        self.assertIsInstance(route, Route)
-        self.assertEqual(_test_handler, route.handler)
-
-    def test_compile_routes__tuple_lazy_handler(self):
-        app = App(routes=(
-            ('/', '%s._test_handler' % __name__),
-        ))
-        self.assertEqual(1, len(app.routes))
-        route = app.routes[0]
-        self.assertIsInstance(route, Route)
-        self.assertIsInstance(route.handler, Handler)
-
-    def test_compile_routes__tuple_lazy_seq(self):
-        app = App(routes=(
-            ('/', '%s._test_handler_seq' % __name__),
-        ))
-        self.assertEqual(1, len(app.routes))
-        root_route = app.routes[0]
-        self.assertEqual(2, len(root_route.handler))
-        route_a, route_b = root_route.handler
-        self.assertIsInstance(route_a, Route)
-        self.assertIsInstance(route_b, Route)
-        self.assertEqual(_test_handler, route_a.handler)
-        self.assertEqual(_test_handler, route_b.handler)
-
-    def test_compile_routes__tuple_lazy_seq_routes(self):
-        app = App(routes=(
-            ('/', '%s._test_handler_seq_routes' % __name__),
-        ))
-        self.assertEqual(1, len(app.routes))
-        root_route = app.routes[0]
-        self.assertEqual(2, len(root_route.handler))
-        route_a, route_b = root_route.handler
-        self.assertIsInstance(route_a, Route)
-        self.assertIsInstance(route_b, Route)
-        self.assertEqual(_test_handler, route_a.handler)
-        self.assertEqual(_test_handler, route_b.handler)
-
-    def test_compile_routes__route(self):
+    def test_compile_routes(self):
         route = Route('/', _test_handler)
         app = App(routes=(route, ))
         self.assertListEqual([route], app.routes)
 
-    def test_compile_routes__route_lazy_handler(self):
-        route = Route('/', '%s._test_handler' % __name__)
-        app = App(routes=(route, ))
-        self.assertListEqual([route], app.routes)
-
-    def test_compile_routes__route_lazy_seq(self):
-        route = Route('/', '%s._test_handler_seq' % __name__)
+    def test_compile_routes__routes(self):
+        route = Route('/', _test_handler_seq_routes)
         app = App(routes=(route, ))
         self.assertListEqual([route], app.routes)
         route_a, route_b = route.handler
@@ -495,7 +412,12 @@ class AppTestCase(unittest.TestCase):
         self.assertEqual(_test_handler, route_a.handler)
         self.assertEqual(_test_handler, route_b.handler)
 
-    def test_compile_routes__route_lazy_seq_routes(self):
+    def test_compile_routes__lazy_handler(self):
+        route = Route('/', '%s._test_handler' % __name__)
+        app = App(routes=(route, ))
+        self.assertListEqual([route], app.routes)
+
+    def test_compile_routes__lazy_routes(self):
         route = Route('/', '%s._test_handler_seq_routes' % __name__)
         app = App(routes=(route, ))
         self.assertListEqual([route], app.routes)
@@ -508,7 +430,7 @@ class AppTestCase(unittest.TestCase):
     def test_compile_routes__typeerror(self):
         wrong_handler = 123
         routes = (
-            ('path', wrong_handler),
+            Route('path', wrong_handler),
         )
         with self.assertRaises(TypeError) as context:
             App(routes=routes)

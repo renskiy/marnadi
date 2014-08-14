@@ -27,7 +27,7 @@ More Complex Example
 ```python
 import re
 from marnadi.wsgi import App
-from marnadi import Response
+from marnadi import Response, Route
 
 
 class MyResponse(Response):
@@ -37,9 +37,9 @@ class MyResponse(Response):
         return 'foo is {foo}, bar is {bar}'.format(foo=foo, bar=bar)
 
 routes=(
-    (re.compile(r'/(?P<foo>\w+)/'), (
-        ('', MyResponse),
-        (re.compile(r'(?P<bar>\w+)/$'), MyResponse),
+    Route(re.compile(r'/(?P<foo>\w+)/'), (
+        Route('', MyResponse),
+        Route(re.compile(r'(?P<bar>\w+)/$'), MyResponse),
     )),
 )
 
