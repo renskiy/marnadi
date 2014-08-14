@@ -19,7 +19,7 @@ class Handler(type):
     def get_instance(cls, *args, **kwargs):
         return type.__call__(cls, *args, **kwargs)
 
-    def handler(cls, func):
+    def provider(cls, func):
         assert callable(func)
         attributes = dict(
             __func__=staticmethod(func),

@@ -83,11 +83,11 @@ class AppTestCase(unittest.TestCase):
         error = context.exception
         self.assertEqual('404 Not Found', error.status)
 
-    @Response.handler
+    @Response.provider
     def expected_handler(self, *args, **kwargs):
         pass
 
-    @Response.handler
+    @Response.provider
     def unexpected_handler(self, *args, **kwargs):
         pass
 

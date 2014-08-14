@@ -13,7 +13,7 @@ application = App()
 
 
 @application.route('/')
-@Response.handler
+@Response.provider
 def hello():
     return "Hello World"
 
