@@ -28,7 +28,7 @@ class Handler(type):
         )
         return type(cls)(func.__name__, (cls, ), attributes)
 
-    def start(cls, *args, **kwargs):
+    def start(cls, **kwargs):
         raise NotImplementedError
 
 
@@ -54,7 +54,7 @@ class Response(object):
     def __init__(self, request):
         self.request = request
 
-    def __call__(self, *method_args, **method_kwargs):
+    def __call__(self, **kwargs):
         if self.request.method not in self.supported_http_methods:
             raise HttpError(
                 '501 Not Implemented',
@@ -66,10 +66,10 @@ class Response(object):
                 '405 Method Not Allowed',
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
             )
-        return callback(*method_args, **method_kwargs)
+        return callback(**kwargs)
 
     @classmethod
-    def start(cls, *args, **kwargs):
+    def start(cls, **kwargs):
         """Start response with given params.
 
         Note:
@@ -81,7 +81,7 @@ class Response(object):
         request, start_response = yield
         try:
             response = cls.get_instance(request)
-            result = response(*args, **kwargs)
+            result = response(**kwargs)
             if isinstance(result, types.GeneratorType):
                 body = (
                     to_bytes(chunk, error_callback=cls.logger.exception)
@@ -111,7 +111,7 @@ class Response(object):
                 continue
             yield method
 
-    def options(self, *args, **kwargs):
+    def options(self, **kwargs):
         self.headers['Allow'] = ', '.join(self.allowed_http_methods)
 
     get = None
