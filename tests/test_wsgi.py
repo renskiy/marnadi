@@ -1,6 +1,9 @@
-import mock
 import re
 import unittest
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from marnadi import Route, Response
 from marnadi.errors import HttpError

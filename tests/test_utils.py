@@ -17,9 +17,9 @@ _test_set = set(_test_tuple)
 
 _test_dict = {'foo': 'bar'}
 
-_test_str = b'foo'
+_test_str = 'foo'
 
-_test_unicode = u'вася'
+_test_bytes = b'foo'
 
 
 def _test_function(*args, **kwargs):
@@ -59,8 +59,8 @@ class LazyTestCase(unittest.TestCase):
         self.assertEqual(_test_str, str(lazy_str))
 
     def test_lazy_bytes(self):
-        lazy_bytes = Lazy('%s._test_str' % __name__)
-        self.assertEqual(_test_str, bytes(lazy_bytes))
+        lazy_bytes = Lazy('%s._test_bytes' % __name__)
+        self.assertEqual(_test_bytes, bytes(lazy_bytes))
 
     def test_lazy_class(self):
         lazy_class = Lazy('%s._TestClass' % __name__)

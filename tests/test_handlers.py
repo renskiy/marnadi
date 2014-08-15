@@ -23,7 +23,7 @@ class HandlerTestCase(unittest.TestCase):
                 self.assertNotIn(header, headers)
 
         app = App(routes=routes)
-        actual_result = ''.join(app(environ, start_response))
+        actual_result = b''.join(app(environ, start_response))
         self.assertEqual(expected_result, actual_result)
 
     def test_handler_as_function(self):
@@ -37,7 +37,7 @@ class HandlerTestCase(unittest.TestCase):
         self.handler_parametrized_test_case(
             routes=routes,
             environ=environ,
-            expected_result='hello',
+            expected_result=b'hello',
             expected_headers=(
                 ('Content-Type', 'text/plain; charset=utf-8'),
             ),
@@ -57,7 +57,7 @@ class HandlerTestCase(unittest.TestCase):
         self.handler_parametrized_test_case(
             routes=routes,
             environ=environ,
-            expected_result='hello',
+            expected_result=b'hello',
             expected_headers=(
                 ('Content-Type', 'text/plain; charset=utf-8'),
             ),
