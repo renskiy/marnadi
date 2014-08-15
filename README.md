@@ -3,6 +3,8 @@ marnadi
 
 Yet another WSGI Web Framework, the simplest and fastest ever written.
 
+Does not have any dependency. Works both with **Python 2** and **Python 3**.
+
 Hello World
 -------
 ```python
