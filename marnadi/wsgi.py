@@ -134,7 +134,10 @@ class App(object):
             handler.send(None)  # start coroutine
             return handler.send((request, start_response))
         except HttpError as error:
-            start_response(error.status, error.headers)
+            start_response(
+                error.status,
+                list(error.headers.items(stringify=True))
+            )
             return error
 
     @staticmethod

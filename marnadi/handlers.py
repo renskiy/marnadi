@@ -46,7 +46,7 @@ class Response(object):
     status = '200 OK'
 
     headers = descriptors.Headers(
-        ('Content-Type', 'text/plain; charset=utf-8'),
+        ('Content-Type', Header('text/plain', charset='utf-8')),
     )
 
     cookies = descriptors.Cookies()
@@ -99,7 +99,7 @@ class Response(object):
             raise
         except Exception as error:
             cls.logger.exception(error)
-            raise HttpError(exception=error)
+            raise HttpError
 
     @property
     def allowed_http_methods(self):
