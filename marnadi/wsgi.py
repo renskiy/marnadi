@@ -169,9 +169,7 @@ class App(object):
         Note:
             If you wish for example automatically redirect all requests
             without trailing slash in URL to URL with persisting one you may
-            extend this method and return special redirect handler
-            (or alternatively you can raise `HttpError` with 301 status and
-            Location header with necessary URL).
+            extend this method and return special redirect handler.
         """
         routes = routes or self.routes
         params = params or {}
