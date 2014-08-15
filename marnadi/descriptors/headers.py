@@ -29,15 +29,15 @@ class HeadersMixin(collections.Mapping):
     def _headers(self):
         raise ValueError("This property must be set before using")
 
-    def items(self):
+    def items(self, stringify=False):
         for header, values in self._headers.items():
             for value in values:
-                yield header, value
+                yield header, str(value) if stringify else value
 
-    def values(self):
+    def values(self, stringify=False):
         for values in self._headers.values():
             for value in values:
-                yield value
+                yield str(value) if stringify else value
 
 
 class ResponseHeaders(HeadersMixin, collections.MutableMapping):

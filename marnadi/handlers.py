@@ -46,7 +46,7 @@ class Response(object):
     status = '200 OK'
 
     headers = descriptors.Headers(
-        ('Content-Type', Header('text/plain', charset='utf-8')),
+        ('Content-Type', 'text/plain; charset=utf-8'),
     )
 
     cookies = descriptors.Cookies()
@@ -92,10 +92,7 @@ class Response(object):
                 response.headers.setdefault('Content-Length', len(body[0]))
             start_response(
                 response.status,
-                [
-                    (header, str(value))
-                    for header, value in response.headers.items()
-                ],
+                list(response.headers.items(stringify=True)),
             )
             yield body
         except HttpError:
