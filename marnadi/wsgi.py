@@ -118,8 +118,7 @@ class App(object):
     provided routes list it can determine which handler should be called.
 
     Args:
-        routes (iterable): routes list each element of which can be either
-            instance of :class:`Route` or sequence of one's arguments.
+        routes (iterable): list of :class:`Route`.
     """
 
     __slots__ = 'routes',
