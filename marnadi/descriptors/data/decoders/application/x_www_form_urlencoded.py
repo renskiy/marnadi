@@ -5,7 +5,7 @@ except ImportError:
 
 
 def decoder(request):
-    return parse.parse_qs(
+    return dict(parse.parse_qsl(
         b''.join(request.input),
         keep_blank_values=True,
-    )
+    ))

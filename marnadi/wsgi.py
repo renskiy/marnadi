@@ -91,12 +91,12 @@ class Request(collections.Mapping):
     @cached_property
     def query(self):
         try:
-            return parse.parse_qsl(
+            return dict(parse.parse_qsl(
                 self['QUERY_STRING'],
                 keep_blank_values=True,
-            )
+            ))
         except KeyError:
-            return ()
+            return {}
 
     data = descriptors.Data(
         (
