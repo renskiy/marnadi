@@ -89,11 +89,9 @@ class cached_property(CachedDescriptor):
 class LazyType(type):
 
     def __call__(cls, path):
-        if isinstance(path, cls):
+        if isinstance(path, cls) or not isinstance(path, str):
             return path
-        elif isinstance(path, str):
-            return super(LazyType, cls).__call__(path)
-        return path
+        return super(LazyType, cls).__call__(path)
 
 
 @metaclass(LazyType)
