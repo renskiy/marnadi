@@ -160,7 +160,7 @@ class App(object):
 
     def route(self, path, params=None):
         def _decorator(handler):
-            route = Route(path, handler, params)
+            route = Route(path, handler, params=params)
             self.routes.append(self.compile_route(route))
             return handler
         return _decorator
