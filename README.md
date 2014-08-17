@@ -39,9 +39,9 @@ class MyResponse(Response):
         return 'foo is {foo}, bar is {bar}'.format(foo=foo, bar=bar)
 
 routes=(
-    Route(re.compile(r'/(?P<foo>\w+)/'), (
-        Route('', MyResponse),
-        Route(re.compile(r'(?P<bar>\w+)/$'), MyResponse),
+    Route('/{foo}'), (
+        Route('/', MyResponse),
+        Route('/{bar}/', MyResponse),
     )),
 )
 
