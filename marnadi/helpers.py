@@ -7,20 +7,45 @@ pattern_type = type(re.compile(''))
 
 class Route(object):
 
-    __slots__ = 'path', 'handler', 'params'
+    __slots__ = 'path', 'handler', 'params', 'pattern'
+
+    placeholder_re = re.compile(r'\{([a-zA-Z_][a-zA-Z0-9_]*)\}')
 
     def __init__(self, path, handler, params=None):
         self.path = path
         self.handler = Lazy(handler)
         self.params = params or {}
+        self.pattern = self.make_pattern(path)
 
-    def match(self, path):
-        if isinstance(self.path, pattern_type):
-            match = self.path.match(path)
+    def match(self, request_path):
+        pattern = self.pattern or self.path
+        if isinstance(pattern, pattern_type):
+            match = pattern.match(request_path)
             if match:
-                return path[match.end(0):], match.groupdict()
-        elif path.startswith(self.path):
-            return path[len(self.path):], ()
+                return request_path[match.end(0):], match.groupdict()
+        elif request_path.startswith(pattern):
+            return request_path[len(pattern):], ()
+
+    @classmethod
+    def make_pattern(cls, path):
+        if isinstance(path, pattern_type):
+            return
+        unescaped_path = path.replace('{{', '').replace('}}', '')
+        placeholders = cls.placeholder_re.findall(unescaped_path)
+        if not placeholders:
+            return
+        pattern = re.escape(path.replace('{{', '{').replace('}}', '}'))
+        for placeholder in placeholders:
+            pattern = pattern.replace(
+                '\\{{{}\\}}'.format(placeholder),
+                '(?P<{}>.+)'.format(placeholder),
+            )
+        return re.compile(pattern)
+
+    def restore_path(self, **params):
+        if isinstance(self.path, pattern_type):
+            raise TypeError("can't restore path from native regular expression")
+        return self.path.format(**params)
 
 
 class Header(object):
