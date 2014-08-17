@@ -1,4 +1,8 @@
+import re
+
 from marnadi.utils import Lazy
+
+pattern_type = type(re.compile(''))
 
 
 class Route(object):
@@ -9,6 +13,14 @@ class Route(object):
         self.path = path
         self.handler = Lazy(handler)
         self.params = params or {}
+
+    def match(self, path):
+        if isinstance(self.path, pattern_type):
+            match = self.path.match(path)
+            if match:
+                return path[match.end(0):], match.groupdict()
+        elif path.startswith(self.path):
+            return path[len(self.path):], ()
 
 
 class Header(object):

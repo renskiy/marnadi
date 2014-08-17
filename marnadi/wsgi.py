@@ -177,17 +177,10 @@ class App(object):
         routes = routes or self.routes
         params = params or {}
         for route in routes:
-            if hasattr(route.path, 'match'):  # assume it's compiled regexp
-                match = route.path.match(path)
-                if not match:
-                    continue
-                url_params = match.groupdict()
-                rest_path = path[match.end(0):]
-            elif path.startswith(route.path):
-                rest_path = path[len(route.path):]
-                url_params = ()
-            else:
+            match = route.match(path)
+            if not match:
                 continue
+            rest_path, url_params = match
             if isinstance(route.handler, list):
                 try:
                     return self.get_handler(
