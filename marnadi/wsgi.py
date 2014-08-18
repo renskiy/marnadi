@@ -1,4 +1,5 @@
 import collections
+import functools
 import itertools
 try:
     from urllib import parse
@@ -121,9 +122,10 @@ class App(object):
         routes (iterable): list of :class:`Route`.
     """
 
-    __slots__ = 'routes',
+    __slots__ = 'routes', 'routes_map'
 
     def __init__(self, routes=()):
+        self.routes_map = {}
         self.routes = self.compile_routes(routes)
 
     def __call__(self, environ, start_response):
@@ -143,27 +145,41 @@ class App(object):
     def make_request_object(environ):
         return Request(environ)
 
-    def compile_routes(self, routes):
-        return list(map(self.compile_route, routes))
+    def compile_routes(self, routes, parents=()):
+        callback = functools.partial(self.compile_route, parents=parents)
+        return list(map(callback, routes))
 
-    def compile_route(self, route):
+    def compile_route(self, route, parents=()):
         assert isinstance(route, Route)
+        parents = parents + (route, )
+        if route.name:
+            self.routes_map[route.name] = parents
         if isinstance(route.handler, Handler):
             return route
         try:
-            route.handler = self.compile_routes(route.handler)
+            route.handler = self.compile_routes(route.handler, parents=parents)
         except TypeError:
             raise TypeError(
                 "Route's handler must be either subclass of Handler " +
                 "or sequence of nested subroutes")
         return route
 
-    def route(self, path, params=None):
+    def route(self, path, name=None, params=None, patterns=None):
         def _decorator(handler):
-            route = Route(path, handler, params=params)
+            route = Route(
+                path, handler, name=name, params=params, patterns=patterns)
             self.routes.append(self.compile_route(route))
             return handler
         return _decorator
+
+    def make_url(self, *route_name, **params):
+        if len(route_name) != 1:
+            raise TypeError(
+                "either route_name isn't provided or it isn't a single value")
+        return ''.join(
+            route.restore_path(**params)
+            for route in self.routes_map[route_name[0]]
+        )
 
     def get_handler(self, path, routes=None, params=None):
         """Return handler according to the given path.

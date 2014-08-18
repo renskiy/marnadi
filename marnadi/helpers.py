@@ -7,13 +7,14 @@ pattern_type = type(re.compile(''))
 
 class Route(object):
 
-    __slots__ = 'path', 'handler', 'params', 'pattern'
+    __slots__ = 'path', 'handler', 'params', 'pattern', 'name'
 
     placeholder_re = re.compile(r'\{([a-zA-Z_][a-zA-Z0-9_]*)\}')
 
-    def __init__(self, path, handler, params=None, patterns=None):
+    def __init__(self, path, handler, name=None, params=None, patterns=None):
         self.path = path
         self.handler = Lazy(handler)
+        self.name = name
         self.params = params or {}
         self.pattern = self.make_pattern(path, patterns)
 

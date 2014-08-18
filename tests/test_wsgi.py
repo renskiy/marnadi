@@ -153,7 +153,7 @@ class AppTestCase(unittest.TestCase):
         self._get_handler_parametrized_test_case(
             routes=(
                 Route(re.compile(r'/foo'),
-                      self.unexpected_handler, dict(bar='baz')),
+                      self.unexpected_handler, params=dict(bar='baz')),
                 Route(re.compile(r'/'), self.expected_handler),
             ),
             requested_path='/',
