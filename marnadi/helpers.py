@@ -11,11 +11,11 @@ class Route(object):
 
     placeholder_re = re.compile(r'\{([a-zA-Z_][a-zA-Z0-9_]*)\}')
 
-    def __init__(self, path, handler, params=None):
+    def __init__(self, path, handler, params=None, patterns=None):
         self.path = path
         self.handler = Lazy(handler)
         self.params = params or {}
-        self.pattern = self.make_pattern(path)
+        self.pattern = self.make_pattern(path, patterns)
 
     def match(self, request_path):
         pattern = self.pattern or self.path
@@ -27,18 +27,22 @@ class Route(object):
             return request_path[len(pattern):], ()
 
     @classmethod
-    def make_pattern(cls, path):
+    def make_pattern(cls, path, placeholder_patterns=None):
         if isinstance(path, pattern_type):
             return
         unescaped_path = path.replace('{{', '').replace('}}', '')
         placeholders = cls.placeholder_re.findall(unescaped_path)
         if not placeholders:
             return
+        placeholder_patterns = placeholder_patterns or {}
         pattern = re.escape(path.replace('{{', '{').replace('}}', '}'))
         for placeholder in placeholders:
             pattern = pattern.replace(
-                '\\{{{}\\}}'.format(placeholder),
-                '(?P<{}>.+)'.format(placeholder),
+                r'\{{{}\}}'.format(placeholder),
+                r'(?P<{}>{})'.format(
+                    placeholder,
+                    placeholder_patterns.get(placeholder, r'\w+')
+                ),
             )
         return re.compile(pattern)
 
