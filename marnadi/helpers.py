@@ -2,8 +2,6 @@ import re
 
 from marnadi.utils import Lazy
 
-pattern_type = type(re.compile(''))
-
 
 class Route(object):
 
@@ -19,18 +17,15 @@ class Route(object):
         self.pattern = self.make_pattern(path, patterns)
 
     def match(self, request_path):
-        pattern = self.pattern or self.path
-        if isinstance(pattern, pattern_type):
-            match = pattern.match(request_path)
+        if self.pattern is not None:
+            match = self.pattern.match(request_path)
             if match:
                 return request_path[match.end(0):], match.groupdict()
-        elif request_path.startswith(pattern):
-            return request_path[len(pattern):], ()
+        elif request_path.startswith(self.path):
+            return request_path[len(self.path):], ()
 
     @classmethod
     def make_pattern(cls, path, placeholder_patterns=None):
-        if isinstance(path, pattern_type):
-            return
         unescaped_path = path.replace('{{', '').replace('}}', '')
         placeholders = cls.placeholder_re.findall(unescaped_path)
         if not placeholders:
@@ -48,8 +43,6 @@ class Route(object):
         return re.compile(pattern)
 
     def restore_path(self, **params):
-        if isinstance(self.path, pattern_type):
-            raise TypeError("can't restore path from native regular expression")
         return self.path.format(**params)
 
 
