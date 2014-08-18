@@ -172,7 +172,7 @@ class App(object):
             return handler
         return _decorator
 
-    def get_path(self, *route_name, **params):
+    def make_path(self, *route_name, **params):
         if len(route_name) != 1:
             raise TypeError(
                 "either route_name isn't provided or it isn't a single value")
