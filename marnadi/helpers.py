@@ -1,14 +1,49 @@
+import re
+
 from marnadi.utils import Lazy
 
 
 class Route(object):
 
-    __slots__ = 'path', 'handler', 'params'
+    __slots__ = 'path', 'handler', 'params', 'pattern', 'name'
 
-    def __init__(self, path, handler, params=None):
+    placeholder_re = re.compile(r'\{([a-zA-Z_][a-zA-Z0-9_]*)\}')
+
+    def __init__(self, path, handler, name=None, params=None, patterns=None):
         self.path = path
         self.handler = Lazy(handler)
+        self.name = name
         self.params = params or {}
+        self.pattern = self.make_pattern(path, patterns)
+
+    def match(self, request_path):
+        if self.pattern is not None:
+            match = self.pattern.match(request_path)
+            if match:
+                return request_path[match.end(0):], match.groupdict()
+        elif request_path.startswith(self.path):
+            return request_path[len(self.path):], ()
+
+    @classmethod
+    def make_pattern(cls, path, placeholder_patterns=None):
+        unescaped_path = path.replace('{{', '').replace('}}', '')
+        placeholders = cls.placeholder_re.findall(unescaped_path)
+        if not placeholders:
+            return
+        placeholder_patterns = placeholder_patterns or {}
+        pattern = re.escape(path.replace('{{', '{').replace('}}', '}'))
+        for placeholder in placeholders:
+            pattern = pattern.replace(
+                r'\{{{}\}}'.format(placeholder),
+                r'(?P<{}>{})'.format(
+                    placeholder,
+                    placeholder_patterns.get(placeholder, r'\w+')
+                ),
+            )
+        return re.compile(pattern)
+
+    def restore_path(self, **params):
+        return self.path.format(**params)
 
 
 class Header(object):
