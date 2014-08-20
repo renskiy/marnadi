@@ -34,10 +34,10 @@ class Route(object):
         pattern = re.escape(path.replace('{{', '{').replace('}}', '}'))
         for placeholder in placeholders:
             pattern = pattern.replace(
-                r'\{{{}\}}'.format(placeholder),
-                r'(?P<{}>{})'.format(
-                    placeholder,
-                    placeholder_patterns.get(placeholder, r'\w+')
+                r'\{{{placeholder}\}}'.format(placeholder=placeholder),
+                r'(?P<{name}>{pattern})'.format(
+                    name=placeholder,
+                    pattern=placeholder_patterns.get(placeholder, r'\w+')
                 ),
             )
         return re.compile(pattern)
