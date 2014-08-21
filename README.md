@@ -12,7 +12,11 @@ Features
 * Headers, query, data, cookies descriptors
 * Rich extending abilities
 
-Hello World
+Installation
+------------
+`pip install marnadi`
+
+"Hello World"
 -------
 
     from marnadi.wsgi import App
@@ -31,7 +35,7 @@ Hello World
         make_server('', 8000, application).serve_forever()
 
 
-More Complex Example
+More complex example
 -------
 
     import re
