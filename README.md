@@ -14,7 +14,7 @@ Features
 
 Hello World
 -------
-```python
+
     from marnadi.wsgi import App
     from marnadi import Response
     
@@ -29,11 +29,11 @@ Hello World
     if __name__ == '__main__':
         from wsgiref.simple_server import make_server
         make_server('', 8000, application).serve_forever()
-```
+
 
 More Complex Example
 -------
-```python
+
     import re
     from marnadi.wsgi import App
     from marnadi import Response, Route
@@ -57,4 +57,3 @@ More Complex Example
     if __name__ == '__main__':
         from wsgiref.simple_server import make_server
         make_server('', 8000, application).serve_forever()
-```
