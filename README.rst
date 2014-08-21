@@ -14,10 +14,13 @@ Features
 
 Installation
 ------------
-`pip install marnadi`
+.. code::
+
+    pip install marnadi
 
 "Hello World"
 -------
+.. code:: python
 
     from marnadi.wsgi import App
     from marnadi import Response
@@ -34,9 +37,9 @@ Installation
         from wsgiref.simple_server import make_server
         make_server('', 8000, application).serve_forever()
 
-
 More complex example
 -------
+.. code:: python
 
     import re
     from marnadi.wsgi import App
