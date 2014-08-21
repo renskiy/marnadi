@@ -19,7 +19,7 @@ Installation
     pip install marnadi
 
 "Hello World"
--------
+-------------
 .. code:: python
 
     from marnadi.wsgi import App
@@ -38,7 +38,7 @@ Installation
         make_server('', 8000, application).serve_forever()
 
 More complex example
--------
+--------------------
 .. code:: python
 
     import re

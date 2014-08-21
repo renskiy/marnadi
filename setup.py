@@ -16,7 +16,6 @@ setup(
     license='MIT',
     description='Yet another WSGI web framework',
     keywords='WSGI, HTTP, REST',
-    long_description=open('README.md').read(),
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
