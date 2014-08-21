@@ -1,5 +1,8 @@
 from distutils.core import setup
 
+with open('README.rst') as description:
+    long_description = description.read()
+
 setup(
     name='Marnadi',
     version='0.1.0',
@@ -16,6 +19,7 @@ setup(
     license='MIT',
     description='Yet another WSGI web framework',
     keywords='WSGI, HTTP, REST',
+    long_description=long_description,
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',

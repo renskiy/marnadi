@@ -14,13 +14,13 @@ Features
 
 Installation
 ------------
-.. code::
+Simply execute following line::
 
     pip install marnadi
 
 "Hello World"
 -------------
-.. code:: python
+Run this script and open http://localhost:8000 on your browser::
 
     from marnadi.wsgi import App
     from marnadi import Response
@@ -39,7 +39,7 @@ Installation
 
 More complex example
 --------------------
-.. code:: python
+Script below will respond to http://localhost:8000/foo/bar/ and http://localhost:8000/foo/ requests::
 
     import re
     from marnadi.wsgi import App
