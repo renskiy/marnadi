@@ -5,6 +5,13 @@ Yet another WSGI Web Framework, the simplest and fastest ever written.
 
 Has no dependencies. Works both with **Python 2** and **Python 3**.
 
+Features
+--------
+* Support both of functional and object-oriented programming styles
+* Dynamic routes, e.g. "/path/{param}/"
+* Headers, query, data, cookies descriptors
+* Rich extending abilities
+
 Hello World
 -------
 ```python
