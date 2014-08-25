@@ -25,6 +25,7 @@ class Handler(type):
             __func__=staticmethod(func),
             __module__=func.__module__,
             __doc__=func.__doc__,
+            __slots__=(),
         )
         return type(cls)(func.__name__, (cls, ), attributes)
 
