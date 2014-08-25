@@ -9,7 +9,7 @@ except NameError:
 
 def metaclass(mcs):
     def _decorator(cls):
-        attrs = dict(cls.__dict__)
+        attrs = dict(vars(cls))
         try:
             if isinstance(cls.__slots__, str):
                 slots = cls.__slots__,
