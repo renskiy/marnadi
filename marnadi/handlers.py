@@ -1,9 +1,14 @@
 import logging
-import types
+import itertools
 
 from marnadi import descriptors, Header
 from marnadi.errors import HttpError
 from marnadi.utils import metaclass, to_bytes
+
+try:
+    str = unicode
+except NameError:
+    pass
 
 
 class Handler(type):
@@ -83,14 +88,28 @@ class Response(object):
         try:
             response = cls.get_instance(request)
             result = response(**kwargs)
-            if isinstance(result, types.GeneratorType):
-                body = (
-                    to_bytes(chunk, error_callback=cls.logger.exception)
-                    for chunk in result
-                )
-            else:
+            if isinstance(result, (str, bytes)):
                 body = (to_bytes(result), )
                 response.headers.setdefault('Content-Length', len(body[0]))
+            else:
+                try:
+                    first_chunk = next(iter(result), b'')
+                except TypeError:
+                    raise TypeError("response must be instance of str/bytes "
+                                    "or support iteration")
+                first_chunk = to_bytes(first_chunk)
+                try:
+                    if len(result) == 1:
+                        response.headers.setdefault(
+                            'Content-Length',
+                            len(first_chunk),
+                        )
+                except TypeError:
+                    pass
+                body = (
+                    to_bytes(chunk, error_callback=cls.logger.exception)
+                    for chunk in itertools.chain((first_chunk, ), result)
+                )
             start_response(
                 response.status,
                 list(response.headers.items(stringify=True)),
