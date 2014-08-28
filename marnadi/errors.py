@@ -4,6 +4,8 @@ from marnadi.utils import to_bytes
 
 class HttpError(Exception):
 
+    __slots__ = '__weakref__',
+
     headers = descriptors.Headers(
         ('Content-Type', Header('text/plain', charset='utf-8')),
     )
