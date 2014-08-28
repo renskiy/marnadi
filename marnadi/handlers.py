@@ -15,6 +15,8 @@ class Handler(type):
 
     __func__ = None
 
+    logger = logging.getLogger('marnadi')
+
     def __call__(cls, *args, **kwargs):
         func = cls.__func__
         if func is not None:
@@ -34,47 +36,6 @@ class Handler(type):
         )
         return type(cls)(func.__name__, (cls, ), attributes)
 
-    def start(cls, **kwargs):
-        raise NotImplementedError
-
-
-@metaclass(Handler)
-class Response(object):
-
-    __slots__ = 'request', '__weakref__'
-
-    logger = logging.getLogger('marnadi')
-
-    supported_http_methods = {
-        'OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',
-    }
-
-    status = '200 OK'
-
-    headers = descriptors.Headers(
-        ('Content-Type', Header('text/plain', charset='utf-8')),
-    )
-
-    cookies = descriptors.Cookies()
-
-    def __init__(self, request):
-        self.request = request
-
-    def __call__(self, **kwargs):
-        if self.request.method not in self.supported_http_methods:
-            raise HttpError(
-                '501 Not Implemented',
-                headers=(('Allow', ', '.join(self.allowed_http_methods)), )
-            )
-        callback = getattr(self, self.request.method.lower()) or self.__func__
-        if callback is None:
-            raise HttpError(
-                '405 Method Not Allowed',
-                headers=(('Allow', ', '.join(self.allowed_http_methods)), )
-            )
-        return callback(**kwargs)
-
-    @classmethod
     def start(cls, **kwargs):
         """Start response with given params.
 
@@ -120,6 +81,41 @@ class Response(object):
         except Exception as error:
             cls.logger.exception(error)
             raise HttpError
+
+
+@metaclass(Handler)
+class Response(object):
+
+    __slots__ = 'request', '__weakref__'
+
+    supported_http_methods = {
+        'OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',
+    }
+
+    status = '200 OK'
+
+    headers = descriptors.Headers(
+        ('Content-Type', Header('text/plain', charset='utf-8')),
+    )
+
+    cookies = descriptors.Cookies()
+
+    def __init__(self, request):
+        self.request = request
+
+    def __call__(self, **kwargs):
+        if self.request.method not in self.supported_http_methods:
+            raise HttpError(
+                '501 Not Implemented',
+                headers=(('Allow', ', '.join(self.allowed_http_methods)), )
+            )
+        callback = getattr(self, self.request.method.lower()) or self.__func__
+        if callback is None:
+            raise HttpError(
+                '405 Method Not Allowed',
+                headers=(('Allow', ', '.join(self.allowed_http_methods)), )
+            )
+        return callback(**kwargs)
 
     @property
     def allowed_http_methods(self):
