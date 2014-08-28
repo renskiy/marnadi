@@ -8,12 +8,20 @@ class HttpError(Exception):
         ('Content-Type', Header('text/plain', charset='utf-8')),
     )
 
-    def __init__(self, status='500 Internal Server Error',
-                 data=None, headers=None):
+    def __init__(
+        self,
+        status='500 Internal Server Error',
+        data=None,
+        headers=None,
+        error=None,
+        traceback=None,
+    ):
         self.status = status
         self.data = data
         if headers:
             self.headers.extend(headers)
+        self.error = error
+        self.traceback = traceback
 
     def __len__(self):
         return 1

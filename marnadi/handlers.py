@@ -1,5 +1,6 @@
 import logging
 import itertools
+import sys
 
 from marnadi import descriptors, Header
 from marnadi.errors import HttpError
@@ -43,7 +44,7 @@ class Handler(type):
             Error responses can be customized by overriding this method.
             For example your version may catch `HttpError` from original
             implementation and reraise it with necessary content data
-            (which may be a HTML containing formatted stack trace).
+            (which may be a HTML containing formatted traceback).
         """
         request, start_response = yield
         try:
@@ -80,7 +81,10 @@ class Handler(type):
             raise
         except Exception as error:
             cls.logger.exception(error)
-            raise HttpError
+            raise HttpError(
+                error=error,
+                traceback=sys.exc_info()[2],
+            )
 
 
 @metaclass(Handler)
