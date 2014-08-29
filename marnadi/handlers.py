@@ -54,23 +54,21 @@ class Handler(type):
                 body = (to_bytes(result), )
                 response.headers.setdefault('Content-Length', len(body[0]))
             else:
+                chunks = iter(result)
+                first_chunk = to_bytes(next(chunks, b''))
                 try:
-                    first_chunk = next(iter(result), b'')
-                except TypeError:
-                    raise TypeError("response must be instance of str/bytes "
-                                    "or support iteration")
-                first_chunk = to_bytes(first_chunk)
-                try:
-                    if len(result) == 1:
+                    result_length = len(result)
+                except TypeError:  # result doesn't support len()
+                    pass
+                else:
+                    if result_length <= 1:
                         response.headers.setdefault(
                             'Content-Length',
                             len(first_chunk),
                         )
-                except TypeError:
-                    pass
                 body = (
                     to_bytes(chunk, error_callback=cls.logger.exception)
-                    for chunk in itertools.chain((first_chunk, ), result)
+                    for chunk in itertools.chain((first_chunk, ), chunks)
                 )
             start_response(
                 response.status,
