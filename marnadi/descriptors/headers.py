@@ -1,5 +1,4 @@
 import collections
-import copy
 import itertools
 
 from marnadi.utils import cached_property, CachedDescriptor
@@ -47,26 +46,21 @@ class ResponseHeaders(HeadersMixin, collections.MutableMapping):
     def __init__(self, default_headers):
         self._headers = default_headers
 
-    @cached_property
-    def _modified_headers(self):
-        modified_headers = self._headers = copy.copy(self._headers)
-        return modified_headers
-
     def __delitem__(self, header):
-        del self._modified_headers[header.title()]
+        del self._headers[header.title()]
 
     def __setitem__(self, header, value):
-        self._modified_headers[header.title()] = [value]
+        self._headers[header.title()] = [value]
 
     def append(self, header, value):
-        self._modified_headers[header.title()].append(value)
+        self._headers[header.title()].append(value)
 
     def extend(self, *headers):
         for header in headers:
             self.append(*header)
 
     def setdefault(self, header, default=None):
-        return self._modified_headers.setdefault(header.title(), [default])
+        return self._headers.setdefault(header.title(), [default])
 
     def clear(self, *headers):
         if headers:
@@ -76,7 +70,7 @@ class ResponseHeaders(HeadersMixin, collections.MutableMapping):
                 except KeyError:
                     pass
         else:
-            self._modified_headers.clear()
+            self._headers.clear()
 
 
 class Headers(CachedDescriptor, HeadersMixin):
@@ -93,4 +87,4 @@ class Headers(CachedDescriptor, HeadersMixin):
             self._headers[header.title()].append(value)
 
     def get_value(self, instance):
-        return ResponseHeaders(default_headers=self._headers)
+        return ResponseHeaders(default_headers=self._headers.copy())
