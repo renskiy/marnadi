@@ -50,7 +50,7 @@ class Handler(type):
         try:
             response = cls.get_instance(request)
             result = response(**kwargs)
-            if isinstance(result, (str, bytes)):
+            if result is None or isinstance(result, (str, bytes)):
                 body = (to_bytes(result), )
                 response.headers.setdefault('Content-Length', len(body[0]))
             else:
