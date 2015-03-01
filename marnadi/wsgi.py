@@ -133,8 +133,8 @@ class App(object):
             request = self.make_request_object(environ)
             handler = self.get_handler(request.path)
             response = handler.send((self, request))
-        except HttpError as response:
-            pass
+        except HttpError as error:
+            response = error
         start_response(
             response.status,
             list(response.headers.items(stringify=True))
