@@ -50,8 +50,7 @@ class Handler(type):
         application, request = yield
         try:
             response = cls.get_instance(application, request)
-            response.iterator.send(kwargs)
-            yield response
+            yield response.iterator.send(kwargs)
         except HttpError:
             raise
         except Exception as error:
@@ -103,12 +102,13 @@ class Response(object):
     @cached_property
     @coroutine
     def iterator(self):
-        kwargs = yield  # kwargs injection
-        result = self(**kwargs)
+        kwargs = yield  # optional request params injection
+        result = self(**(kwargs or {}))
         if result is None or isinstance(result, (str, bytes)):
             chunk = to_bytes(result)
             self.headers.setdefault('Content-Length', len(chunk))
-            yield  # kwargs injection returns None
+            if kwargs is not None:
+                yield self  # request params injection returns self
             yield chunk
         else:
             chunks = iter(result)
@@ -123,7 +123,8 @@ class Response(object):
                         'Content-Length',
                         len(first_chunk),
                     )
-            yield  # kwargs injection returns None
+            if kwargs is not None:
+                yield self  # request params injection returns self
             for chunk in itertools.chain((first_chunk, ), chunks):
                 yield to_bytes(chunk, error_callback=self.logger.exception)
 
