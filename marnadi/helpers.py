@@ -46,6 +46,23 @@ class Route(object):
         return self.path.format(**params)
 
 
+class Routes(list):
+
+    __slots__ = ('path', )
+
+    def __init__(self, seq=(), path=''):
+        super(Routes, self).__init__(seq)
+        self.path = path
+
+    def route(self, path, name=None, params=None, patterns=None):
+        def _decorator(handler):
+            route = Route(self.path + path, handler,
+                          name=name, params=params, patterns=patterns)
+            self.append(route)
+            return handler
+        return _decorator
+
+
 class Header(object):
 
     __slots__ = 'value', 'params'
