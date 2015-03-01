@@ -47,9 +47,9 @@ class Handler(type):
             implementation and reraise it with necessary content data
             (which may be a HTML containing formatted traceback).
         """
-        request = yield
+        application, request = yield
         try:
-            response = cls.get_instance(request)
+            response = cls.get_instance(application, request)
             response.iterator.send(kwargs)
             yield response
         except HttpError:
@@ -65,7 +65,7 @@ class Handler(type):
 @metaclass(Handler)
 class Response(object):
 
-    __slots__ = 'request', '__weakref__'
+    __slots__ = 'application', 'request', '__weakref__'
 
     supported_http_methods = {
         'OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',
@@ -79,7 +79,8 @@ class Response(object):
 
     cookies = descriptors.Cookies()
 
-    def __init__(self, request):
+    def __init__(self, application, request):
+        self.application = application
         self.request = request
 
     def __call__(self, **kwargs):
