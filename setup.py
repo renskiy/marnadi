@@ -5,7 +5,7 @@ with open('README.rst') as description:
 
 setup(
     name='Marnadi',
-    version='0.1.2',
+    version='0.2.1',
     author='Rinat Khabibiev',
     author_email='srenskiy@gmail.com',
     packages=[
@@ -21,7 +21,7 @@ setup(
     keywords='WSGI, HTTP, REST',
     long_description=long_description,
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Environment :: Web Environment',
         'License :: OSI Approved :: MIT License',
