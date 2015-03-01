@@ -132,14 +132,14 @@ class App(object):
         try:
             request = self.make_request_object(environ)
             handler = self.get_handler(request.path)
-            handler.send(None)  # start coroutine
-            return handler.send((request, start_response))
-        except HttpError as error:
-            start_response(
-                error.status,
-                list(error.headers.items(stringify=True))
-            )
-            return error
+            response = handler.send(request)
+        except HttpError as response:
+            pass
+        start_response(
+            response.status,
+            list(response.headers.items(stringify=True))
+        )
+        return response
 
     @staticmethod
     def make_request_object(environ):

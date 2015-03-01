@@ -156,3 +156,11 @@ def to_bytes(obj, encoding='utf-8', error_callback=None):
         if error_callback is not None:
             error_callback(error)
         raise
+
+
+def coroutine(fn):
+    def _fn(*args, **kwargs):
+        co = fn(*args, **kwargs)
+        co.send(None)
+        return co
+    return _fn

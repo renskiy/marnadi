@@ -4,7 +4,7 @@ import sys
 
 from marnadi import descriptors, Header
 from marnadi.errors import HttpError
-from marnadi.utils import metaclass, to_bytes
+from marnadi.utils import metaclass, to_bytes, cached_property, coroutine
 
 try:
     str = unicode
@@ -37,6 +37,7 @@ class Handler(type):
         )
         return type(cls)(func.__name__, (cls, ), attributes)
 
+    @coroutine
     def start(cls, **kwargs):
         """Start response with given params.
 
@@ -46,35 +47,11 @@ class Handler(type):
             implementation and reraise it with necessary content data
             (which may be a HTML containing formatted traceback).
         """
-        request, start_response = yield
+        request = yield
         try:
             response = cls.get_instance(request)
-            result = response(**kwargs)
-            if result is None or isinstance(result, (str, bytes)):
-                body = (to_bytes(result), )
-                response.headers.setdefault('Content-Length', len(body[0]))
-            else:
-                chunks = iter(result)
-                first_chunk = to_bytes(next(chunks, b''))
-                try:
-                    result_length = len(result)
-                except TypeError:  # result doesn't support len()
-                    pass
-                else:
-                    if result_length <= 1:
-                        response.headers.setdefault(
-                            'Content-Length',
-                            len(first_chunk),
-                        )
-                body = (
-                    to_bytes(chunk, error_callback=cls.logger.exception)
-                    for chunk in itertools.chain((first_chunk, ), chunks)
-                )
-            start_response(
-                response.status,
-                list(response.headers.items(stringify=True)),
-            )
-            yield body
+            response.iterator.send(kwargs)
+            yield response
         except HttpError:
             raise
         except Exception as error:
@@ -118,6 +95,36 @@ class Response(object):
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
             )
         return callback(**kwargs)
+
+    def __iter__(self):
+        return self.iterator
+
+    @cached_property
+    @coroutine
+    def iterator(self):
+        kwargs = yield  # kwargs injection
+        result = self(**kwargs)
+        if result is None or isinstance(result, (str, bytes)):
+            chunk = to_bytes(result)
+            self.headers.setdefault('Content-Length', len(chunk))
+            yield  # kwargs injection returns None
+            yield chunk
+        else:
+            chunks = iter(result)
+            first_chunk = to_bytes(next(chunks, b''))
+            try:
+                result_length = len(result)
+            except TypeError:  # result doesn't support len()
+                pass
+            else:
+                if result_length <= 1:
+                    self.headers.setdefault(
+                        'Content-Length',
+                        len(first_chunk),
+                    )
+            yield  # kwargs injection returns None
+            for chunk in itertools.chain((first_chunk, ), chunks):
+                yield to_bytes(chunk, error_callback=self.logger.exception)
 
     @property
     def allowed_http_methods(self):
