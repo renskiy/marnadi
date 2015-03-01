@@ -20,7 +20,9 @@ Simply execute following line::
 
 "Hello World"
 -------------
-Run this script and open http://localhost:8000 on your browser::
+Run this script and open http://localhost:8000 on your browser:
+
+.. code-block:: python
 
     from marnadi.wsgi import App
     from marnadi import Response
@@ -39,7 +41,9 @@ Run this script and open http://localhost:8000 on your browser::
 
 More complex example
 --------------------
-Script below will respond to http://localhost:8000/foo/bar/ and http://localhost:8000/foo/ requests::
+Script below will respond to http://localhost:8000/foo/bar/ and http://localhost:8000/foo/ requests:
+
+.. code-block:: python
 
     import re
     from marnadi.wsgi import App
