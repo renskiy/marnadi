@@ -14,14 +14,12 @@ class HttpError(Exception):
         data=None,
         headers=None,
         error=None,
-        traceback=None,
     ):
         self.status = status
-        self.data = data
+        self.data = data or status
         if headers:
             self.headers.extend(headers)
         self.error = error
-        self.traceback = traceback
 
     def __len__(self):
         return 1

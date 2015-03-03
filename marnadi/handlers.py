@@ -1,6 +1,5 @@
 import logging
 import itertools
-import sys
 
 from marnadi import descriptors, Header
 from marnadi.errors import HttpError
@@ -55,10 +54,7 @@ class Handler(type):
             raise
         except Exception as error:
             cls.logger.exception(error)
-            raise HttpError(
-                error=error,
-                traceback=sys.exc_info()[2],
-            )
+            raise HttpError(error=error)
 
 
 @metaclass(Handler)
