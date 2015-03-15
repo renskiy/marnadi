@@ -23,7 +23,7 @@ class Handler(type):
             return func(*args, **kwargs)
         return super(Handler, cls).__call__(*args, **kwargs)
 
-    def get_instance(cls, *args, **kwargs):
+    def get_response(cls, *args, **kwargs):
         return type.__call__(cls, *args, **kwargs)
 
     def provider(cls, func):
@@ -37,8 +37,8 @@ class Handler(type):
         return type(cls)(func.__name__, (cls, ), attributes)
 
     @coroutine
-    def start(cls, **kwargs):
-        """Start response with given params.
+    def prepare(cls, **kwargs):
+        """Initializes response generator with given params.
 
         Note:
             Error responses can be customized by overriding this method.
@@ -48,7 +48,7 @@ class Handler(type):
         """
         application, request = yield
         try:
-            response = cls.get_instance(application, request)
+            response = cls.get_response(application, request)
             yield response.iterator.send(kwargs)
         except HttpError:
             raise

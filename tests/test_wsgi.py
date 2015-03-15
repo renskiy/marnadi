@@ -26,8 +26,8 @@ class AppTestCase(unittest.TestCase):
     def unexpected_handler(self, *args, **kwargs):
         pass
 
-    @mock.patch.object(unexpected_handler, 'start')
-    @mock.patch.object(expected_handler, 'start')
+    @mock.patch.object(unexpected_handler, 'prepare')
+    @mock.patch.object(expected_handler, 'prepare')
     def _get_handler_parametrized_test_case(
         self,
         expected,
@@ -631,7 +631,7 @@ class AppTestCase(unittest.TestCase):
             App(routes=routes)
         self.assertIn('subclass of Handler', str(context.exception))
 
-    @mock.patch.object(Response, 'start')
+    @mock.patch.object(Response, 'prepare')
     def test_route(self, mocked):
         def side_effect(**kwargs):
             self.assertDictEqual(
@@ -645,7 +645,7 @@ class AppTestCase(unittest.TestCase):
         app.get_handler('/foo')
         self.assertEqual(1, mocked.call_count)
 
-    @mock.patch.object(Response, 'start')
+    @mock.patch.object(Response, 'prepare')
     def test_route__routes(self, mocked):
         def side_effect(**kwargs):
             self.assertDictEqual(

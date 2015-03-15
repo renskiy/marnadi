@@ -208,7 +208,7 @@ class App(object):
                 except HttpError:
                     continue
             if not rest_path:
-                return route.handler.start(**self._merge_dicts(
+                return route.handler.prepare(**self._merge_dicts(
                     params, route.params, url_params))
         raise HttpError('404 Not Found')  # matching route not found
 
