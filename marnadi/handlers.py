@@ -23,9 +23,6 @@ class Handler(type):
             return func(*args, **kwargs)
         return super(Handler, cls).__call__(*args, **kwargs)
 
-    def get_response(cls, *args, **kwargs):
-        return type.__call__(cls, *args, **kwargs)
-
     def provider(cls, func):
         assert callable(func)
         attributes = dict(
@@ -43,13 +40,14 @@ class Handler(type):
         Note:
             Error responses can be customized by overriding this method.
             For example your version may catch `HttpError` from original
-            implementation and reraise it with necessary content data
+            implementation and re-raise it with necessary content data
             (which may be a HTML containing formatted traceback).
         """
-        application, request = yield
+        app, request = yield
         try:
-            response = cls.get_response(application, request)
-            yield response.iterator.send(kwargs)
+            response = type.__call__(cls, app, request)  # response instance
+            response.start(**kwargs)
+            yield response
         except HttpError:
             raise
         except Exception as error:
@@ -60,7 +58,7 @@ class Handler(type):
 @metaclass(Handler)
 class Response(object):
 
-    __slots__ = 'application', 'request', '__weakref__'
+    __slots__ = 'app', 'request', '__weakref__'
 
     supported_http_methods = {
         'OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',
@@ -74,8 +72,8 @@ class Response(object):
 
     cookies = descriptors.Cookies()
 
-    def __init__(self, application, request):
-        self.application = application
+    def __init__(self, app, request):
+        self.app = app
         self.request = request
 
     def __call__(self, **kwargs):
@@ -93,18 +91,26 @@ class Response(object):
         return callback(**kwargs)
 
     def __iter__(self):
-        return self.iterator
+        return self
+
+    def __next__(self):
+        return next(self.iterator)
+
+    def next(self):
+        return self.__next__()
+
+    def start(self, **kwargs):
+        result = self.__call__(**kwargs)
+        first_chunk = self.iterator.send(result)
+        self.iterator = itertools.chain((first_chunk, ), self.iterator)
 
     @cached_property
     @coroutine
     def iterator(self):
-        kwargs = yield  # optional request params injection
-        result = self(**(kwargs or {}))
+        result = yield
         if result is None or isinstance(result, (str, bytes)):
             chunk = to_bytes(result)
             self.headers.setdefault('Content-Length', len(chunk))
-            if kwargs is not None:
-                yield self  # request params injection returns self
             yield chunk
         else:
             chunks = iter(result)
@@ -119,8 +125,6 @@ class Response(object):
                         'Content-Length',
                         len(first_chunk),
                     )
-            if kwargs is not None:
-                yield self  # request params injection returns self
             for chunk in itertools.chain((first_chunk, ), chunks):
                 yield to_bytes(chunk, error_callback=self.logger.exception)
 
