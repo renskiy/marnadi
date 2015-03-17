@@ -101,8 +101,10 @@ class Response(object):
 
     def start(self, **kwargs):
         result = self.__call__(**kwargs)
-        first_chunk = self.iterator.send(result)
-        self.iterator = itertools.chain((first_chunk, ), self.iterator)
+        self.iterator = itertools.chain(
+            (self.iterator.send(result), ),
+            self.iterator
+        )
 
     @cached_property
     @coroutine
