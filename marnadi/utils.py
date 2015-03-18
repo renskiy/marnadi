@@ -41,19 +41,27 @@ class CachedDescriptor(object):
             value = self.cache[instance] = self.get_value(instance)
             return value
 
+    def __set__(self, instance, value):
+        self.cache[instance] = self.set_value(instance, value)
+
+    def __delete__(self, instance):
+        del self.cache[instance]
+
     def get_value(self, instance):
         raise NotImplementedError
+
+    def set_value(self, instance, value):
+        return value
 
 
 class cached_property(CachedDescriptor):
 
-    __slots__ = 'get', 'set', 'delete', '__doc__'
+    __slots__ = 'get', 'set', '__doc__'
 
-    def __init__(self, fget=None, fset=None, fdel=None, doc=None):
+    def __init__(self, fget=None, fset=None, doc=None):
         super(cached_property, self).__init__()
         self.get = fget
         self.set = fset
-        self.delete = fdel
         self.__doc__ = doc
 
     def get_value(self, instance):
@@ -61,17 +69,10 @@ class cached_property(CachedDescriptor):
             raise AttributeError("unreadable attribute")
         return self.get(instance)
 
-    def __set__(self, instance, value):
-        if self.set is None:
-            self.cache[instance] = value
-        else:
-            self.set(instance, value)
-            self.cache.pop(instance, None)
-
-    def __delete__(self, instance):
-        if self.delete is not None:
-            self.delete(instance)
-        self.cache.pop(instance, None)
+    def set_value(self, instance, value):
+        if self.set is not None:
+            return self.set(instance, value)
+        return super(cached_property, self).set_value(instance, value)
 
     def getter(self, getter):
         self.get = getter
@@ -79,10 +80,6 @@ class cached_property(CachedDescriptor):
 
     def setter(self, setter):
         self.set = setter
-        return self
-
-    def deleter(self, deleter):
-        self.delete = deleter
         return self
 
 
