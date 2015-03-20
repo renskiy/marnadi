@@ -62,3 +62,41 @@ class HandlerTestCase(unittest.TestCase):
                 ('Content-Type', 'text/plain; charset=utf-8'),
             ),
         )
+
+    def test_handler_not_supported_method(self):
+        routes = (
+            Route('/', Response),
+        )
+        environ = Request(dict(
+            REQUEST_METHOD='NOT_SUPPORTED_METHOD',
+            PATH_INFO='/',
+        ))
+        self.handler_parametrized_test_case(
+            routes=routes,
+            environ=environ,
+            expected_status='501 Not Implemented',
+            expected_result=b'501 Not Implemented',
+            expected_headers=(
+                ('Content-Type', 'text/plain; charset=utf-8'),
+                ('Allow', 'OPTIONS'),
+            ),
+        )
+
+    def test_handler_not_allowed_method(self):
+        routes = (
+            Route('/', Response),
+        )
+        environ = Request(dict(
+            REQUEST_METHOD='GET',
+            PATH_INFO='/',
+        ))
+        self.handler_parametrized_test_case(
+            routes=routes,
+            environ=environ,
+            expected_status='405 Method Not Allowed',
+            expected_result=b'405 Method Not Allowed',
+            expected_headers=(
+                ('Content-Type', 'text/plain; charset=utf-8'),
+                ('Allow', 'OPTIONS'),
+            ),
+        )

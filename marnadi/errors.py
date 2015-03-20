@@ -18,7 +18,7 @@ class HttpError(Exception):
         self.status = status
         self.data = data or status
         if headers:
-            self.headers.extend(headers)
+            self.headers.extend(*headers)
         self.error = error
 
     def __len__(self):

@@ -82,7 +82,10 @@ class Response(object):
                 '501 Not Implemented',
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
             )
-        callback = getattr(self, self.request.method.lower()) or self.__func__
+        callback = getattr(
+            self,
+            self.request.method.lower()
+        ) or self.__class__.__func__
         if callback is None:
             raise HttpError(
                 '405 Method Not Allowed',
@@ -132,7 +135,7 @@ class Response(object):
 
     @property
     def allowed_http_methods(self):
-        func = self.__func__
+        func = self.__class__.__func__
         for method in self.supported_http_methods:
             if func or getattr(self, method.lower()):
                 yield method
