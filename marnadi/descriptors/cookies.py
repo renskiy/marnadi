@@ -1,6 +1,7 @@
 import collections
 import copy
 import datetime
+import locale
 import time
 import weakref
 
@@ -104,8 +105,11 @@ class CookieJar(collections.MutableMapping):
                     if expires.tzinfo is None else
                     time.localtime(time.mktime(expires.utctimetuple()))
                 )
+                current_locale = locale.getlocale(locale.LC_TIME)
+                locale.setlocale(locale.LC_TIME, 'C')
                 expires = time.strftime("%a, %d %b %Y %H:%M:%S GMT",
                                         struct_time)
+                locale.setlocale(locale.LC_TIME, current_locale)
             cookie_params.append("Expires=%s" % expires)
         secure and cookie_params.append("Secure")
         http_only and cookie_params.append("HttpOnly")
