@@ -5,39 +5,44 @@ from marnadi.utils import Lazy
 
 class Route(object):
 
-    __slots__ = 'path', 'handler', 'params', 'pattern', 'name'
+    __slots__ = 'path', 'handler', 'params', 'pattern', 'name', 'callbacks'
 
     placeholder_re = re.compile(r'\{([a-zA-Z_][a-zA-Z0-9_]*)\}')
 
-    def __init__(self, path, handler, name=None, params=None, patterns=None):
+    def __init__(self, path, handler, name=None, params=None, callbacks=None,
+                 patterns=None):
         self.path = path
         self.handler = Lazy(handler)
         self.name = name
         self.params = params or {}
-        self.pattern = self.make_pattern(path, patterns)
+        self.callbacks = callbacks or {}
+        self.pattern = self.make_pattern(patterns)
 
-    def match(self, request_path):
-        if self.pattern is not None:
-            match = self.pattern.match(request_path)
+    def match(self, path):
+        if self.pattern:
+            match = self.pattern.match(path)
             if match:
-                return request_path[match.end(0):], match.groupdict()
-        elif request_path.startswith(self.path):
-            return request_path[len(self.path):], ()
+                params = {
+                    param: self.callbacks.get(param, lambda x: x)(value)
+                    for param, value in match.groupdict().items()
+                }
+                return path[match.end(0):], dict(self.params, **params)
+        elif path.startswith(self.path):
+            return path[len(self.path):], self.params
 
-    @classmethod
-    def make_pattern(cls, path, placeholder_patterns=None):
-        unescaped_path = path.replace('{{', '').replace('}}', '')
-        placeholders = cls.placeholder_re.findall(unescaped_path)
+    def make_pattern(self, patterns=None):
+        unescaped_path = self.path.replace('{{', '').replace('}}', '')
+        placeholders = self.placeholder_re.findall(unescaped_path)
         if not placeholders:
             return
-        placeholder_patterns = placeholder_patterns or {}
-        pattern = re.escape(path.replace('{{', '{').replace('}}', '}'))
+        patterns = patterns or {}
+        pattern = re.escape(self.path.replace('{{', '{').replace('}}', '}'))
         for placeholder in placeholders:
             pattern = pattern.replace(
                 r'\{{{placeholder}\}}'.format(placeholder=placeholder),
                 r'(?P<{name}>{pattern})'.format(
                     name=placeholder,
-                    pattern=placeholder_patterns.get(placeholder, r'\w+')
+                    pattern=patterns.get(placeholder, r'\w+')
                 ),
             )
         return re.compile(pattern)
@@ -54,10 +59,14 @@ class Routes(list):
         super(Routes, self).__init__(seq)
         self.path = path
 
-    def route(self, path, name=None, params=None, patterns=None):
+    def route(self, path, name=None, params=None, callbacks=None,
+              patterns=None):
         def _decorator(handler):
             route = Route(self.path + path, handler,
-                          name=name, params=params, patterns=patterns)
+                          name=name,
+                          params=params,
+                          callbacks=callbacks,
+                          patterns=patterns)
             self.append(route)
             return handler
         return _decorator

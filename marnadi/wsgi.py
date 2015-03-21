@@ -196,24 +196,17 @@ class App(object):
             match = route.match(path)
             if not match:
                 continue
-            rest_path, url_params = match
+            rest_path, route_params = match
             if isinstance(route.handler, list):
                 try:
                     return self.get_handler(
                         rest_path,
                         routes=route.handler,
-                        params=self._merge_dicts(
-                            params.copy(), route.params, url_params),
+                        params=dict(params, **route_params),
                     )
                 except HttpError:
-                    continue
+                    continue  # wrong way raises "404 Not Found" at the end
             if not rest_path:
-                return route.handler.prepare(**self._merge_dicts(
-                    params, route.params, url_params))
+                params.update(route_params)
+                return route.handler.prepare(**params)
         raise HttpError('404 Not Found')  # matching route not found
-
-    @staticmethod
-    def _merge_dicts(target, *sources):
-        for source in sources:
-            target.update(source)
-        return target
