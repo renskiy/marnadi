@@ -1,8 +1,12 @@
+import collections
+
 from marnadi import Header, descriptors
 from marnadi.utils import to_bytes
 
 
-class HttpError(Exception):
+class HttpError(Exception, collections.Iterable, collections.Sized):
+
+    __slots__ = 'status', 'data', '__weakref__'
 
     headers = descriptors.Headers(
         ('Content-Type', Header('text/plain', charset='utf-8')),
@@ -19,7 +23,6 @@ class HttpError(Exception):
         self.data = data or status
         if headers:
             self.headers.extend(*headers)
-        self.error = error
 
     def __len__(self):
         return 1
