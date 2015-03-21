@@ -3,6 +3,11 @@ Changelog
 
 .. currentmodule:: marnadi
 
+Release 0.2.8
+-------------
+
+- Enhancement #15: added ability to provide param callback mapping when instantiating the `Route`
+
 Release 0.2.7
 -------------
 
