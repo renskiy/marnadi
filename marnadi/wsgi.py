@@ -20,7 +20,7 @@ class Request(collections.Mapping):
     """
 
     if hasattr(collections.Mapping, '__slots__'):
-        __slots__ = '_environ', '__weakref__'
+        __slots__ = 'environ', '__weakref__'
 
     __hash__ = object.__hash__
 
@@ -29,16 +29,16 @@ class Request(collections.Mapping):
     __ne__ = object.__ne__
 
     def __init__(self, environ):
-        self._environ = environ
+        self.environ = environ
 
     def __getitem__(self, key):
-        return self._environ[key]
+        return self.environ[key]
 
     def __iter__(self):
-        return iter(self._environ)
+        return iter(self.environ)
 
     def __len__(self):
-        return len(self._environ)
+        return len(self.environ)
 
     @property
     def input(self):
