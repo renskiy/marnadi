@@ -52,6 +52,22 @@ class Request(collections.Mapping):
     def path(self):
         return self['PATH_INFO']
 
+    @property
+    def query_string(self):
+        return self.get('QUERY_STRING')
+
+    @property
+    def remote_addr(self):
+        return self.get('REMOTE_ADDR')
+
+    @property
+    def remote_host(self):
+        return self.get('REMOTE_HOST')
+
+    @property
+    def content_length(self):
+        return self.get('CONTENT_LENGTH', 0)
+
     @cached_property
     def content_type(self):
         try:
@@ -62,13 +78,6 @@ class Request(collections.Mapping):
             ))
         except KeyError:
             raise AttributeError("content_type is not provided")
-
-    @property
-    def content_length(self):
-        try:
-            return int(self['CONTENT_LENGTH'])
-        except KeyError:
-            raise AttributeError("content_length is not provided")
 
     @cached_property
     def headers(self):
@@ -93,7 +102,7 @@ class Request(collections.Mapping):
     def query(self):
         try:
             return dict(parse.parse_qsl(
-                self['QUERY_STRING'],
+                self.query_string,
                 keep_blank_values=True,
             ))
         except KeyError:
