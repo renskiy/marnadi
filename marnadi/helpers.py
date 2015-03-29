@@ -1,4 +1,5 @@
 import re
+import collections
 
 from marnadi.utils import Lazy
 
@@ -72,7 +73,7 @@ class Routes(list):
         return _decorator
 
 
-class Header(object):
+class Header(collections.Mapping):
 
     __slots__ = 'value', 'params'
 
@@ -88,6 +89,15 @@ class Header(object):
         if isinstance(value, bytes):  # python 2.x
             return value
         return value.encode(encoding='latin1')
+
+    def __getitem__(self, item):
+        return self.params[item]
+
+    def __iter__(self):
+        return iter(self.params)
+
+    def __len__(self):
+        len(self.params)
 
     def make_value(self):
         if not self.params:
