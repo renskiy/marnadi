@@ -81,11 +81,20 @@ class Header(collections.Mapping):
         self.value = _value
         self.params = params
 
+    def __hash__(self):
+        return hash(self.value)
+
+    def __eq__(self, other):
+        return self.value == other
+
+    def __ne__(self, other):
+        return self.value != other
+
     def __str__(self):
-        return self.make_value()
+        return self.stringify()
 
     def __bytes__(self):
-        value = self.make_value()
+        value = self.stringify()
         if isinstance(value, bytes):  # python 2.x
             return value
         return value.encode(encoding='latin1')
@@ -99,7 +108,7 @@ class Header(collections.Mapping):
     def __len__(self):
         len(self.params)
 
-    def make_value(self):
+    def stringify(self):
         if not self.params:
             return str(self.value)
         return '{value}; {params}'.format(

@@ -73,11 +73,11 @@ class Request(collections.Mapping):
         try:
             parts = iter(self['CONTENT_TYPE'].split(';'))
             return Header(next(parts).strip(), **dict(
-                map(str.strip, option.split('='))
-                for option in parts
+                map(str.strip, part.split('='))
+                for part in parts
             ))
         except KeyError:
-            raise AttributeError("content_type is not provided")
+            pass
 
     @cached_property
     def headers(self):
