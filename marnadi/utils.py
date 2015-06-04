@@ -27,25 +27,25 @@ def metaclass(mcs):
 
 class CachedDescriptor(object):
 
-    __slots__ = 'cache',
+    __slots__ = '_cache',
 
     def __init__(self):
-        self.cache = weakref.WeakKeyDictionary()
+        self._cache = weakref.WeakKeyDictionary()
 
     def __get__(self, instance, instance_type=None):
         if instance is None:
             return self  # static access
         try:
-            return self.cache[instance]
+            return self._cache[instance]
         except KeyError:
-            value = self.cache[instance] = self.get_value(instance)
+            value = self._cache[instance] = self.get_value(instance)
             return value
 
     def __set__(self, instance, value):
-        self.cache[instance] = self.set_value(instance, value)
+        self._cache[instance] = self.set_value(instance, value)
 
     def __delete__(self, instance):
-        del self.cache[instance]
+        del self._cache[instance]
 
     def get_value(self, instance):
         raise NotImplementedError
@@ -85,18 +85,24 @@ class cached_property(CachedDescriptor):
 
 class LazyType(type):
 
-    def __call__(cls, path):
-        if isinstance(path, cls) or not isinstance(path, str):
-            return path
-        return super(LazyType, cls).__call__(path)
+    def __call__(cls, *args):
+        assert len(args) < 2
+        try:
+            arg = args[0]
+            if isinstance(arg, cls) or not isinstance(arg, str):
+                return arg
+        except IndexError:
+            pass
+        return super(LazyType, cls).__call__(*args)
 
 
 @metaclass(LazyType)
-class Lazy(object):
+class Lazy(CachedDescriptor):
 
     __slots__ = '_path', '__weakref__'
 
-    def __init__(self, path):
+    def __init__(self, path=None):
+        super(Lazy, self).__init__()
         self._path = path
 
     def __call__(self, *args, **kwargs):
@@ -127,6 +133,10 @@ class Lazy(object):
     def __class__(self):
         return self._obj.__class__
 
+    def __get__(self, instance, instance_type=None):
+        value = super(Lazy, self).__get__(instance, instance_type)
+        return value._obj if isinstance(value, Lazy) else value
+
     @cached_property
     def _obj(self):
         try:
@@ -137,6 +147,10 @@ class Lazy(object):
         if obj_name is not None:
             return getattr(module, obj_name)
         return module
+
+    @classmethod
+    def set_value(cls, instance, value):
+        return cls(value)
 
 
 def to_bytes(obj, encoding='utf-8', error_callback=None):
