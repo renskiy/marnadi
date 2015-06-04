@@ -85,14 +85,6 @@ class Response(object):
     @classmethod
     @coroutine
     def prepare(cls, **kwargs):
-        """Initializes response generator with given params.
-
-        Note:
-            Error responses can be customized by overriding this method.
-            For example your version may catch `HttpError` from original
-            implementation and re-raise it with necessary content data
-            (which may be a HTML containing formatted traceback).
-        """
         app, request = yield
         try:
             response = type.__call__(cls, app, request)  # response instance
@@ -102,7 +94,7 @@ class Response(object):
             raise
         except Exception as error:
             cls.logger.exception(error)
-            raise HttpError(error=error)
+            raise HttpError
 
     def start(self, **kwargs):
         result = self.__call__(**kwargs)

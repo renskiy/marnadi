@@ -17,7 +17,6 @@ class HttpError(Exception, collections.Iterable, collections.Sized):
         status='500 Internal Server Error',
         data=None,
         headers=None,
-        error=None,
     ):
         self.status = status
         self.data = data or status
