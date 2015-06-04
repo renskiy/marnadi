@@ -1,3 +1,5 @@
+import abc
+import collections
 import logging
 import itertools
 
@@ -11,7 +13,7 @@ except NameError:
     pass
 
 
-class Handler(type):
+class Handler(abc.ABCMeta):
 
     def __call__(cls, *args, **kwargs):
         func = getattr(cls, '__func__', None)
@@ -21,11 +23,12 @@ class Handler(type):
 
 
 @metaclass(Handler)
-class Response(object):
+class Response(collections.Iterator):
 
     __func__ = None
 
-    __slots__ = 'app', 'request', '__weakref__'
+    if hasattr(collections.Iterator, '__slots__'):
+        __slots__ = 'app', 'request', '__weakref__'
 
     supported_http_methods = {
         'OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',
@@ -62,9 +65,6 @@ class Response(object):
             )
         return callback(**kwargs)
 
-    def __iter__(self):
-        return self
-
     def __next__(self):
         return next(self.iterator)
 
@@ -88,8 +88,7 @@ class Response(object):
         app, request = yield
         try:
             response = type.__call__(cls, app, request)  # response instance
-            response.start(**kwargs)
-            yield response
+            yield response.start(**kwargs)
         except HttpError:
             raise
         except Exception as error:
@@ -102,6 +101,7 @@ class Response(object):
             (self.iterator.send(result), ),
             self.iterator
         )
+        return self
 
     @cached_property
     @coroutine
