@@ -72,7 +72,7 @@ class Request(collections.Mapping):
         try:
             parts = iter(self['CONTENT_TYPE'].split(';'))
             return Header(next(parts).strip(), **dict(
-                map(str.strip, part.split('='))
+                map(str.strip, part.split('=', 1))
                 for part in parts
             ))
         except KeyError:
