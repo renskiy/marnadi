@@ -6,9 +6,8 @@ try:
 except ImportError:
     import urlparse as parse
 
-from marnadi import Route, descriptors, Header
+from marnadi import Route, descriptors, Header, Response
 from marnadi.errors import HttpError
-from marnadi.handlers import Handler
 from marnadi.utils import cached_property
 
 
@@ -163,8 +162,11 @@ class App(object):
         parents = parents + (route, )
         if route.name:
             self.routes_map[route.name] = parents
-        if isinstance(route.handler, Handler):
-            return route
+        try:
+            if issubclass(route.handler, Response):
+                return route
+        except TypeError:
+            pass
         try:
             route.handler = self.compile_routes(route.handler, parents=parents)
         except TypeError:
