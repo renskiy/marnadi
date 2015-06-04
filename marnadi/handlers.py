@@ -13,16 +13,65 @@ except NameError:
 
 class Handler(type):
 
-    __func__ = None
-
-    logger = logging.getLogger('marnadi')
-
     def __call__(cls, *args, **kwargs):
-        func = cls.__func__
+        func = getattr(cls, '__func__', None)
         if func is not None:
             return func(*args, **kwargs)
         return super(Handler, cls).__call__(*args, **kwargs)
 
+
+@metaclass(Handler)
+class Response(object):
+
+    __func__ = None
+
+    __slots__ = 'app', 'request', '__weakref__'
+
+    supported_http_methods = {
+        'OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',
+    }
+
+    status = '200 OK'
+
+    headers = descriptors.Headers(
+        ('Content-Type', Header('text/plain', charset='utf-8')),
+    )
+
+    cookies = descriptors.Cookies()
+
+    logger = logging.getLogger('marnadi')
+
+    def __init__(self, app, request):
+        self.app = app
+        self.request = request
+
+    def __call__(self, **kwargs):
+        if self.request.method not in self.supported_http_methods:
+            raise HttpError(
+                '501 Not Implemented',
+                headers=(('Allow', ', '.join(self.allowed_http_methods)), )
+            )
+        callback = getattr(
+            self,
+            self.request.method.lower()
+        ) or self.__func__
+        if callback is None:
+            raise HttpError(
+                '405 Method Not Allowed',
+                headers=(('Allow', ', '.join(self.allowed_http_methods)), )
+            )
+        return callback(**kwargs)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return next(self.iterator)
+
+    def next(self):
+        return self.__next__()
+
+    @classmethod
     def provider(cls, func):
         assert callable(func)
         attributes = dict(
@@ -33,6 +82,7 @@ class Handler(type):
         )
         return type(cls)(func.__name__, (cls, ), attributes)
 
+    @classmethod
     @coroutine
     def prepare(cls, **kwargs):
         """Initializes response generator with given params.
@@ -53,54 +103,6 @@ class Handler(type):
         except Exception as error:
             cls.logger.exception(error)
             raise HttpError(error=error)
-
-
-@metaclass(Handler)
-class Response(object):
-
-    __slots__ = 'app', 'request', '__weakref__'
-
-    supported_http_methods = {
-        'OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',
-    }
-
-    status = '200 OK'
-
-    headers = descriptors.Headers(
-        ('Content-Type', Header('text/plain', charset='utf-8')),
-    )
-
-    cookies = descriptors.Cookies()
-
-    def __init__(self, app, request):
-        self.app = app
-        self.request = request
-
-    def __call__(self, **kwargs):
-        if self.request.method not in self.supported_http_methods:
-            raise HttpError(
-                '501 Not Implemented',
-                headers=(('Allow', ', '.join(self.allowed_http_methods)), )
-            )
-        callback = getattr(
-            self,
-            self.request.method.lower()
-        ) or self.__class__.__func__
-        if callback is None:
-            raise HttpError(
-                '405 Method Not Allowed',
-                headers=(('Allow', ', '.join(self.allowed_http_methods)), )
-            )
-        return callback(**kwargs)
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        return next(self.iterator)
-
-    def next(self):
-        return self.__next__()
 
     def start(self, **kwargs):
         result = self.__call__(**kwargs)
