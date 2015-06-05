@@ -175,3 +175,7 @@ def coroutine(fn):
         co.send(None)
         return co
     return _fn
+
+
+def is_class(cls):
+    return issubclass(type(cls), type)
