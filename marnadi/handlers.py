@@ -15,17 +15,30 @@ except NameError:
 
 class Handler(abc.ABCMeta):
 
+    __func__ = None
+
     def __call__(cls, *args, **kwargs):
-        func = getattr(cls, '__func__', None)
-        if func is not None:
-            return func(*args, **kwargs)
+        if cls.__func__ is not None:
+            return cls.__func__(*args, **kwargs)
         return super(Handler, cls).__call__(*args, **kwargs)
+
+    def provider(cls, *methods):
+        def decorator(func):
+            assert callable(func)
+            actual_method = staticmethod(func)
+            attributes = {method.lower(): actual_method for method in methods}
+            attributes.update(
+                __func__=actual_method,
+                __module__=func.__module__,
+                __doc__=func.__doc__,
+                __slots__=(),
+            )
+            return type(cls)(func.__name__, (cls, ), attributes)
+        return decorator
 
 
 @metaclass(Handler)
 class Response(collections.Iterator):
-
-    __func__ = None
 
     if hasattr(collections.Iterator, '__slots__'):
         __slots__ = 'app', 'request', '__weakref__'
@@ -54,10 +67,7 @@ class Response(collections.Iterator):
                 '501 Not Implemented',
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
             )
-        callback = getattr(
-            self,
-            self.request.method.lower()
-        ) or self.__func__
+        callback = getattr(self, self.request.method.lower())
         if callback is None:
             raise HttpError(
                 '405 Method Not Allowed',
@@ -72,17 +82,6 @@ class Response(collections.Iterator):
         return self.__next__()
 
     @classmethod
-    def provider(cls, func):
-        assert callable(func)
-        attributes = dict(
-            __func__=staticmethod(func),
-            __module__=func.__module__,
-            __doc__=func.__doc__,
-            __slots__=(),
-        )
-        return type(cls)(func.__name__, (cls, ), attributes)
-
-    @classmethod
     @coroutine
     def prepare(cls, **kwargs):
         app, request = yield
@@ -91,7 +90,7 @@ class Response(collections.Iterator):
 
     def start(self, **kwargs):
         try:
-            result = self.__call__(**kwargs)
+            result = self(**kwargs)
             self.iterator = itertools.chain(
                 (self.iterator.send(result), ),
                 self.iterator
