@@ -168,7 +168,7 @@ class App(object):
             route.handler = self.compile_routes(route.handler, parents=parents)
         except TypeError:
             raise TypeError(
-                "Route's handler must be either subclass of Handler " +
+                "Route's handler must be either subclass of Response " +
                 "or sequence of nested subroutes")
         return route
 
