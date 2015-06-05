@@ -8,7 +8,7 @@ except ImportError:
 
 from marnadi import Route, descriptors, Header, Response
 from marnadi.errors import HttpError
-from marnadi.utils import cached_property, is_regular_class
+from marnadi.utils import cached_property, is_class
 
 
 class Request(collections.Mapping):
@@ -162,8 +162,7 @@ class App(object):
         parents = parents + (route, )
         if route.name:
             self.routes_map[route.name] = parents
-        if is_regular_class(route.handler) \
-                and issubclass(route.handler, Response):
+        if is_class(route.handler) and issubclass(route.handler, Response):
             return route
         try:
             route.handler = self.compile_routes(route.handler, parents=parents)
