@@ -177,5 +177,5 @@ def coroutine(fn):
     return _fn
 
 
-def is_class(cls):
+def is_regular_class(cls):
     return issubclass(type(cls), type)
