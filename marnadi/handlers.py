@@ -86,21 +86,21 @@ class Response(collections.Iterator):
     @coroutine
     def prepare(cls, **kwargs):
         app, request = yield
+        response = type.__call__(cls, app, request)  # response instance
+        yield response.start(**kwargs)
+
+    def start(self, **kwargs):
         try:
-            response = type.__call__(cls, app, request)  # response instance
-            yield response.start(**kwargs)
+            result = self.__call__(**kwargs)
+            self.iterator = itertools.chain(
+                (self.iterator.send(result), ),
+                self.iterator
+            )
         except HttpError:
             raise
         except Exception as error:
-            cls.logger.exception(error)
+            self.logger.exception(error)
             raise HttpError
-
-    def start(self, **kwargs):
-        result = self.__call__(**kwargs)
-        self.iterator = itertools.chain(
-            (self.iterator.send(result), ),
-            self.iterator
-        )
         return self
 
     @cached_property
