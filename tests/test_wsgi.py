@@ -629,7 +629,7 @@ class AppTestCase(unittest.TestCase):
         )
         with self.assertRaises(TypeError) as context:
             App(routes=routes)
-        self.assertIn('subclass of Handler', str(context.exception))
+        self.assertIn('subclass of Response', str(context.exception))
 
     @mock.patch.object(Response, 'prepare')
     def test_route(self, mocked):
