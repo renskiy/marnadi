@@ -72,6 +72,7 @@ class Response(collections.Iterator):
         class classmethod(classmethod):
 
             def __get__(self, instance, cls):
+                assert isinstance(cls, Response.FunctionalHandler)
                 return functools.partial(self.__func__, cls.__response__)
 
     @classmethod
