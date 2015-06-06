@@ -31,7 +31,7 @@ Run this script and open http://localhost:8000 on your browser:
     
     
     @application.route('/')
-    @Response.provider
+    @Response.handler('GET', 'POST')
     def hello():
         return "Hello World"
     

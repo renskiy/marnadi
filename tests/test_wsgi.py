@@ -18,11 +18,11 @@ _test_handler_seq_routes = (
 
 class AppTestCase(unittest.TestCase):
 
-    @Response.provider('get')
+    @Response.handler('get')
     def expected_handler(self, *args, **kwargs):
         pass
 
-    @Response.provider('get')
+    @Response.handler('get')
     def unexpected_handler(self, *args, **kwargs):
         pass
 

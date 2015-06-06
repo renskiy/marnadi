@@ -28,7 +28,7 @@ class HandlerTestCase(unittest.TestCase):
 
     def test_handler_as_function(self):
         routes = (
-            Route('/', Response.provider('get')(lambda: 'hello')),
+            Route('/', Response.handler('get')(lambda: 'hello')),
         )
         environ = Request(dict(
             REQUEST_METHOD='GET',

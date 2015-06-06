@@ -86,7 +86,7 @@ class Response(collections.Iterator):
             return cls.FunctionalHandler.prepare.__func__(cls, **kwargs)
 
     @classmethod
-    def provider(cls, *methods):
+    def handler(cls, *methods):
         def decorator(func):
             method = staticmethod(func)
             attributes = dict(
