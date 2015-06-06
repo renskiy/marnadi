@@ -14,7 +14,7 @@ except NameError:
 
 
 @coroutine
-def prepare(cls, **kwargs):
+def prepare_response(cls, **kwargs):
     app, request = yield
     yield cls.get_instance(app, request).start(**kwargs)
 
@@ -66,8 +66,6 @@ class Response(collections.Iterator):
     def __subclasshook__(cls, subclass):
         return isinstance(subclass, cls.FunctionResponseMeta) or NotImplemented
 
-    prepare = classmethod(prepare)
-
     class FunctionResponseMeta(abc.ABCMeta):
 
         __function__ = NotImplemented
@@ -80,7 +78,9 @@ class Response(collections.Iterator):
         def get_instance(cls, *args, **kwargs):
             return cls.__response__(*args, **kwargs)
 
-        prepare = prepare
+        prepare = prepare_response
+
+    prepare = classmethod(prepare_response)
 
     @classmethod
     def provider(cls, *methods):
