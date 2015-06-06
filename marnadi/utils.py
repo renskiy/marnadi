@@ -1,3 +1,4 @@
+import functools
 import importlib
 import weakref
 
@@ -170,6 +171,7 @@ def to_bytes(obj, encoding='utf-8', error_callback=None):
 
 
 def coroutine(fn):
+    @functools.wraps(fn)
     def _fn(*args, **kwargs):
         co = fn(*args, **kwargs)
         co.send(None)
