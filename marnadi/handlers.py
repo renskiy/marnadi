@@ -58,9 +58,9 @@ class Response(collections.Iterator):
 
     @classmethod
     def __subclasshook__(cls, subclass):
-        return isinstance(subclass, cls.FunctionalHandler) or NotImplemented
+        return isinstance(subclass, cls.FunctionHandler) or NotImplemented
 
-    class FunctionalHandler(type):
+    class FunctionHandler(type):
 
         __function__ = NotImplemented
 
@@ -72,7 +72,7 @@ class Response(collections.Iterator):
         class classmethod(classmethod):
 
             def __get__(self, instance, cls):
-                assert isinstance(cls, Response.FunctionalHandler)
+                assert isinstance(cls, Response.FunctionHandler)
                 return functools.partial(self.__func__, cls.__response__)
 
     @classmethod
@@ -88,7 +88,7 @@ class Response(collections.Iterator):
                 {m.lower(): method for m in methods},
                 **attributes
             ))
-            func_replacement = cls.FunctionalHandler(
+            func_replacement = cls.FunctionHandler(
                 func.__name__,
                 (),
                 dict(
@@ -96,7 +96,7 @@ class Response(collections.Iterator):
                     __function__=method,
                     __response__=response_class,
                     prepare=classmethod(cls.prepare.__func__),
-                    get_instance=cls.FunctionalHandler.classmethod(
+                    get_instance=cls.FunctionHandler.classmethod(
                         cls.get_instance.__func__),
                 ),
             )
