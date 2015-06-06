@@ -1,7 +1,7 @@
 import abc
 import collections
-import logging
 import itertools
+import logging
 
 from marnadi import descriptors, Header
 from marnadi.errors import HttpError
