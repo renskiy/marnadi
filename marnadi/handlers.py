@@ -5,7 +5,7 @@ import itertools
 
 from marnadi import descriptors, Header
 from marnadi.errors import HttpError
-from marnadi.utils import metaclass, to_bytes, cached_property, coroutine
+from marnadi.utils import to_bytes, cached_property, coroutine
 
 try:
     str = unicode
@@ -13,31 +13,12 @@ except NameError:
     pass
 
 
-class Handler(abc.ABCMeta):
-
-    __func__ = None
-
-    def __call__(cls, *args, **kwargs):
-        if cls.__func__ is not None:
-            return cls.__func__(*args, **kwargs)
-        return super(Handler, cls).__call__(*args, **kwargs)
-
-    def provider(cls, *methods):
-        def decorator(func):
-            assert callable(func)
-            actual_method = staticmethod(func)
-            attributes = {method.lower(): actual_method for method in methods}
-            attributes.update(
-                __func__=actual_method,
-                __module__=func.__module__,
-                __doc__=func.__doc__,
-                __slots__=(),
-            )
-            return type(cls)(func.__name__, (cls, ), attributes)
-        return decorator
+@coroutine
+def prepare(cls, **kwargs):
+    app, request = yield
+    yield cls.get_instance(app, request).start(**kwargs)
 
 
-@metaclass(Handler)
 class Response(collections.Iterator):
 
     if hasattr(collections.Iterator, '__slots__'):
@@ -82,11 +63,53 @@ class Response(collections.Iterator):
         return self.__next__()
 
     @classmethod
-    @coroutine
-    def prepare(cls, **kwargs):
-        app, request = yield
-        response = type.__call__(cls, app, request)  # response instance
-        yield response.start(**kwargs)
+    def __subclasshook__(cls, subclass):
+        return isinstance(subclass, cls.FunctionResponseMeta) or NotImplemented
+
+    prepare = classmethod(prepare)
+
+    class FunctionResponseMeta(abc.ABCMeta):
+
+        __function__ = NotImplemented
+
+        __response__ = NotImplemented
+
+        def __call__(cls, *args, **kwargs):
+            return cls.__function__(*args, **kwargs)
+
+        def get_instance(cls, *args, **kwargs):
+            return cls.__response__(*args, **kwargs)
+
+        prepare = prepare
+
+    @classmethod
+    def provider(cls, *methods):
+        def decorator(func):
+            method = staticmethod(func)
+            attributes = dict(
+                __module__=func.__module__,
+                __doc__=func.__doc__,
+                __slots__=(),
+            )
+            response_class = type(func.__name__, (cls, ), dict(
+                {m.lower(): method for m in methods},
+                **attributes
+            ))
+            func_replacement = cls.FunctionResponseMeta(
+                func.__name__,
+                (),
+                dict(
+                    attributes,
+                    __function__=method,
+                    __response__=response_class,
+                ),
+            )
+            return func_replacement
+        return decorator
+
+    @classmethod
+    def get_instance(cls, *args, **kwargs):
+        return cls(*args, **kwargs)
 
     def start(self, **kwargs):
         try:
@@ -128,9 +151,8 @@ class Response(collections.Iterator):
 
     @property
     def allowed_http_methods(self):
-        func = self.__class__.__func__
         for method in self.supported_http_methods:
-            if func or getattr(self, method.lower()):
+            if getattr(self, method.lower()):
                 yield method
 
     def options(self, **kwargs):
