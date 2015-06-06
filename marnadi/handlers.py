@@ -1,4 +1,3 @@
-import abc
 import collections
 import itertools
 import logging
@@ -60,7 +59,7 @@ class Response(collections.Iterator):
     def __subclasshook__(cls, subclass):
         return isinstance(subclass, cls.FunctionalHandler) or NotImplemented
 
-    class FunctionalHandler(abc.ABCMeta):
+    class FunctionalHandler(type):
 
         __function__ = NotImplemented
 
@@ -77,12 +76,14 @@ class Response(collections.Iterator):
             app, request = yield
             yield cls.get_instance(app, request).start(**kwargs)
 
-    try:
-        # python 2.x
-        prepare = classmethod(FunctionalHandler.prepare.__func__)
-    except AttributeError:
-        # python 3.x
-        prepare = classmethod(coroutine(FunctionalHandler.prepare.__wrapped__))
+    @classmethod
+    def prepare(cls, **kwargs):
+        try:
+            # python 3.x
+            return cls.FunctionalHandler.prepare(cls, **kwargs)
+        except TypeError:
+            # python 2.x
+            return cls.FunctionalHandler.prepare.__func__(cls, **kwargs)
 
     @classmethod
     def provider(cls, *methods):
