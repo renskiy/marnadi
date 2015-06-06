@@ -13,12 +13,6 @@ except NameError:
     pass
 
 
-@coroutine
-def prepare_response(cls, **kwargs):
-    app, request = yield
-    yield cls.get_instance(app, request).start(**kwargs)
-
-
 class Response(collections.Iterator):
 
     if hasattr(collections.Iterator, '__slots__'):
@@ -64,9 +58,9 @@ class Response(collections.Iterator):
 
     @classmethod
     def __subclasshook__(cls, subclass):
-        return isinstance(subclass, cls.FunctionResponseMeta) or NotImplemented
+        return isinstance(subclass, cls.FunctionalHandler) or NotImplemented
 
-    class FunctionResponseMeta(abc.ABCMeta):
+    class FunctionalHandler(abc.ABCMeta):
 
         __function__ = NotImplemented
 
@@ -78,9 +72,17 @@ class Response(collections.Iterator):
         def get_instance(cls, *args, **kwargs):
             return cls.__response__(*args, **kwargs)
 
-        prepare = prepare_response
+        @coroutine
+        def prepare(cls, **kwargs):
+            app, request = yield
+            yield cls.get_instance(app, request).start(**kwargs)
 
-    prepare = classmethod(prepare_response)
+    try:
+        # python 2.x
+        prepare = classmethod(FunctionalHandler.prepare.__func__)
+    except AttributeError:
+        # python 3.x
+        prepare = classmethod(coroutine(FunctionalHandler.prepare.__wrapped__))
 
     @classmethod
     def provider(cls, *methods):
@@ -95,7 +97,7 @@ class Response(collections.Iterator):
                 {m.lower(): method for m in methods},
                 **attributes
             ))
-            func_replacement = cls.FunctionResponseMeta(
+            func_replacement = cls.FunctionalHandler(
                 func.__name__,
                 (),
                 dict(
