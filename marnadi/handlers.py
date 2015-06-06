@@ -1,4 +1,5 @@
 import collections
+import functools
 import itertools
 import logging
 
@@ -68,22 +69,10 @@ class Response(collections.Iterator):
         def __call__(cls, *args, **kwargs):
             return cls.__function__(*args, **kwargs)
 
-        def get_instance(cls, *args, **kwargs):
-            return cls.__response__(*args, **kwargs)
+        class classmethod(classmethod):
 
-        @coroutine
-        def prepare(cls, **kwargs):
-            app, request = yield
-            yield cls.get_instance(app, request).start(**kwargs)
-
-    @classmethod
-    def prepare(cls, **kwargs):
-        try:
-            # python 3.x
-            return cls.FunctionalHandler.prepare(cls, **kwargs)
-        except TypeError:
-            # python 2.x
-            return cls.FunctionalHandler.prepare.__func__(cls, **kwargs)
+            def __get__(self, instance, cls):
+                return functools.partial(self.__func__, cls.__response__)
 
     @classmethod
     def handler(cls, *methods):
@@ -105,6 +94,9 @@ class Response(collections.Iterator):
                     attributes,
                     __function__=method,
                     __response__=response_class,
+                    prepare=classmethod(cls.prepare.__func__),
+                    get_instance=cls.FunctionalHandler.classmethod(
+                        cls.get_instance.__func__),
                 ),
             )
             return func_replacement
@@ -113,6 +105,12 @@ class Response(collections.Iterator):
     @classmethod
     def get_instance(cls, *args, **kwargs):
         return cls(*args, **kwargs)
+
+    @classmethod
+    @coroutine
+    def prepare(cls, **kwargs):
+        app, request = yield
+        yield cls.get_instance(app, request).start(**kwargs)
 
     def start(self, **kwargs):
         try:
