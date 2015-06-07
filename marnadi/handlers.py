@@ -85,6 +85,22 @@ class Response(collections.Iterator):
             for chunk in chunks:
                 yield to_bytes(chunk, error_callback=self.logger.exception)
 
+    @classmethod
+    def start(cls, *args, **params):
+        try:
+            response = cls(*args)
+            result = response(**params)
+            response.iterator = itertools.chain(
+                (response.iterator.send(result), ),
+                response.iterator
+            )
+            return response
+        except HttpError:
+            raise
+        except Exception as error:
+            cls.logger.exception(error)
+            raise
+
     class FunctionHandler(type):
 
         __function__ = NotImplemented
@@ -128,22 +144,6 @@ class Response(collections.Iterator):
             )
             return func_replacement
         return decorator
-
-    @classmethod
-    def start(cls, *args, **params):
-        try:
-            response = cls(*args)
-            result = response(**params)
-            response.iterator = itertools.chain(
-                (response.iterator.send(result), ),
-                response.iterator
-            )
-            return response
-        except HttpError:
-            raise
-        except Exception as error:
-            cls.logger.exception(error)
-            raise
 
     @property
     def allowed_http_methods(self):
