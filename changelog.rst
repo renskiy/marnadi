@@ -3,6 +3,11 @@ Changelog
 
 .. currentmodule:: marnadi
 
+Release 0.3.1
+-------------
+
+- Fix: uncaught exceptions are now reraised
+
 Release 0.3.0
 -------------
 
