@@ -15,22 +15,22 @@ except NameError:
 
 class Response(collections.Iterator):
 
-    if hasattr(collections.Iterator, '__slots__'):
-        __slots__ = 'app', 'request', '__weakref__'
+    logger = logging.getLogger('marnadi')
+
+    status = '200 OK'
 
     supported_http_methods = {
         'OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',
     }
 
-    status = '200 OK'
+    if hasattr(collections.Iterator, '__slots__'):
+        __slots__ = 'app', 'request', '__weakref__'
 
     headers = descriptors.Headers(
         ('Content-Type', Header('text/plain', charset='utf-8')),
     )
 
     cookies = descriptors.Cookies()
-
-    logger = logging.getLogger('marnadi')
 
     def __init__(self, app, request):
         self.app = app
@@ -50,15 +50,40 @@ class Response(collections.Iterator):
             )
         return callback(**kwargs)
 
+    @classmethod
+    def __subclasshook__(cls, subclass):
+        return isinstance(subclass, cls.FunctionHandler) or NotImplemented
+
     def __next__(self):
         return next(self.iterator)
 
     def next(self):
         return self.__next__()
 
-    @classmethod
-    def __subclasshook__(cls, subclass):
-        return isinstance(subclass, cls.FunctionHandler) or NotImplemented
+    @cached_property
+    @coroutine
+    def iterator(self):
+        result = yield
+        if result is None or isinstance(result, (str, bytes)):
+            chunk = to_bytes(result)
+            self.headers.setdefault('Content-Length', len(chunk))
+            yield chunk
+        else:
+            chunks = iter(result)
+            first_chunk = to_bytes(next(chunks, b''))
+            try:
+                result_length = len(result)
+            except TypeError:  # result doesn't support len()
+                pass
+            else:
+                if result_length <= 1:
+                    self.headers.setdefault(
+                        'Content-Length',
+                        len(first_chunk),
+                    )
+            yield first_chunk
+            for chunk in chunks:
+                yield to_bytes(chunk, error_callback=self.logger.exception)
 
     class FunctionHandler(type):
 
@@ -103,16 +128,6 @@ class Response(collections.Iterator):
             return func_replacement
         return decorator
 
-    @classmethod
-    def get_instance(cls, *args, **kwargs):
-        return cls(*args, **kwargs)
-
-    @classmethod
-    @coroutine
-    def prepare(cls, **kwargs):
-        app, request = yield
-        yield cls.get_instance(app, request).start(**kwargs)
-
     def start(self, **kwargs):
         try:
             result = self(**kwargs)
@@ -127,30 +142,15 @@ class Response(collections.Iterator):
             raise HttpError
         return self
 
-    @cached_property
+    @classmethod
     @coroutine
-    def iterator(self):
-        result = yield
-        if result is None or isinstance(result, (str, bytes)):
-            chunk = to_bytes(result)
-            self.headers.setdefault('Content-Length', len(chunk))
-            yield chunk
-        else:
-            chunks = iter(result)
-            first_chunk = to_bytes(next(chunks, b''))
-            try:
-                result_length = len(result)
-            except TypeError:  # result doesn't support len()
-                pass
-            else:
-                if result_length <= 1:
-                    self.headers.setdefault(
-                        'Content-Length',
-                        len(first_chunk),
-                    )
-            yield first_chunk
-            for chunk in chunks:
-                yield to_bytes(chunk, error_callback=self.logger.exception)
+    def prepare(cls, **kwargs):
+        app, request = yield
+        yield cls.get_instance(app, request).start(**kwargs)
+
+    @classmethod
+    def get_instance(cls, *args, **kwargs):
+        return cls(*args, **kwargs)
 
     @property
     def allowed_http_methods(self):
