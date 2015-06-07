@@ -3,6 +3,13 @@ Changelog
 
 .. currentmodule:: marnadi
 
+Release 0.3.0
+-------------
+
+- Enhancement: the Response class now implements collections.Iterator interface
+- Enhancement: reworked functional part of the Response class
+- Enhancement: added descriptor behavior to the Lazy class
+
 Release 0.2.9
 -------------
 
