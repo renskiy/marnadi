@@ -148,7 +148,8 @@ class Response(collections.Iterator):
                         'Content-Length',
                         len(first_chunk),
                     )
-            for chunk in itertools.chain((first_chunk, ), chunks):
+            yield first_chunk
+            for chunk in chunks:
                 yield to_bytes(chunk, error_callback=self.logger.exception)
 
     @property
