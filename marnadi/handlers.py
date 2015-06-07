@@ -97,9 +97,6 @@ class Response(collections.Iterator):
         def prepare(cls, **kwargs):
             raise NotImplementedError
 
-        def get_instance(cls, *args, **kwargs):
-            raise NotImplementedError
-
         class classmethod(classmethod):
 
             def __get__(self, instance, cls):
@@ -126,9 +123,8 @@ class Response(collections.Iterator):
                     attributes,
                     __function__=method,
                     __response__=response_class,
-                    prepare=classmethod(cls.prepare.__func__),
-                    get_instance=cls.FunctionHandler.classmethod(
-                        cls.get_instance.__func__),
+                    prepare=cls.FunctionHandler.classmethod(
+                        cls.prepare.__func__),
                 ),
             )
             return func_replacement
@@ -152,11 +148,7 @@ class Response(collections.Iterator):
     @coroutine
     def prepare(cls, **kwargs):
         app, request = yield
-        yield cls.get_instance(app, request).start(**kwargs)
-
-    @classmethod
-    def get_instance(cls, *args, **kwargs):
-        return cls(*args, **kwargs)
+        yield cls(app, request).start(**kwargs)
 
     @property
     def allowed_http_methods(self):
