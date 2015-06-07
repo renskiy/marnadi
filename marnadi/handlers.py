@@ -94,6 +94,12 @@ class Response(collections.Iterator):
         def __call__(cls, *args, **kwargs):
             return cls.__function__(*args, **kwargs)
 
+        def prepare(cls, **kwargs):
+            raise NotImplementedError
+
+        def get_instance(cls, *args, **kwargs):
+            raise NotImplementedError
+
         class classmethod(classmethod):
 
             def __get__(self, instance, cls):
