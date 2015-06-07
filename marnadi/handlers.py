@@ -145,7 +145,7 @@ class Response(collections.Iterator):
             raise
         except Exception as error:
             self.logger.exception(error)
-            raise HttpError
+            raise
         return self
 
     @classmethod
