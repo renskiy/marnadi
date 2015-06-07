@@ -3,6 +3,11 @@ Changelog
 
 .. currentmodule:: marnadi
 
+Release 0.3.2
+-------------
+
+- Enhancement: reworked starting of response generation
+
 Release 0.3.1
 -------------
 
