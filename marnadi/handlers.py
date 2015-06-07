@@ -94,7 +94,7 @@ class Response(collections.Iterator):
         def __call__(cls, *args, **kwargs):
             return cls.__function__(*args, **kwargs)
 
-        def prepare(cls, **kwargs):
+        def start(cls, **kwargs):
             raise NotImplementedError
 
         class classmethod(classmethod):
@@ -123,32 +123,27 @@ class Response(collections.Iterator):
                     attributes,
                     __function__=method,
                     __response__=response_class,
-                    prepare=cls.FunctionHandler.classmethod(
-                        cls.prepare.__func__),
+                    start=cls.FunctionHandler.classmethod(cls.start.__func__),
                 ),
             )
             return func_replacement
         return decorator
 
-    def start(self, **kwargs):
+    @classmethod
+    def start(cls, *args, **params):
         try:
-            result = self(**kwargs)
-            self.iterator = itertools.chain(
-                (self.iterator.send(result), ),
-                self.iterator
+            response = cls(*args)
+            result = response(**params)
+            response.iterator = itertools.chain(
+                (response.iterator.send(result), ),
+                response.iterator
             )
+            return response
         except HttpError:
             raise
         except Exception as error:
-            self.logger.exception(error)
+            cls.logger.exception(error)
             raise
-        return self
-
-    @classmethod
-    @coroutine
-    def prepare(cls, **kwargs):
-        app, request = yield
-        yield cls(app, request).start(**kwargs)
 
     @property
     def allowed_http_methods(self):

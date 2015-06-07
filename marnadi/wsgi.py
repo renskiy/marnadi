@@ -140,7 +140,7 @@ class App(object):
         try:
             request = self.make_request_object(environ)
             handler = self.get_handler(request.path)
-            response = handler.send((self, request))
+            response = handler(self, request)
         except HttpError as error:
             response = error
         start_response(
@@ -216,5 +216,5 @@ class App(object):
                     continue  # wrong way raises "404 Not Found" at the end
             if not rest_path:
                 params.update(route_params)
-                return route.handler.prepare(**params)
+                return functools.partial(route.handler.start, **params)
         raise HttpError('404 Not Found')  # matching route not found

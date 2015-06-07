@@ -1,3 +1,4 @@
+import functools
 import unittest
 try:
     from unittest import mock
@@ -26,24 +27,15 @@ class AppTestCase(unittest.TestCase):
     def unexpected_handler(self, *args, **kwargs):
         pass
 
-    @mock.patch.object(unexpected_handler, 'prepare')
-    @mock.patch.object(expected_handler, 'prepare')
     def _get_handler_parametrized_test_case(
         self,
-        expected,
-        unexpected,
         routes,
         requested_path,
         expected_kwargs=None,
     ):
-        def side_effect(**kwargs):
-            self.assertDictEqual(expected_kwargs or {}, kwargs)
-
-        expected.side_effect = side_effect
         app = App(routes=routes)
-        app.get_handler(requested_path)
-        self.assertEqual(1, expected.call_count)
-        self.assertEqual(0, unexpected.call_count)
+        partial = app.get_handler(requested_path)
+        self.assertDictEqual(expected_kwargs or {}, partial.keywords)
 
     def test_get_handler__expected(self):
         self._get_handler_parametrized_test_case(
@@ -631,34 +623,22 @@ class AppTestCase(unittest.TestCase):
             App(routes=routes)
         self.assertIn('subclass of Response', str(context.exception))
 
-    @mock.patch.object(Response, 'prepare')
-    def test_route(self, mocked):
-        def side_effect(**kwargs):
-            self.assertDictEqual(
-                dict(kwarg='kwarg', foo='foo'),
-                kwargs,
-            )
-
-        mocked.side_effect = side_effect
+    def test_route(self):
         app = App()
         app.route('/{foo}', params=dict(kwarg='kwarg'))(Response)
-        app.get_handler('/foo')
-        self.assertEqual(1, mocked.call_count)
+        partial = app.get_handler('/foo')
+        self.assertDictEqual(dict(kwarg='kwarg', foo='foo'), partial.keywords)
 
-    @mock.patch.object(Response, 'prepare')
-    def test_route__routes(self, mocked):
-        def side_effect(**kwargs):
-            self.assertDictEqual(
-                dict(kwarg1='kwarg1', kwarg2='kwarg2', kwarg=2, bar='bar',
-                     foo='foo'),
-                kwargs,
-            )
-
-        mocked.side_effect = side_effect
+    def test_route__routes(self):
         app = App()
         routes = (
             Route('/{bar}', Response, params=dict(kwarg2='kwarg2', kwarg=2)),
         )
         app.route('/{foo}', params=dict(kwarg1='kwarg1', kwarg=1))(routes)
-        app.get_handler('/foo/bar')
-        self.assertEqual(1, mocked.call_count)
+        partial = app.get_handler('/foo/bar')
+        self.assertDictEqual(
+            dict(
+                kwarg1='kwarg1', kwarg2='kwarg2', kwarg=2, bar='bar', foo='foo'
+            ),
+            partial.keywords
+        )
