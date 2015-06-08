@@ -79,8 +79,9 @@ class Header(collections.Mapping):
 
     __slots__ = 'value', 'params'
 
-    def __init__(self, _value, **params):
-        self.value = _value
+    def __init__(self, *value, **params):
+        assert len(value) == 1
+        self.value = value[0]
         self.params = params
 
     def __hash__(self):
