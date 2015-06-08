@@ -1,4 +1,3 @@
-import functools
 import unittest
 try:
     from unittest import mock
