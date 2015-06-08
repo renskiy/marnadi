@@ -1,6 +1,7 @@
 import collections
 
-from marnadi import Header, descriptors
+from marnadi import descriptors
+from marnadi.helpers import Header
 from marnadi.utils import to_bytes
 
 

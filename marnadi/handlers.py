@@ -3,8 +3,9 @@ import functools
 import itertools
 import logging
 
-from marnadi import descriptors, Header
+from marnadi import descriptors
 from marnadi.errors import HttpError
+from marnadi.helpers import Header
 from marnadi.utils import to_bytes, cached_property, coroutine
 
 try:
