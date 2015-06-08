@@ -6,8 +6,9 @@ try:
 except ImportError:
     import urlparse as parse
 
-from marnadi import Route, descriptors, Header, Response
+from marnadi import descriptors, Response
 from marnadi.errors import HttpError
+from marnadi.helpers import Route, Header
 from marnadi.utils import cached_property, is_class
 
 

@@ -5,8 +5,9 @@ try:
 except ImportError:
     import mock
 
-from marnadi import Route, Response
+from marnadi import Response
 from marnadi.errors import HttpError
+from marnadi.helpers import Route
 from marnadi.wsgi import App
 
 _test_handler = Response
