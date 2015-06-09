@@ -140,6 +140,8 @@ class Lazy(CachedDescriptor):
 
     @cached_property
     def _obj(self):
+        if self._path is None:
+            return
         try:
             module_name, obj_name = self._path.rsplit('.', 1)
         except ValueError:
