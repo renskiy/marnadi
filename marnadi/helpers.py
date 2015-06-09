@@ -21,6 +21,12 @@ class Route(object):
         self.callbacks = callbacks or {}
         self.pattern = self.make_pattern(patterns)
 
+    def __call__(self, *args, **kwargs):
+        return self.handler(*args, **kwargs)
+
+    def __iter__(self):
+        return iter(self.handler)
+
     def match(self, path):
         if self.pattern:
             match = self.pattern.match(path)
@@ -54,6 +60,19 @@ class Route(object):
         return self.path.format(**params)
 
 
+def route(path, name=None, params=None, callbacks=None, patterns=None):
+    def _route(handler):
+        return Route(
+            path,
+            handler,
+            name=name,
+            params=params,
+            callbacks=callbacks,
+            patterns=patterns,
+        )
+    return _route
+
+
 class Routes(list):
 
     __slots__ = ('path', )
@@ -65,12 +84,14 @@ class Routes(list):
     def route(self, path, name=None, params=None, callbacks=None,
               patterns=None):
         def _decorator(handler):
-            route = Route(self.path + path, handler,
-                          name=name,
-                          params=params,
-                          callbacks=callbacks,
-                          patterns=patterns)
-            self.append(route)
+            self.append(Route(
+                self.path + path,
+                handler,
+                name=name,
+                params=params,
+                callbacks=callbacks,
+                patterns=patterns,
+            ))
             return handler
         return _decorator
 
