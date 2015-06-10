@@ -1,21 +1,23 @@
-import re
 import collections
+import re
 
-from marnadi.utils import Lazy
+from marnadi.utils import Lazy, ReferenceType, metaclass
 
 
 class Route(object):
 
-    __slots__ = 'path', 'params', 'pattern', 'name', 'callbacks', '__weakref__'
+    __slots__ = 'path', 'params', 'pattern', 'name', 'callbacks', \
+                'subroutes', '__weakref__'
 
     placeholder_re = re.compile(r'\{([a-zA-Z_][a-zA-Z0-9_]*)\}')
 
     handler = Lazy()
 
-    def __init__(self, path, handler, name=None, params=None, callbacks=None,
-                 patterns=None):
+    def __init__(self, path, handler=None, subroutes=(), name=None, params=None,
+                 callbacks=None, patterns=None):
         self.path = path
         self.handler = handler
+        self.subroutes = Routes(map(Lazy, subroutes))
         self.name = name
         self.params = params or {}
         self.callbacks = callbacks or {}
@@ -23,9 +25,6 @@ class Route(object):
 
     def __call__(self, *args, **kwargs):
         return self.handler(*args, **kwargs)
-
-    def __iter__(self):
-        return iter(self.handler)
 
     def match(self, path):
         if self.pattern:
@@ -60,38 +59,20 @@ class Route(object):
         return self.path.format(**params)
 
 
-def route(path, name=None, params=None, callbacks=None, patterns=None):
+def route(path, **route_params):
     def _route(handler):
-        return Route(
-            path,
-            handler,
-            name=name,
-            params=params,
-            callbacks=callbacks,
-            patterns=patterns,
-        )
+        return Route(path, handler, **route_params)
     return _route
 
 
+@metaclass(ReferenceType)
 class Routes(list):
 
-    __slots__ = ('path', )
+    __slots__ = ()
 
-    def __init__(self, seq=(), path=''):
-        super(Routes, self).__init__(seq)
-        self.path = path
-
-    def route(self, path, name=None, params=None, callbacks=None,
-              patterns=None):
+    def route(self, path, **route_params):
         def _decorator(handler):
-            self.append(Route(
-                self.path + path,
-                handler,
-                name=name,
-                params=params,
-                callbacks=callbacks,
-                patterns=patterns,
-            ))
+            self.append(Route(path, handler, **route_params))
             return handler
         return _decorator
 

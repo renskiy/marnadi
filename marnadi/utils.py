@@ -26,6 +26,15 @@ def metaclass(mcs):
     return _decorator
 
 
+class ReferenceType(type):
+
+    def __call__(cls, *args, **kwargs):
+        if len(args) == 1 and len(kwargs) == 0:
+            if isinstance(args[0], cls):
+                return args[0]
+        return super(ReferenceType, cls).__call__(*args, **kwargs)
+
+
 class CachedDescriptor(object):
 
     __slots__ = '_cache',
@@ -84,7 +93,7 @@ class cached_property(CachedDescriptor):
         return self
 
 
-class LazyType(type):
+class LazyType(type):  # TODO inherit from ReferenceType
 
     def __call__(cls, *args):
         assert len(args) < 2
@@ -151,6 +160,9 @@ class Lazy(CachedDescriptor):
             return getattr(module, obj_name)
         return module
 
+    def get_value(self, instance):
+        return self._obj
+
     @classmethod
     def set_value(cls, instance, value):
         return cls(value)
@@ -179,7 +191,3 @@ def coroutine(fn):
         co.send(None)
         return co
     return _fn
-
-
-def is_class(cls):
-    return issubclass(type(cls), type)

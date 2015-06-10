@@ -20,7 +20,7 @@ Simply execute following line::
 
 "Hello World"
 -------------
-Run this script and open http://localhost:8000 on your browser:
+Run this script and open http://localhost:8000/ on your browser:
 
 .. code-block:: python
 
@@ -32,8 +32,8 @@ Run this script and open http://localhost:8000 on your browser:
     
     @application.route('/')
     @Response.handler('GET', 'POST')
-    def hello():
-        return "Hello World"
+    def main_page():
+        return 'This is main page'
     
     if __name__ == '__main__':
         from wsgiref.simple_server import make_server
@@ -41,25 +41,33 @@ Run this script and open http://localhost:8000 on your browser:
 
 More complex example
 --------------------
-Script below will respond to http://localhost:8000/foo/bar/ and http://localhost:8000/foo/ requests:
+Script below additionally will respond to http://localhost:8000/foo/bar/ and http://localhost:8000/foo/ requests:
 
 .. code-block:: python
 
     import re
+    from marnadi import Response
+    from marnadi.helpers import Route, route
     from marnadi.wsgi import App
-    from marnadi import Response, Route
+
+
+    @route('/')
+    class MainPageResponse(Response):
+
+        def get(self):
+            return 'This is main page'
     
     
-    class MyResponse(Response):
+    class FooBarResponse(Response):
     
         # HTTP GET request handler
         def get(self, foo, bar=None):
             return 'foo is {foo}, bar is {bar}'.format(foo=foo, bar=bar)
     
     routes=(
-        Route('/{foo}'), (
-            Route('/', MyResponse),
-            Route('/{bar}/', MyResponse),
+        MainPageResponse,
+        Route('/{foo}/'), FooBarResponse, subroutes=(
+            Route('{bar}/', FooBarResponse),
         )),
     )
     

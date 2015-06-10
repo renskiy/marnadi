@@ -6,10 +6,10 @@ try:
 except ImportError:
     import urlparse as parse
 
-from marnadi import descriptors, Response
+from marnadi import descriptors
 from marnadi.errors import HttpError
-from marnadi.helpers import Route, Header
-from marnadi.utils import cached_property, is_class
+from marnadi.helpers import Route, Routes, Header
+from marnadi.utils import cached_property
 
 
 class Request(collections.Mapping):
@@ -131,11 +131,12 @@ class App(object):
         routes (iterable): list of :class:`Route`.
     """
 
-    __slots__ = 'routes', 'routes_map'
+    __slots__ = 'routes', 'route_map'
 
     def __init__(self, routes=()):
-        self.routes_map = {}
-        self.routes = self.compile_routes(routes)
+        self.route_map = {}
+        self.routes = Routes(routes)
+        self.build_route_map()
 
     def __call__(self, environ, start_response):
         try:
@@ -152,34 +153,22 @@ class App(object):
 
     @staticmethod
     def make_request_object(environ):
-        return Request(environ)
+        return Request(environ)  # TODO make request_type as instance attribute
 
-    def compile_routes(self, routes, parents=()):
-        callback = functools.partial(self.compile_route, parents=parents)
-        return list(map(callback, routes))
+    def build_route_map(self, routes=None, parents=()):
+        routes = self.routes if routes is None else routes
+        for route in routes:
+            self.register_route(route, parents=parents)
 
-    def compile_route(self, route, parents=()):
+    def register_route(self, route, parents=()):
         assert isinstance(route, Route)
         parents = parents + (route, )
         if route.name:
-            self.routes_map[route.name] = parents
-        if is_class(route.handler) and issubclass(route.handler, Response):
-            return route
-        try:
-            route.handler = self.compile_routes(route.handler, parents=parents)
-        except TypeError:
-            raise TypeError(
-                "Route's handler must be either subclass of Response " +
-                "or sequence of nested subroutes")
-        return route
+            self.route_map[route.name] = parents
+        self.build_route_map(route.subroutes, parents=parents)
 
-    def route(self, path, name=None, params=None, patterns=None):
-        def _decorator(handler):
-            route = Route(
-                path, handler, name=name, params=params, patterns=patterns)
-            self.routes.append(self.compile_route(route))
-            return handler
-        return _decorator
+    def route(self, path, **route_params):
+        return self.routes.route(path, **route_params)
 
     def make_path(self, *route_name, **params):
         if len(route_name) != 1:
@@ -187,7 +176,7 @@ class App(object):
                 "either route_name isn't provided or it isn't a single value")
         return ''.join(
             route.restore_path(**params)
-            for route in self.routes_map[route_name[0]]
+            for route in self.route_map[route_name[0]]
         )
 
     def get_handler(self, path, routes=None, params=None):
@@ -206,16 +195,17 @@ class App(object):
             if not match:
                 continue
             rest_path, route_params = match
-            if isinstance(route.handler, list):
+            if not rest_path:
+                if route.handler:
+                    params.update(route_params)
+                    return functools.partial(route.handler.start, **params)
+            else:
                 try:
                     return self.get_handler(
                         rest_path,
-                        routes=route.handler,
+                        routes=route.subroutes,
                         params=dict(params, **route_params),
                     )
                 except HttpError:
-                    continue  # wrong way raises "404 Not Found" at the end
-            if not rest_path:
-                params.update(route_params)
-                return functools.partial(route.handler.start, **params)
+                    pass  # wrong way raises "404 Not Found" at the end
         raise HttpError('404 Not Found')  # matching route not found

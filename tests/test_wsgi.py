@@ -11,9 +11,12 @@ from marnadi.wsgi import App
 
 _test_handler = Response
 
-_test_handler_seq_routes = (
-    Route('a', Response),
-    Route('b', Response),
+_test_route_1 = Route('a', _test_handler)
+_test_route_2 = Route('b', _test_handler)
+
+_test_routes = (
+    _test_route_1,
+    _test_route_2,
 )
 
 
@@ -387,10 +390,10 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__nested2_expected_unexpected_params_url(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                Route('/foo/{kwarg2}', (
+                Route('/foo/{kwarg2}', _test_handler, subroutes=(
                     Route('/baz', self.expected_handler),
                 )),
-                Route('/foo/{kwarg1}', (
+                Route('/foo/{kwarg1}', _test_handler, subroutes=(
                     Route('/bar', self.unexpected_handler),
                 )),
             ),
@@ -415,10 +418,10 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__nested2_expected_unexpected_params_route(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                Route('/foo', (
+                Route('/foo', _test_handler, subroutes=(
                     Route('/baz', self.expected_handler, params=dict(f2=2)),
                 )),
-                Route('/foo', (
+                Route('/foo', _test_handler, subroutes=(
                     Route('/bar', self.unexpected_handler, params=dict(f1=1)),
                 )),
             ),
@@ -473,11 +476,11 @@ class AppTestCase(unittest.TestCase):
     def test_get_handler__nested2_expected_unexpected_params_url2_route(self):
         self._get_handler_parametrized_test_case(
             routes=(
-                Route('/foo/{kwarg2}', (
+                Route('/foo/{kwarg2}', _test_handler, subroutes=(
                     Route('/baz/{baz}', self.expected_handler,
                           params=dict(f2=2)),
                 )),
-                Route('/foo/{kwarg1}', (
+                Route('/foo/{kwarg1}', _test_handler, subroutes=(
                     Route('/bar/{bar}', self.unexpected_handler,
                           params=dict(f1=1)),
                 )),
@@ -589,11 +592,11 @@ class AppTestCase(unittest.TestCase):
         app = App(routes=(route, ))
         self.assertListEqual([route], app.routes)
 
-    def test_compile_routes__routes(self):
-        route = Route('/', _test_handler_seq_routes)
+    def test_compile_routes__subroutes(self):
+        route = Route('/', _test_handler, subroutes=_test_routes)
         app = App(routes=(route, ))
         self.assertListEqual([route], app.routes)
-        route_a, route_b = route.handler
+        route_a, route_b = route.subroutes
         self.assertIsInstance(route_a, Route)
         self.assertIsInstance(route_b, Route)
         self.assertEqual(_test_handler, route_a.handler)
@@ -604,11 +607,14 @@ class AppTestCase(unittest.TestCase):
         app = App(routes=(route, ))
         self.assertListEqual([route], app.routes)
 
-    def test_compile_routes__lazy_routes(self):
-        route = Route('/', '%s._test_handler_seq_routes' % __name__)
+    def test_compile_routes__lazy_subroutes(self):
+        route = Route('/', _test_handler, subroutes=(
+            '%s._test_route_1' % __name__,
+            '%s._test_route_2' % __name__,
+        ))
         app = App(routes=(route, ))
         self.assertListEqual([route], app.routes)
-        route_a, route_b = route.handler
+        route_a, route_b = route.subroutes
         self.assertIsInstance(route_a, Route)
         self.assertIsInstance(route_b, Route)
         self.assertEqual(_test_handler, route_a.handler)
