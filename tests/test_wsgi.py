@@ -648,3 +648,5 @@ class AppTestCase(unittest.TestCase):
             ),
             partial.keywords
         )
+
+    # TODO add test with empty Route.handler (must raise 404)
