@@ -171,9 +171,7 @@ class App(object):
         return self.routes.route(path, **route_params)
 
     def make_path(self, *route_name, **params):
-        if len(route_name) != 1:
-            raise TypeError(
-                "either route_name isn't provided or it isn't a single value")
+        assert len(route_name) == 1
         return ''.join(
             route.restore_path(**params)
             for route in self.route_map[route_name[0]]
