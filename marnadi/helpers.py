@@ -17,7 +17,7 @@ class Route(object):
                  callbacks=None, patterns=None):
         self.path = path
         self.handler = handler
-        self.subroutes = Routes(map(Lazy, subroutes))
+        self.subroutes = Routes(subroutes)
         self.name = name
         self.params = params or {}
         self.callbacks = callbacks or {}
@@ -69,6 +69,9 @@ def route(path, **route_params):
 class Routes(list):
 
     __slots__ = ()
+
+    def __init__(self, seq=()):
+        super(Routes, self).__init__(map(Lazy, seq))
 
     def route(self, path, **route_params):
         def _decorator(handler):
