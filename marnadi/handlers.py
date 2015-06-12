@@ -42,42 +42,46 @@ class Method(object):
 
         class classmethod(classmethod):
 
-            def __get__(self, instance, cls):
-                assert isinstance(cls, Method.FunctionHandler)
-                return functools.partial(self.__func__, cls.__response__)
+            def __get__(self, instance, instance_class):
+                assert isinstance(instance_class, Method.FunctionHandler)
+                return functools.partial(
+                    self.__func__, instance_class.__response__)
 
     def __init__(self, func=None, name=None):
         self.func = func
         self.name = name or func and func.__name__
 
-    def __get__(self, response, response_cls):
+    def __get__(self, response, response_class):
         if response is None:
-            return functools.partial(self, response_cls)
+            return functools.partial(self, response_class)
         return self.func and functools.partial(self.func, response)
 
-    def __call__(self, response_cls, func):
-        # TODO func maybe already subclass of Response
-        method = staticmethod(func)
+    def __call__(self, response_class, callback):
+        method = staticmethod(callback)
+        if isinstance(callback, self.FunctionHandler):
+            setattr(callback.__response__, self.name, method)
+            return callback
         attributes = dict(
-            __module__=func.__module__,
-            __doc__=func.__doc__,
+            __module__=callback.__module__,
+            __doc__=callback.__doc__,
             __slots__=(),
         )
-        response = type(func.__name__, (response_cls, ), dict(
+        response = type(callback.__name__, (response_class, ), dict(
             {self.name: method},
             **attributes
         ))
-        func_replacement = self.FunctionHandler(
-            func.__name__,
+        callback_replacement = self.FunctionHandler(
+            callback.__name__,
             (),
             dict(
                 attributes,
                 __function__=method,
                 __response__=response,
-                start=self.FunctionHandler.classmethod(response_cls.start.__func__),
+                start=self.FunctionHandler.classmethod(
+                    response_class.start.__func__),
             ),
         )
-        return func_replacement
+        return callback_replacement
 
 
 @metaclass(Handler)
