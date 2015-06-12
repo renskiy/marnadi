@@ -6,7 +6,7 @@ import logging
 from marnadi import descriptors
 from marnadi.errors import HttpError
 from marnadi.helpers import Header
-from marnadi.utils import to_bytes, cached_property, coroutine
+from marnadi.utils import to_bytes, cached_property, coroutine, metaclass
 
 try:
     str = unicode
@@ -14,7 +14,14 @@ except NameError:
     pass
 
 
-class Response(collections.Iterator):
+class Handler(type):
+
+    def start(cls, *args, **kwargs):
+        raise NotImplementedError
+
+
+@metaclass(Handler)
+class Response(object):
 
     logger = logging.getLogger('marnadi')
 
@@ -51,9 +58,8 @@ class Response(collections.Iterator):
             )
         return callback(**kwargs)
 
-    @classmethod
-    def __subclasshook__(cls, subclass):
-        return isinstance(subclass, cls.FunctionHandler) or NotImplemented
+    def __iter__(self):
+        return self
 
     def __next__(self):
         return next(self.iterator)
@@ -102,7 +108,7 @@ class Response(collections.Iterator):
             cls.logger.exception(error)
             raise
 
-    class FunctionHandler(type):
+    class FunctionHandler(Handler):
 
         __function__ = NotImplemented
 
@@ -110,9 +116,6 @@ class Response(collections.Iterator):
 
         def __call__(cls, *args, **kwargs):
             return cls.__function__(*args, **kwargs)
-
-        def start(cls, **kwargs):
-            raise NotImplementedError
 
         class classmethod(classmethod):
 
