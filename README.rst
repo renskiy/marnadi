@@ -31,7 +31,7 @@ Run this script and open http://localhost:8000/ on your browser:
     
     
     @application.route('/')
-    @Response.handler('GET', 'POST')
+    @Response.get
     def main_page():
         return 'This is main page'
     

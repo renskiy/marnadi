@@ -1,3 +1,4 @@
+# TODO rename module to http
 import collections
 import functools
 import itertools
@@ -16,8 +17,66 @@ except NameError:
 
 class Handler(type):
 
+    def __new__(mcs, name, mro, attributes):
+        for attribute, value in attributes.items():
+            if isinstance(value, Method):
+                value.name = attribute
+        return super(Handler, mcs).__new__(mcs, name, mro, attributes)
+
     def start(cls, *args, **kwargs):
         raise NotImplementedError
+
+
+class Method(object):
+
+    __slots__ = 'name', 'func'
+
+    class FunctionHandler(Handler):
+
+        __function__ = NotImplemented
+
+        __response__ = NotImplemented
+
+        def __call__(cls, *args, **kwargs):
+            return cls.__function__(*args, **kwargs)
+
+        class classmethod(classmethod):
+
+            def __get__(self, instance, cls):
+                assert isinstance(cls, Method.FunctionHandler)
+                return functools.partial(self.__func__, cls.__response__)
+
+    def __init__(self, func=None, name=None):
+        self.func = func
+        self.name = name or func and func.__name__
+
+    def __get__(self, response, response_cls):
+        if response is None:
+            return functools.partial(self, response_cls)
+        return self.func and functools.partial(self.func, response)
+
+    def __call__(self, response_cls, func):
+        method = staticmethod(func)
+        attributes = dict(
+            __module__=func.__module__,
+            __doc__=func.__doc__,
+            __slots__=(),
+        )
+        response = type(func.__name__, (response_cls, ), dict(
+            {self.name: method},
+            **attributes
+        ))
+        func_replacement = self.FunctionHandler(
+            func.__name__,
+            (),
+            dict(
+                attributes,
+                __function__=method,
+                __response__=response,
+                start=self.FunctionHandler.classmethod(response_cls.start.__func__),
+            ),
+        )
+        return func_replacement
 
 
 @metaclass(Handler)
@@ -108,64 +167,24 @@ class Response(object):
             cls.logger.exception(error)
             raise
 
-    class FunctionHandler(Handler):
-
-        __function__ = NotImplemented
-
-        __response__ = NotImplemented
-
-        def __call__(cls, *args, **kwargs):
-            return cls.__function__(*args, **kwargs)
-
-        class classmethod(classmethod):
-
-            def __get__(self, instance, cls):
-                assert isinstance(cls, Response.FunctionHandler)
-                return functools.partial(self.__func__, cls.__response__)
-
-    @classmethod
-    def handler(cls, *methods):
-        def decorator(func):
-            method = staticmethod(func)
-            attributes = dict(
-                __module__=func.__module__,
-                __doc__=func.__doc__,
-                __slots__=(),
-            )
-            response_class = type(func.__name__, (cls, ), dict(
-                {m.lower(): method for m in methods},
-                **attributes
-            ))
-            func_replacement = cls.FunctionHandler(
-                func.__name__,
-                (),
-                dict(
-                    attributes,
-                    __function__=method,
-                    __response__=response_class,
-                    start=cls.FunctionHandler.classmethod(cls.start.__func__),
-                ),
-            )
-            return func_replacement
-        return decorator
-
     @property
     def allowed_http_methods(self):
         for method in self.supported_http_methods:
             if getattr(self, method.lower()):
                 yield method
 
+    @Method
     def options(self, **kwargs):
-        self.headers['Allow'] = ', '.join(self.allowed_http_methods)
+        self.headers.append('Allow', ', '.join(self.allowed_http_methods))
 
-    get = None
+    get = Method()
 
-    head = None
+    head = Method()
 
-    post = None
+    post = Method()
 
-    put = None
+    put = Method()
 
-    patch = None
+    patch = Method()
 
-    delete = None
+    delete = Method()
