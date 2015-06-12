@@ -56,6 +56,7 @@ class Method(object):
         return self.func and functools.partial(self.func, response)
 
     def __call__(self, response_cls, func):
+        # TODO func maybe already subclass of Response
         method = staticmethod(func)
         attributes = dict(
             __module__=func.__module__,
