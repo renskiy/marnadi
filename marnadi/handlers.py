@@ -98,9 +98,7 @@ class Response(object):
     if hasattr(collections.Iterator, '__slots__'):
         __slots__ = 'app', 'request', '__weakref__'
 
-    headers = descriptors.Headers(
-        ('Content-Type', Header('text/plain', charset='utf-8')),
-    )
+    headers = descriptors.Headers()
 
     cookies = descriptors.Cookies()
 
