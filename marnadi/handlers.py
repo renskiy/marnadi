@@ -135,7 +135,7 @@ class Response(object):
         result = yield
         if result is None or isinstance(result, (str, bytes)):
             chunk = to_bytes(result)
-            self.headers.setdefault('Content-Length', len(chunk))
+            self.headers['Content-Length'] = len(chunk)
             yield chunk
         else:
             chunks = iter(result)
@@ -146,10 +146,7 @@ class Response(object):
                 pass
             else:
                 if result_length <= 1:
-                    self.headers.setdefault(
-                        'Content-Length',
-                        len(first_chunk),
-                    )
+                    self.headers['Content-Length'] = len(first_chunk)
             yield first_chunk
             for chunk in chunks:
                 yield to_bytes(chunk, error_callback=self.logger.exception)
@@ -178,7 +175,7 @@ class Response(object):
 
     @Method
     def options(self, **kwargs):
-        self.headers.append('Allow', ', '.join(self.allowed_http_methods))
+        self.headers['Allow'] = ', '.join(self.allowed_http_methods)
 
     get = Method()
 
