@@ -22,11 +22,11 @@ _test_routes = (
 
 class AppTestCase(unittest.TestCase):
 
-    @Response.handler('get')
+    @Response.get
     def expected_handler(self, *args, **kwargs):
         pass
 
-    @Response.handler('get')
+    @Response.get
     def unexpected_handler(self, *args, **kwargs):
         pass
 
@@ -39,6 +39,8 @@ class AppTestCase(unittest.TestCase):
         app = App(routes=routes)
         partial = app.get_handler(requested_path)
         self.assertDictEqual(expected_kwargs or {}, partial.keywords)
+
+    # TODO add test with lazy route
 
     def test_get_handler__expected(self):
         self._get_handler_parametrized_test_case(
@@ -583,16 +585,16 @@ class AppTestCase(unittest.TestCase):
             )
         self.assertEqual('404 Not Found', context.exception.status)
 
-    def test_compile_routes__empty(self):
+    def test_routes__empty(self):
         app = App()
         self.assertListEqual([], app.routes)
 
-    def test_compile_routes(self):
+    def test_routes__single(self):
         route = Route('/', _test_handler)
         app = App(routes=(route, ))
         self.assertListEqual([route], app.routes)
 
-    def test_compile_routes__subroutes(self):
+    def test_routes__subroutes(self):
         route = Route('/', _test_handler, subroutes=_test_routes)
         app = App(routes=(route, ))
         self.assertListEqual([route], app.routes)
@@ -602,12 +604,12 @@ class AppTestCase(unittest.TestCase):
         self.assertEqual(_test_handler, route_a.handler)
         self.assertEqual(_test_handler, route_b.handler)
 
-    def test_compile_routes__lazy_handler(self):
+    def test_routes__lazy_handler(self):
         route = Route('/', '%s._test_handler' % __name__)
         app = App(routes=(route, ))
         self.assertListEqual([route], app.routes)
 
-    def test_compile_routes__lazy_subroutes(self):
+    def test_routes__lazy_subroutes(self):
         route = Route('/', _test_handler, subroutes=(
             '%s._test_route_1' % __name__,
             '%s._test_route_2' % __name__,
@@ -619,15 +621,6 @@ class AppTestCase(unittest.TestCase):
         self.assertIsInstance(route_b, Route)
         self.assertEqual(_test_handler, route_a.handler)
         self.assertEqual(_test_handler, route_b.handler)
-
-    def test_compile_routes__typeerror(self):
-        wrong_handler = 123
-        routes = (
-            Route('path', wrong_handler),
-        )
-        with self.assertRaises(TypeError) as context:
-            App(routes=routes)
-        self.assertIn('subclass of Response', str(context.exception))
 
     def test_route(self):
         app = App()

@@ -29,7 +29,7 @@ class HandlerTestCase(unittest.TestCase):
 
     def test_handler_as_function(self):
         routes = (
-            Route('/', Response.handler('get')(lambda: 'hello')),
+            Route('/', Response.get(lambda: 'foo')),
         )
         environ = Request(dict(
             REQUEST_METHOD='GET',
@@ -38,9 +38,9 @@ class HandlerTestCase(unittest.TestCase):
         self.handler_parametrized_test_case(
             routes=routes,
             environ=environ,
-            expected_result=b'hello',
+            expected_result=b'foo',
             expected_headers=(
-                ('Content-Type', 'text/plain; charset=utf-8'),
+                ('Content-Length', '3'),
             ),
         )
 
@@ -60,7 +60,7 @@ class HandlerTestCase(unittest.TestCase):
             environ=environ,
             expected_result=b'hello',
             expected_headers=(
-                ('Content-Type', 'text/plain; charset=utf-8'),
+                ('Content-Length', '5'),
             ),
         )
 
