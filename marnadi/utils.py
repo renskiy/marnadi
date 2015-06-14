@@ -93,25 +93,20 @@ class cached_property(CachedDescriptor):
         return self
 
 
-class LazyType(type):  # TODO inherit from ReferenceType
+class LazyType(type):
 
-    def __call__(cls, *args):
-        assert len(args) < 2
-        try:
-            arg = args[0]
-            if isinstance(arg, cls) or not isinstance(arg, str):
-                return arg
-        except IndexError:
-            pass
-        return super(LazyType, cls).__call__(*args)
+    def __call__(cls, path):
+        if isinstance(path, cls) or not isinstance(path, str):
+            return path
+        return super(LazyType, cls).__call__(path)
 
 
 @metaclass(LazyType)
-class Lazy(CachedDescriptor):
+class Lazy(object):
 
     __slots__ = '_path', '__weakref__'
 
-    def __init__(self, path=None):
+    def __init__(self, path):
         super(Lazy, self).__init__()
         self._path = path
 
@@ -139,13 +134,15 @@ class Lazy(CachedDescriptor):
     def __getattr__(self, attr):
         return getattr(self._obj, attr)
 
+    def __bool__(self):
+        return bool(self._obj)
+
+    def __nonzero__(self):
+        return self.__bool__()
+
     @property
     def __class__(self):
         return self._obj.__class__
-
-    def __get__(self, instance, instance_type=None):
-        value = super(Lazy, self).__get__(instance, instance_type)
-        return value._obj if isinstance(value, Lazy) else value
 
     @cached_property
     def _obj(self):
@@ -159,13 +156,6 @@ class Lazy(CachedDescriptor):
         if obj_name is not None:
             return getattr(module, obj_name)
         return module
-
-    def get_value(self, instance):
-        return self._obj
-
-    @classmethod
-    def set_value(cls, instance, value):
-        return cls(value)
 
 
 def to_bytes(obj, encoding='utf-8', error_callback=None):

@@ -4,6 +4,12 @@ from marnadi import Response
 from marnadi.helpers import Route
 from marnadi.wsgi import Request, App
 
+handler_function = Response.get(lambda: 'foo')
+
+handler_class = type('MyHandler', (Response, ), dict(
+    get=lambda *args: 'hello'
+))
+
 
 class HandlerTestCase(unittest.TestCase):
 
@@ -29,7 +35,7 @@ class HandlerTestCase(unittest.TestCase):
 
     def test_handler_as_function(self):
         routes = (
-            Route('/', Response.get(lambda: 'foo')),
+            Route('/', handler_function),
         )
         environ = Request(dict(
             REQUEST_METHOD='GET',
@@ -45,11 +51,42 @@ class HandlerTestCase(unittest.TestCase):
         )
 
     def test_handler_as_class(self):
-        MyResponse = type('MyHandler', (Response, ), dict(
-            get=lambda *args: 'hello'
-        ))
         routes = (
-            Route('/', MyResponse),
+            Route('/', handler_class),
+        )
+        environ = Request(dict(
+            REQUEST_METHOD='GET',
+            PATH_INFO='/',
+        ))
+        self.handler_parametrized_test_case(
+            routes=routes,
+            environ=environ,
+            expected_result=b'hello',
+            expected_headers=(
+                ('Content-Length', '5'),
+            ),
+        )
+
+    def test_handler_as_lazy_function(self):
+        routes = (
+            Route('/', '%s.handler_function' % __name__),
+        )
+        environ = Request(dict(
+            REQUEST_METHOD='GET',
+            PATH_INFO='/',
+        ))
+        self.handler_parametrized_test_case(
+            routes=routes,
+            environ=environ,
+            expected_result=b'foo',
+            expected_headers=(
+                ('Content-Length', '3'),
+            ),
+        )
+
+    def test_handler_as_lazy_class(self):
+        routes = (
+            Route('/', '%s.handler_class' % __name__),
         )
         environ = Request(dict(
             REQUEST_METHOD='GET',
