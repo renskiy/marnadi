@@ -7,6 +7,7 @@ except ImportError:
 from marnadi import Response
 from marnadi.errors import HttpError
 from marnadi.helpers import Route
+from marnadi.utils import Lazy
 from marnadi.wsgi import App
 
 _test_handler = Response
@@ -21,6 +22,30 @@ _test_routes = (
 
 
 class AppTestCase(unittest.TestCase):
+
+    def test_get_handler__explicit_lazy_route_match(self):
+        lazy_route = Lazy('%s._test_route_1' % __name__)
+        app = App([lazy_route])
+        app.get_handler('a')
+
+    def test_get_handler__implicit_lazy_route_match(self):
+        lazy_route = '%s._test_route_1' % __name__
+        app = App([lazy_route])
+        app.get_handler('a')
+
+    def test_get_handler__explicit_lazy_subroute_match(self):
+        route = Route('/', subroutes=(
+            Lazy('%s._test_route_1' % __name__),
+        ))
+        app = App([route])
+        app.get_handler('/a')
+
+    def test_get_handler__implicit_lazy_subroute_match(self):
+        route = Route('/', subroutes=(
+            '%s._test_route_1' % __name__,
+        ))
+        app = App([route])
+        app.get_handler('/a')
 
     @Response.get
     def expected_handler(self, *args, **kwargs):
@@ -38,9 +63,22 @@ class AppTestCase(unittest.TestCase):
     ):
         app = App(routes=routes)
         partial = app.get_handler(requested_path)
+        actual_handler = partial.func.args[0]
+        expected_handler = self.expected_handler.__response__
+        unexpected_handler = self.unexpected_handler.__response__
+        self.assertIs(expected_handler, actual_handler)
+        self.assertIsNot(unexpected_handler, actual_handler)
         self.assertDictEqual(expected_kwargs or {}, partial.keywords)
 
-    # TODO add test with lazy route
+    def test_get_handler__empty_route_handler_error(self):
+        with self.assertRaises(HttpError) as context:
+            self._get_handler_parametrized_test_case(
+                routes=(
+                    Route('/'),
+                ),
+                requested_path='/',
+            )
+        self.assertEqual('404 Not Found', context.exception.status)
 
     def test_get_handler__expected(self):
         self._get_handler_parametrized_test_case(
@@ -585,43 +623,6 @@ class AppTestCase(unittest.TestCase):
             )
         self.assertEqual('404 Not Found', context.exception.status)
 
-    def test_routes__empty(self):
-        app = App()
-        self.assertListEqual([], app.routes)
-
-    def test_routes__single(self):
-        route = Route('/', _test_handler)
-        app = App(routes=(route, ))
-        self.assertListEqual([route], app.routes)
-
-    def test_routes__subroutes(self):
-        route = Route('/', _test_handler, subroutes=_test_routes)
-        app = App(routes=(route, ))
-        self.assertListEqual([route], app.routes)
-        route_a, route_b = route.subroutes
-        self.assertIsInstance(route_a, Route)
-        self.assertIsInstance(route_b, Route)
-        self.assertEqual(_test_handler, route_a.handler)
-        self.assertEqual(_test_handler, route_b.handler)
-
-    def test_routes__lazy_handler(self):
-        route = Route('/', '%s._test_handler' % __name__)
-        app = App(routes=(route, ))
-        self.assertListEqual([route], app.routes)
-
-    def test_routes__lazy_subroutes(self):
-        route = Route('/', _test_handler, subroutes=(
-            '%s._test_route_1' % __name__,
-            '%s._test_route_2' % __name__,
-        ))
-        app = App(routes=(route, ))
-        self.assertListEqual([route], app.routes)
-        route_a, route_b = route.subroutes
-        self.assertIsInstance(route_a, Route)
-        self.assertIsInstance(route_b, Route)
-        self.assertEqual(_test_handler, route_a.handler)
-        self.assertEqual(_test_handler, route_b.handler)
-
     def test_route(self):
         app = App()
         app.route('/{foo}', params=dict(kwarg='kwarg'))(Response)
@@ -641,5 +642,3 @@ class AppTestCase(unittest.TestCase):
             ),
             partial.keywords
         )
-
-    # TODO add test with empty Route.handler (must raise 404)
