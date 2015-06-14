@@ -47,12 +47,10 @@ class AppTestCase(unittest.TestCase):
         app = App([route])
         app.get_handler('/a')
 
-    @Response.get
-    def expected_handler(self, *args, **kwargs):
+    class expected_handler(Response):
         pass
 
-    @Response.get
-    def unexpected_handler(self, *args, **kwargs):
+    class unexpected_handler(Response):
         pass
 
     def _get_handler_parametrized_test_case(
@@ -63,11 +61,9 @@ class AppTestCase(unittest.TestCase):
     ):
         app = App(routes=routes)
         partial = app.get_handler(requested_path)
-        actual_handler = partial.func.args[0]
-        expected_handler = self.expected_handler.__response__
-        unexpected_handler = self.unexpected_handler.__response__
-        self.assertIs(expected_handler, actual_handler)
-        self.assertIsNot(unexpected_handler, actual_handler)
+        actual_handler = partial.func.__self__
+        self.assertIs(actual_handler, self.expected_handler)
+        self.assertIsNot(actual_handler, self.unexpected_handler)
         self.assertDictEqual(expected_kwargs or {}, partial.keywords)
 
     def test_get_handler__empty_route_handler_error(self):
