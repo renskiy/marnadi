@@ -39,25 +39,25 @@ class ReferenceType(type):
 
 class CachedDescriptor(object):
 
-    __slots__ = '_cache',
+    __slots__ = 'cache',
 
     def __init__(self):
-        self._cache = weakref.WeakKeyDictionary()
+        self.cache = weakref.WeakKeyDictionary()
 
     def __get__(self, instance, instance_type=None):
         if instance is None:
             return self  # static access
         try:
-            return self._cache[instance]
+            return self.cache[instance]
         except KeyError:
-            value = self._cache[instance] = self.get_value(instance)
+            value = self.cache[instance] = self.get_value(instance)
             return value
 
     def __set__(self, instance, value):
-        self._cache[instance] = self.set_value(instance, value)
+        self.cache[instance] = self.set_value(instance, value)
 
     def __delete__(self, instance):
-        del self._cache[instance]
+        del self.cache[instance]
 
     def get_value(self, instance):
         raise NotImplementedError
