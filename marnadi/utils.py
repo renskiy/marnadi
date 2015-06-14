@@ -17,7 +17,9 @@ def metaclass(mcs):
             else:
                 slots = cls.__slots__
             for slot in slots:
-                del attrs[slot]
+                if slot.startswith('__') and not slot.endswith('__'):
+                    slot = '_{cls}{slot}'.format(cls=cls.__name__, slot=slot)
+                attrs.pop(slot, None)
         except AttributeError:
             pass
         for prop in '__weakref__', '__dict__':
@@ -104,54 +106,54 @@ class LazyType(type):
 @metaclass(LazyType)
 class Lazy(object):
 
-    __slots__ = '_path', '__weakref__'
+    __slots__ = '__path', '__weakref__'
 
     def __init__(self, path):
         super(Lazy, self).__init__()
-        self._path = path
+        self.__path = path
 
     def __call__(self, *args, **kwargs):
-        return self._obj(*args, **kwargs)
+        return self.__obj(*args, **kwargs)
 
     def __iter__(self):
-        return iter(self._obj)
+        return iter(self.__obj)
 
     def __len__(self):
-        return len(self._obj)
+        return len(self.__obj)
 
     def __str__(self):
-        return str(self._obj)
+        return str(self.__obj)
 
     def __unicode__(self):
-        return unicode(self._obj)
+        return unicode(self.__obj)
 
     def __bytes__(self):
-        return bytes(self._obj)
+        return bytes(self.__obj)
 
     def __getitem__(self, item):
-        return self._obj[item]
+        return self.__obj[item]
 
     def __getattr__(self, attr):
-        return getattr(self._obj, attr)
+        return getattr(self.__obj, attr)
 
     def __bool__(self):
-        return bool(self._obj)
+        return bool(self.__obj)
 
     def __nonzero__(self):
         return self.__bool__()
 
     @property
     def __class__(self):
-        return self._obj.__class__
+        return self.__obj.__class__
 
     @cached_property
-    def _obj(self):
-        if self._path is None:
+    def __obj(self):
+        if self.__path is None:
             return
         try:
-            module_name, obj_name = self._path.rsplit('.', 1)
+            module_name, obj_name = self.__path.rsplit('.', 1)
         except ValueError:
-            module_name, obj_name = self._path, None
+            module_name, obj_name = self.__path, None
         module = importlib.import_module(module_name)
         if obj_name is not None:
             return getattr(module, obj_name)
