@@ -25,7 +25,7 @@ Run this script and open http://localhost:8000/ on your browser:
 .. code-block:: python
 
     from marnadi.wsgi import App
-    from marnadi import Response
+    from marnadi.http import Response
     
     application = App()
     
@@ -46,7 +46,7 @@ Script below additionally will respond to http://localhost:8000/foo/bar/ and htt
 .. code-block:: python
 
     import re
-    from marnadi import Response
+    from marnadi.http import Response
     from marnadi.helpers import Route, route
     from marnadi.wsgi import App
 

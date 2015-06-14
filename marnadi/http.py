@@ -1,4 +1,3 @@
-# TODO rename module to http
 import collections
 import functools
 import itertools

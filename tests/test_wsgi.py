@@ -4,7 +4,7 @@ try:
 except ImportError:
     import mock
 
-from marnadi import Response
+from marnadi.http import Response
 from marnadi.errors import HttpError
 from marnadi.helpers import Route
 from marnadi.utils import Lazy
