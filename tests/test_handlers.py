@@ -1,6 +1,6 @@
 import unittest
 
-from marnadi.http import Response
+from marnadi.response import Response
 from marnadi.route import Route
 from marnadi.wsgi import Request, App
 

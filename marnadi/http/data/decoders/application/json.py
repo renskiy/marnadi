@@ -1,7 +1,7 @@
 import importlib
 json = importlib.import_module('json')  # import built-in module 'json'
 
-from marnadi.descriptors.data.decoders import Decoder as BaseDecoder
+from marnadi.http.data.decoders import Decoder as BaseDecoder
 
 
 class Decoder(BaseDecoder):

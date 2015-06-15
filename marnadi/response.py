@@ -3,7 +3,7 @@ import functools
 import itertools
 import logging
 
-from marnadi import descriptors
+from marnadi import http
 from marnadi.errors import HttpError
 from marnadi.utils import to_bytes, cached_property, coroutine, metaclass
 
@@ -96,9 +96,9 @@ class Response(object):
     if hasattr(collections.Iterator, '__slots__'):
         __slots__ = 'app', 'request', '__weakref__'
 
-    headers = descriptors.Headers()
+    headers = http.Headers()
 
-    cookies = descriptors.Cookies()
+    cookies = http.Cookies()
 
     def __init__(self, app, request):
         self.app = app

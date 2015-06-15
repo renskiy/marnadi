@@ -6,10 +6,9 @@ try:
 except ImportError:
     import urlparse as parse
 
-from marnadi import descriptors
+from marnadi import http
 from marnadi.errors import HttpError
 from marnadi.route import Route, Routes
-from marnadi.helpers import Header
 from marnadi.utils import cached_property
 
 
@@ -73,7 +72,7 @@ class Request(collections.Mapping):
     def content_type(self):
         try:
             parts = iter(self['CONTENT_TYPE'].split(';'))
-            return Header(next(parts).strip(), **dict(
+            return http.Header(next(parts).strip(), **dict(
                 map(str.strip, part.split('=', 1))
                 for part in parts
             ))
@@ -109,14 +108,14 @@ class Request(collections.Mapping):
         except KeyError:
             return {}
 
-    data = descriptors.Data(
+    data = http.Data(
         (
             'application/json',
-            'marnadi.descriptors.data.decoders.application.json.Decoder',
+            'marnadi.http.data.decoders.application.json.Decoder',
         ),
         (
             'application/x-www-form-urlencoded',
-            'marnadi.descriptors.data.decoders' +
+            'marnadi.http.data.decoders' +
             '.application.x_www_form_urlencoded.decoder',
         ),
     )

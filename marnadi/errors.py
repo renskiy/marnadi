@@ -1,7 +1,6 @@
 import collections
 
-from marnadi import descriptors
-from marnadi.helpers import Header
+from marnadi import http
 from marnadi.utils import to_bytes
 
 
@@ -9,8 +8,8 @@ class HttpError(Exception, collections.Iterable, collections.Sized):
 
     __slots__ = 'status', 'data', '__weakref__'
 
-    headers = descriptors.Headers(
-        ('Content-Type', Header('text/plain', charset='utf-8')),
+    headers = http.Headers(
+        ('Content-Type', http.Header('text/plain', charset='utf-8')),
     )
 
     def __init__(

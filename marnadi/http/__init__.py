@@ -1,5 +1,9 @@
 import collections
 
+from marnadi.http.data import Data
+from marnadi.http.cookies import Cookies
+from marnadi.http.headers import Headers
+
 
 class Header(collections.Mapping):
 

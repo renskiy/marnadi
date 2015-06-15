@@ -154,6 +154,6 @@ class LazyTestCase(unittest.TestCase):
         self.assertEqual('marnadi', lazy.__name__)
 
     def test_lazy__package_from_package(self):
-        lazy = Lazy('marnadi.descriptors')
+        lazy = Lazy('marnadi.http')
         self.assertIsInstance(lazy, types.ModuleType)
-        self.assertEqual('marnadi.descriptors', lazy.__name__)
+        self.assertEqual('marnadi.http', lazy.__name__)
