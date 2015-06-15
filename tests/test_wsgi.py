@@ -6,7 +6,7 @@ except ImportError:
 
 from marnadi.http import Response
 from marnadi.errors import HttpError
-from marnadi.helpers import Route
+from marnadi.route import Route
 from marnadi.utils import Lazy
 from marnadi.wsgi import App
 

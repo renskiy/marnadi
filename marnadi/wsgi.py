@@ -8,7 +8,8 @@ except ImportError:
 
 from marnadi import descriptors
 from marnadi.errors import HttpError
-from marnadi.helpers import Route, Routes, Header
+from marnadi.route import Route, Routes
+from marnadi.helpers import Header
 from marnadi.utils import cached_property
 
 

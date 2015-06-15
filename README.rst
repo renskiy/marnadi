@@ -60,7 +60,6 @@ Script below additionally will respond to http://localhost:8000/foo/bar/ and htt
     
     class FooBarResponse(Response):
     
-        # HTTP GET request handler
         def get(self, foo, bar=None):
             return 'foo is {foo}, bar is {bar}'.format(foo=foo, bar=bar)
     

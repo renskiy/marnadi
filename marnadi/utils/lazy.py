@@ -1,40 +1,7 @@
-import functools
 import importlib
 import weakref
 
-try:
-    unicode_str = unicode
-except NameError:
-    unicode_str = str
-
-
-def metaclass(mcs):
-    def _decorator(cls):
-        attrs = dict(vars(cls))
-        try:
-            if isinstance(cls.__slots__, str):
-                slots = (cls.__slots__, )
-            else:
-                slots = cls.__slots__
-            for slot in slots:
-                if slot.startswith('__') and not slot.endswith('__'):
-                    slot = '_{cls}{slot}'.format(cls=cls.__name__, slot=slot)
-                attrs.pop(slot, None)
-        except AttributeError:
-            pass
-        for prop in '__weakref__', '__dict__':
-            attrs.pop(prop, None)
-        return mcs(cls.__name__, cls.__bases__, attrs)
-    return _decorator
-
-
-class ReferenceType(type):
-
-    def __call__(cls, *args, **kwargs):
-        if len(args) == 1 and len(kwargs) == 0:
-            if isinstance(args[0], cls):
-                return args[0]
-        return super(ReferenceType, cls).__call__(*args, **kwargs)
+from marnadi.utils import metaclass
 
 
 class CachedDescriptor(object):
@@ -66,12 +33,12 @@ class CachedDescriptor(object):
         return value
 
 
-class cached_property(CachedDescriptor):
+class CachedProperty(CachedDescriptor):
 
     __slots__ = 'get', 'set', '__doc__'
 
     def __init__(self, fget=None, fset=None, doc=None):
-        super(cached_property, self).__init__()
+        super(CachedProperty, self).__init__()
         self.get = fget
         self.set = fset
         self.__doc__ = doc
@@ -84,7 +51,7 @@ class cached_property(CachedDescriptor):
     def set_value(self, instance, value):
         if self.set is not None:
             return self.set(instance, value)
-        return super(cached_property, self).set_value(instance, value)
+        return super(CachedProperty, self).set_value(instance, value)
 
     def getter(self, getter):
         self.get = getter
@@ -94,16 +61,18 @@ class cached_property(CachedDescriptor):
         self.set = setter
         return self
 
+cached_property = CachedProperty
 
-class LazyType(type):
+
+class LazyMeta(type):
 
     def __call__(cls, path):
         if isinstance(path, cls) or not isinstance(path, str):
             return path
-        return super(LazyType, cls).__call__(path)
+        return super(LazyMeta, cls).__call__(path)
 
 
-@metaclass(LazyType)
+@metaclass(LazyMeta)
 class Lazy(object):
 
     __slots__ = '__path', '__weakref__'
@@ -158,28 +127,3 @@ class Lazy(object):
         if obj_name is not None:
             return getattr(module, obj_name)
         return module
-
-
-def to_bytes(obj, encoding='utf-8', error_callback=None):
-    try:
-        if isinstance(obj, (bytes, bytearray, memoryview)):
-            return bytes(obj)
-        if obj is None:
-            return b''
-        try:
-            return obj.__bytes__()
-        except AttributeError:
-            return unicode_str(obj).encode(encoding=encoding)
-    except Exception as error:
-        if error_callback is not None:
-            error_callback(error)
-        raise
-
-
-def coroutine(fn):
-    @functools.wraps(fn)
-    def _fn(*args, **kwargs):
-        co = fn(*args, **kwargs)
-        co.send(None)
-        return co
-    return _fn

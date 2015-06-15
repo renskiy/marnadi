@@ -29,7 +29,7 @@ def _test_function(*args, **kwargs):
     return args, kwargs
 
 
-class _TestClass(object):
+class _TestClass:
     pass
 
 _test_instance = _TestClass()

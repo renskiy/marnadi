@@ -1,7 +1,7 @@
 import unittest
 
 from marnadi.http import Response
-from marnadi.helpers import Route
+from marnadi.route import Route
 from marnadi.wsgi import Request, App
 
 handler_function = Response.get(lambda: 'foo')
