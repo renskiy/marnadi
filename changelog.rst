@@ -3,6 +3,15 @@ Changelog
 
 .. currentmodule:: marnadi
 
+Release 0.4.0
+-------------
+
+- Enhancement: completely reworked project structure
+- Enhancement: Route now has explicit subroutes
+- Enhancement: added special http.Method descriptor which can be used for decorating function handlers
+- Enhancement: Lazy made its variable private
+- Enhancement: Response sets new value of Content-Length even if it's already set
+
 Release 0.3.2
 -------------
 
