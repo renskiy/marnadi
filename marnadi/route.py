@@ -1,4 +1,3 @@
-import itertools
 import re
 
 from marnadi.utils import ReferenceType, metaclass, Lazy
