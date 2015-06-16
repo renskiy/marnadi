@@ -46,11 +46,10 @@ Script below additionally will respond to http://localhost:8000/foo/bar/ and htt
 .. code-block:: python
 
     from marnadi.response import Response
-    from marnadi.route import Route, route
+    from marnadi.route import Route
     from marnadi.wsgi import App
 
 
-    @route('/')
     class MainPageResponse(Response):
 
         def get(self):
@@ -63,7 +62,7 @@ Script below additionally will respond to http://localhost:8000/foo/bar/ and htt
             return 'foo is {foo}, bar is {bar}'.format(foo=foo, bar=bar)
     
     routes=(
-        MainPageResponse,
+        Route('/', MainPageResponse),
         Route('/{foo}/', FooBarResponse, subroutes=(
             Route('{bar}/', FooBarResponse),
         )),

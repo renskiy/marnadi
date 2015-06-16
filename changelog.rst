@@ -3,6 +3,11 @@ Changelog
 
 .. currentmodule:: marnadi
 
+Release 0.4.1
+-------------
+
+- Enhancement: route sequences can include routes and another sequences (nested route sequences)
+
 Release 0.4.0
 -------------
 

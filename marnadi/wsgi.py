@@ -8,7 +8,7 @@ except ImportError:
 
 from marnadi import http
 from marnadi.errors import HttpError
-from marnadi.route import Route, Routes
+from marnadi.route import Routes
 from marnadi.utils import cached_property
 
 
@@ -161,7 +161,6 @@ class App(object):
             self.register_route(route, parents=parents)
 
     def register_route(self, route, parents=()):
-        assert isinstance(route, Route)
         parents = parents + (route, )
         if route.name:
             self.route_map[route.name] = parents

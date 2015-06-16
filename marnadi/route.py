@@ -1,3 +1,4 @@
+import itertools
 import re
 
 from marnadi.utils import ReferenceType, metaclass, Lazy
@@ -62,16 +63,17 @@ class Routes(list):
     __slots__ = ()
 
     def __init__(self, seq=()):
-        super(Routes, self).__init__(map(Lazy, seq))
+        def unnest(routes):
+            for route in map(Lazy, routes):
+                if isinstance(route, Route):
+                    yield route
+                else:
+                    for unnested in unnest(route):
+                        yield unnested
+        super(Routes, self).__init__(unnest(seq))
 
     def route(self, path, **route_params):
         def _decorator(handler):
             self.append(Route(path, handler, **route_params))
             return handler
         return _decorator
-
-
-def route(path, **route_params):
-    def _route(handler):
-        return Route(path, handler, **route_params)
-    return _route
