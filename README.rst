@@ -1,6 +1,9 @@
 marnadi
 =======
 
+.. image:: https://travis-ci.org/renskiy/marnadi.svg?branch=master
+    :target: https://travis-ci.org/renskiy/marnadi
+
 Yet another WSGI Web Framework, the simplest and fastest ever written.
 
 Has no dependencies. Works both with **Python 2** and **Python 3**.
