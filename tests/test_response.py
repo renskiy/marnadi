@@ -11,9 +11,9 @@ handler_class = type('MyHandler', (Response, ), dict(
 ))
 
 
-class HandlerTestCase(unittest.TestCase):
+class ResponseTestCase(unittest.TestCase):
 
-    def handler_parametrized_test_case(
+    def _handle_request(
         self,
         routes,
         environ,
@@ -33,7 +33,7 @@ class HandlerTestCase(unittest.TestCase):
         actual_result = b''.join(app(environ, start_response))
         self.assertEqual(expected_result, actual_result)
 
-    def test_handler_as_function(self):
+    def test_as_function(self):
         routes = (
             Route('/', handler_function),
         )
@@ -41,7 +41,7 @@ class HandlerTestCase(unittest.TestCase):
             REQUEST_METHOD='GET',
             PATH_INFO='/',
         ))
-        self.handler_parametrized_test_case(
+        self._handle_request(
             routes=routes,
             environ=environ,
             expected_result=b'foo',
@@ -50,7 +50,7 @@ class HandlerTestCase(unittest.TestCase):
             ),
         )
 
-    def test_handler_as_class(self):
+    def test_as_class(self):
         routes = (
             Route('/', handler_class),
         )
@@ -58,7 +58,7 @@ class HandlerTestCase(unittest.TestCase):
             REQUEST_METHOD='GET',
             PATH_INFO='/',
         ))
-        self.handler_parametrized_test_case(
+        self._handle_request(
             routes=routes,
             environ=environ,
             expected_result=b'hello',
@@ -67,7 +67,7 @@ class HandlerTestCase(unittest.TestCase):
             ),
         )
 
-    def test_handler_as_lazy_function(self):
+    def test_as_lazy_function(self):
         routes = (
             Route('/', '%s.handler_function' % __name__),
         )
@@ -75,7 +75,7 @@ class HandlerTestCase(unittest.TestCase):
             REQUEST_METHOD='GET',
             PATH_INFO='/',
         ))
-        self.handler_parametrized_test_case(
+        self._handle_request(
             routes=routes,
             environ=environ,
             expected_result=b'foo',
@@ -84,7 +84,7 @@ class HandlerTestCase(unittest.TestCase):
             ),
         )
 
-    def test_handler_as_lazy_class(self):
+    def test_as_lazy_class(self):
         routes = (
             Route('/', '%s.handler_class' % __name__),
         )
@@ -92,7 +92,7 @@ class HandlerTestCase(unittest.TestCase):
             REQUEST_METHOD='GET',
             PATH_INFO='/',
         ))
-        self.handler_parametrized_test_case(
+        self._handle_request(
             routes=routes,
             environ=environ,
             expected_result=b'hello',
@@ -101,7 +101,7 @@ class HandlerTestCase(unittest.TestCase):
             ),
         )
 
-    def test_handler_not_supported_method(self):
+    def test_not_supported_method(self):
         routes = (
             Route('/', Response),
         )
@@ -109,7 +109,7 @@ class HandlerTestCase(unittest.TestCase):
             REQUEST_METHOD='NOT_SUPPORTED_METHOD',
             PATH_INFO='/',
         ))
-        self.handler_parametrized_test_case(
+        self._handle_request(
             routes=routes,
             environ=environ,
             expected_status='501 Not Implemented',
@@ -120,7 +120,7 @@ class HandlerTestCase(unittest.TestCase):
             ),
         )
 
-    def test_handler_not_allowed_method(self):
+    def test_not_allowed_method(self):
         routes = (
             Route('/', Response),
         )
@@ -128,7 +128,7 @@ class HandlerTestCase(unittest.TestCase):
             REQUEST_METHOD='GET',
             PATH_INFO='/',
         ))
-        self.handler_parametrized_test_case(
+        self._handle_request(
             routes=routes,
             environ=environ,
             expected_status='405 Method Not Allowed',

@@ -53,7 +53,7 @@ class AppTestCase(unittest.TestCase):
     class unexpected_handler(Response):
         pass
 
-    def _get_handler_parametrized_test_case(
+    def _test_get_handler(
         self,
         routes,
         requested_path,
@@ -68,7 +68,7 @@ class AppTestCase(unittest.TestCase):
 
     def test_get_handler__empty_route_handler_error(self):
         with self.assertRaises(HttpError) as context:
-            self._get_handler_parametrized_test_case(
+            self._test_get_handler(
                 routes=(
                     Route('/'),
                 ),
@@ -77,7 +77,7 @@ class AppTestCase(unittest.TestCase):
         self.assertEqual('404 Not Found', context.exception.status)
 
     def test_get_handler__expected(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo', self.expected_handler),
             ),
@@ -85,7 +85,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__expected_params_url(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/{foo}', self.expected_handler),
             ),
@@ -94,7 +94,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__expected_params_route(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo', self.expected_handler, params=dict(foo='foo')),
             ),
@@ -103,7 +103,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__expected_params_url_route(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/{baz}', self.expected_handler, params=dict(foo='foo')),
             ),
@@ -112,7 +112,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__expected_params_url_route_collision(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/{foo}',
                       self.expected_handler, params=dict(foo='baz')),
@@ -123,7 +123,7 @@ class AppTestCase(unittest.TestCase):
 
     def test_get_handler__unexpected_error(self):
         with self.assertRaises(HttpError) as context:
-            self._get_handler_parametrized_test_case(
+            self._test_get_handler(
                 routes=(
                     Route('/foo', self.unexpected_handler),
                 ),
@@ -133,7 +133,7 @@ class AppTestCase(unittest.TestCase):
 
     def test_get_handler__unexpected_error2(self):
         with self.assertRaises(HttpError) as context:
-            self._get_handler_parametrized_test_case(
+            self._test_get_handler(
                 routes=(
                     Route('/', self.unexpected_handler),
                 ),
@@ -142,7 +142,7 @@ class AppTestCase(unittest.TestCase):
         self.assertEqual('404 Not Found', context.exception.status)
 
     def test_get_handler__expected_unexpected(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/', self.unexpected_handler),
                 Route('/foo', self.expected_handler),
@@ -151,7 +151,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__unexpected_expected(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo', self.expected_handler),
                 Route('/', self.unexpected_handler),
@@ -160,7 +160,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__expected_unexpected2(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/', self.expected_handler),
                 Route('/foo', self.unexpected_handler),
@@ -169,7 +169,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__unexpected_expected2(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo', self.unexpected_handler),
                 Route('/', self.expected_handler),
@@ -178,7 +178,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__expected_unexpected_params_url(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/{bar}', self.unexpected_handler),
                 Route('/{foo}/', self.expected_handler),
@@ -188,7 +188,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__unexpected_expected_params_url(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/{foo}/', self.expected_handler),
                 Route('/{bar}', self.unexpected_handler),
@@ -198,7 +198,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__expected_unexpected_params_route(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/', self.unexpected_handler, params=dict(bar='bar')),
                 Route('/foo', self.expected_handler, params=dict(foo='foo')),
@@ -208,7 +208,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__unexpected_expected_params_route(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo', self.expected_handler, params=dict(foo='foo')),
                 Route('/', self.unexpected_handler, params=dict(bar='bar')),
@@ -218,7 +218,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__expected_unexpected_params_url_route(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/{bar}', self.unexpected_handler, params=dict(z2=2)),
                 Route('/{foo}/', self.expected_handler, params=dict(z1=1)),
@@ -228,7 +228,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__unexpected_expected_params_url_route(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/{foo}/', self.expected_handler, params=dict(z1=1)),
                 Route('/{bar}', self.unexpected_handler, params=dict(z2=2)),
@@ -238,7 +238,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested_expected(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo', subroutes=(
                     Route('/bar', self.expected_handler),
@@ -248,7 +248,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested_expected_params_url(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/{foo}', subroutes=(
                     Route('/bar', self.expected_handler),
@@ -259,7 +259,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested_expected_params_url2(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/{foo}', subroutes=(
                     Route('/{bar}', self.expected_handler),
@@ -270,7 +270,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested_expected_params_url2_collision(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/{foo}', subroutes=(
                     Route('/{foo}', self.expected_handler),
@@ -281,7 +281,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested_expected_params_route(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo', subroutes=(
                     Route('/bar', self.expected_handler),
@@ -292,7 +292,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested_expected_params_route2(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo', subroutes=(
                     Route('/bar', self.expected_handler,
@@ -304,7 +304,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested_expected_params_route2_collision(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo', subroutes=(
                     Route('/bar', self.expected_handler,
@@ -316,7 +316,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested_expected_params_url2_route2(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/{foo}', subroutes=(
                     Route('/{bar}', self.expected_handler,
@@ -328,7 +328,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested_expected_params_url2_route2_collision(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/{foo}', subroutes=(
                     Route('/{bar}', self.expected_handler,
@@ -340,7 +340,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested_unexpected_expected(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo', subroutes=(
                     Route('', self.unexpected_handler),
@@ -351,7 +351,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested_expected_unexpected(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo', subroutes=(
                     Route('/bar', self.expected_handler),
@@ -362,7 +362,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested_unexpected_expected_half(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo', self.unexpected_handler, subroutes=(
                     Route('/bar', self.expected_handler),
@@ -372,7 +372,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested_expected_unexpected_half(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo', self.expected_handler, subroutes=(
                     Route('/bar', self.unexpected_handler),
@@ -382,7 +382,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested2_expected_unexpected(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo', subroutes=(
                     Route('/baz', self.expected_handler),
@@ -395,7 +395,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested2_unexpected_expected(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo', subroutes=(
                     Route('/bar', self.unexpected_handler),
@@ -408,7 +408,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested2_unexpected_expected_params_url(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo/{kwarg1}', subroutes=(
                     Route('/bar', self.unexpected_handler),
@@ -422,7 +422,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested2_expected_unexpected_params_url(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo/{kwarg2}', subroutes=(
                     Route('/baz', self.expected_handler),
@@ -436,7 +436,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested2_unexpected_expected_params_route(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo', subroutes=(
                     Route('/bar', self.unexpected_handler, params=dict(f1=1)),
@@ -450,7 +450,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested2_expected_unexpected_params_route(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo', subroutes=(
                     Route('/baz', self.expected_handler, params=dict(f2=2)),
@@ -464,7 +464,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested2_unexpected_expected_params_url_route(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo/{kwarg1}', subroutes=(
                     Route('/bar', self.unexpected_handler, params=dict(f1=1)),
@@ -478,7 +478,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested2_expected_unexpected_params_url_route(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo/{kwarg2}', subroutes=(
                     Route('/baz', self.expected_handler, params=dict(f2=2)),
@@ -492,7 +492,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested2_unexpected_expected_params_url2_route(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo/{kwarg1}', subroutes=(
                     Route('/bar/{bar}', self.unexpected_handler,
@@ -508,7 +508,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested2_expected_unexpected_params_url2_route(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo/{kwarg2}', subroutes=(
                     Route('/baz/{baz}', self.expected_handler,
@@ -524,7 +524,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested2_unexpected_expected_params_url_route2(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo/{kwarg1}', subroutes=(
                     Route('/bar', self.unexpected_handler,
@@ -540,7 +540,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested2_expected_unexpected_params_url_route2(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo/{kwarg2}', subroutes=(
                     Route('/baz', self.expected_handler,
@@ -556,7 +556,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested2_unexpected_expected_params_url2_route2(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo/{kwarg1}', subroutes=(
                     Route('/bar/{bar}', self.unexpected_handler,
@@ -572,7 +572,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested2_expected_unexpected_params_url2_route2(self):
-        self._get_handler_parametrized_test_case(
+        self._test_get_handler(
             routes=(
                 Route('/foo/{kwarg2}', subroutes=(
                     Route('/baz/{baz}', self.expected_handler,
@@ -589,7 +589,7 @@ class AppTestCase(unittest.TestCase):
 
     def test_get_handler__nested2_expected_unexpected_half_error(self):
         with self.assertRaises(HttpError) as context:
-            self._get_handler_parametrized_test_case(
+            self._test_get_handler(
                 routes=(
                     Route('/foo', subroutes=(
                         Route('/baz', self.expected_handler),
@@ -604,7 +604,7 @@ class AppTestCase(unittest.TestCase):
 
     def test_get_handler__nested2_unexpected_expected_half_error(self):
         with self.assertRaises(HttpError) as context:
-            self._get_handler_parametrized_test_case(
+            self._test_get_handler(
                 routes=(
                     Route('/foo', subroutes=(
                         Route('/bar', self.unexpected_handler),
@@ -619,6 +619,7 @@ class AppTestCase(unittest.TestCase):
 
     def test_route(self):
         app = App()
-        app.route('/{foo}', params=dict(kwarg='kwarg'))(Response)
+        handler = app.route('/{foo}', params=dict(kwarg='kwarg'))(Response)
+        self.assertIs(handler, Response)
         partial = app.get_handler('/foo')
         self.assertDictEqual(dict(kwarg='kwarg', foo='foo'), partial.keywords)
