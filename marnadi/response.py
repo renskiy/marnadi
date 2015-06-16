@@ -26,7 +26,9 @@ class Response(object):
     if hasattr(collections.Iterator, '__slots__'):
         __slots__ = 'app', 'request', '__weakref__'
 
-    headers = http.Headers()
+    headers = http.Headers(
+        ('Content-Type', http.Header('text/plain', charset='utf-8')),
+    )
 
     cookies = http.Cookies()
 
