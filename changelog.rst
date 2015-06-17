@@ -7,6 +7,8 @@ Release 0.4.1
 -------------
 
 - Enhancement: route sequences can include routes and another sequences (nested route sequences)
+- Enhancement: enabled Travis CI integration
+- Enhancement: added default Content-Type
 
 Release 0.4.0
 -------------
