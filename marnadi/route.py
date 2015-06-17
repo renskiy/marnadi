@@ -6,7 +6,7 @@ from marnadi.utils import ReferenceType, metaclass, Lazy
 class Route(object):
 
     __slots__ = 'path', 'handler', 'params', 'pattern', 'name', 'callbacks', \
-                'subroutes', '__weakref__'
+                'subroutes'
 
     placeholder_re = re.compile(r'\{([a-zA-Z_][a-zA-Z0-9_]*)\}')
 
