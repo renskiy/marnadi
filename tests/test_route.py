@@ -1,6 +1,7 @@
 import unittest
 
-from marnadi.route import Routes, Route
+from marnadi import Route
+from marnadi.route import Routes
 
 
 class RoutesTestCase(unittest.TestCase):
