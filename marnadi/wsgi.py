@@ -164,7 +164,7 @@ class App(object):
         parents = parents + (route, )
         if route.name:
             self.route_map[route.name] = parents
-        self.build_route_map(route.subroutes, parents=parents)
+        self.build_route_map(route.routes, parents=parents)
 
     def route(self, path, **route_params):
         return self.routes.route(path, **route_params)
@@ -200,7 +200,7 @@ class App(object):
                 try:
                     return self.get_handler(
                         rest_path,
-                        routes=route.subroutes,
+                        routes=route.routes,
                         params=dict(params, **route_params),
                     )
                 except HttpError:

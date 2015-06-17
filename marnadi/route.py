@@ -6,15 +6,15 @@ from marnadi.utils import ReferenceType, metaclass, Lazy
 class Route(object):
 
     __slots__ = 'path', 'handler', 'params', 'pattern', 'name', 'callbacks', \
-                'subroutes'
+                'routes'
 
     placeholder_re = re.compile(r'\{([a-zA-Z_][a-zA-Z0-9_]*)\}')
 
-    def __init__(self, path, handler=None, subroutes=(), name=None, params=None,
+    def __init__(self, path, handler=None, routes=(), name=None, params=None,
                  callbacks=None, patterns=None):
         self.path = path
         self.handler = Lazy(handler)
-        self.subroutes = Routes(subroutes)
+        self.routes = Routes(routes)
         self.name = name
         self.params = params or {}
         self.callbacks = callbacks or {}

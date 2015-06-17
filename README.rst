@@ -66,7 +66,7 @@ Script below additionally will respond to http://localhost:8000/foo/bar/ and htt
     
     routes=(
         Route('/', MainPageResponse),
-        Route('/{foo}/', FooBarResponse, subroutes=(
+        Route('/{foo}/', FooBarResponse, routes=(
             Route('{bar}/', FooBarResponse),
         )),
     )
