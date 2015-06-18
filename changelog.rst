@@ -7,8 +7,7 @@ Release 0.4.2
 -------------
 
 - Enhancement: Response and Route became project global
-- Enhancement: added Travis CI building under Python 3.2 and 3.3
-- Fix: fixed tests under Python 3.2 and 3.3
+- Enhancement: removed support of Python 3.2 and 3.3 due to incompatibility
 
 Release 0.4.1
 -------------
