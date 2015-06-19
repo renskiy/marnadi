@@ -66,7 +66,7 @@ class Request(collections.Mapping):
 
     @property
     def content_length(self):
-        return self.get('CONTENT_LENGTH', 0)
+        return int(self.get('CONTENT_LENGTH', 0))
 
     @cached_property
     def content_type(self):
