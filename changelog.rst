@@ -3,6 +3,12 @@ Changelog
 
 .. currentmodule:: marnadi
 
+Release 0.4.3
+-------------
+
+- Fix: fixed compatibility with the Python built-in `wsgiref` module
+- Fix: Request.content_length is always of int type
+
 Release 0.4.2
 -------------
 
