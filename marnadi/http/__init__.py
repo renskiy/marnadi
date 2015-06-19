@@ -42,6 +42,9 @@ class Header(collections.Mapping):
     def __len__(self):
         len(self.params)
 
+    def __bool__(self):
+        return True
+
     def stringify(self):
         if not self.params:
             return str(self.value)

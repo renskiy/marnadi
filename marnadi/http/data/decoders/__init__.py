@@ -14,4 +14,8 @@ class Decoder(object):
     __slots__ = ()
 
     def __call__(self, request):
-        return b''.join(request.input)
+        content_type = request.content_type
+        encoding = content_type and content_type.params.get(
+            'charset') or 'utf-8'
+        return request.input.read(request.content_length).decode(
+            encoding=encoding)

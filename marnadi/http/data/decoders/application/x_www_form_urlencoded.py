@@ -5,7 +5,8 @@ except ImportError:
 
 
 def decoder(request):
+    encoding = request.content_type.params.get('charset', 'utf-8')
     return dict(parse.parse_qsl(
-        b''.join(request.input),
+        request.input.read(request.content_length).decode(encoding=encoding),
         keep_blank_values=True,
     ))
