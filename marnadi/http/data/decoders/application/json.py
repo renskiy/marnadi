@@ -11,10 +11,12 @@ class Decoder(BaseDecoder):
     __slots__ = 'read',
 
     def __call__(self, request):
-        encoding = request.content_type.params.get('charset', 'utf-8')
-        stream = request.input
-        size = request.content_length
-        self.read = functools.partial(self._read, stream, encoding, size)
+        self.read = functools.partial(
+            self._read,
+            stream=request.input,
+            encoding=request.content_type.get('charset', 'utf-8'),
+            size=request.content_length,
+        )
         try:
             return json.load(self)
         except ValueError:

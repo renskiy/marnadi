@@ -1,3 +1,4 @@
+import io
 import unittest
 
 from marnadi import Response, Route
@@ -135,5 +136,95 @@ class ResponseTestCase(unittest.TestCase):
             expected_headers=(
                 ('Content-Type', 'text/plain; charset=utf-8'),
                 ('Allow', 'OPTIONS'),
+            ),
+        )
+
+    def test_post_application_json(self):
+        routes = (
+            Route('/', type('', (Response, ), dict(
+                post=lambda this: this.request.data,
+            ))),
+        )
+        environ = Request({
+            'REQUEST_METHOD': 'POST',
+            'PATH_INFO': '/',
+            'wsgi.input': io.BytesIO(b'"hello"'),
+            'CONTENT_LENGTH': '7',
+            'CONTENT_TYPE': 'application/json',
+        })
+        self._handle_request(
+            routes=routes,
+            environ=environ,
+            expected_result=b'hello',
+            expected_headers=(
+                ('Content-Length', '5'),
+            ),
+        )
+
+    def test_post_application_x_www_form_urlencoded(self):
+        routes = (
+            Route('/', type('', (Response, ), dict(
+                post=lambda this: str(this.request.data),
+            ))),
+        )
+        environ = Request({
+            'REQUEST_METHOD': 'POST',
+            'PATH_INFO': '/',
+            'wsgi.input': io.BytesIO(b'hello=world'),
+            'CONTENT_LENGTH': '11',
+            'CONTENT_TYPE': 'application/x-www-form-urlencoded',
+        })
+        self._handle_request(
+            routes=routes,
+            environ=environ,
+            expected_result=b"{'hello': 'world'}",
+            expected_headers=(
+                ('Content-Length', '18'),
+            ),
+        )
+
+    def test_post(self, content_type=''):
+        routes = (
+            Route('/', type('', (Response, ), dict(
+                post=lambda this: str(this.request.data),
+            ))),
+        )
+        environ = Request({
+            'REQUEST_METHOD': 'POST',
+            'PATH_INFO': '/',
+            'wsgi.input': io.BytesIO(b'hello'),
+            'CONTENT_LENGTH': '5',
+            'CONTENT_TYPE': content_type,
+        })
+        self._handle_request(
+            routes=routes,
+            environ=environ,
+            expected_result=b'hello',
+            expected_headers=(
+                ('Content-Length', '5'),
+            ),
+        )
+
+    def test_post_text_plain(self):
+        self.test_post('text/plain')
+
+    def test_post_broken_encoding(self):
+        routes = (
+            Route('/', type('', (Response, ), dict(
+                post=lambda this: this.request.data,
+            ))),
+        )
+        environ = Request({
+            'REQUEST_METHOD': 'POST',
+            'PATH_INFO': '/',
+            'wsgi.input': io.BytesIO(b'\xd0'),
+            'CONTENT_LENGTH': '1',
+        })
+        self._handle_request(
+            routes=routes,
+            environ=environ,
+            expected_result=b'',
+            expected_headers=(
+                ('Content-Length', '0'),
             ),
         )
