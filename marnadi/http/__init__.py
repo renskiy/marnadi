@@ -40,7 +40,7 @@ class Header(collections.Mapping):
         return iter(self.params)
 
     def __len__(self):
-        len(self.params)
+        return len(self.params)
 
     def __bool__(self):
         return True
