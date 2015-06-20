@@ -45,6 +45,9 @@ class Header(collections.Mapping):
     def __bool__(self):
         return True
 
+    def __nonzero__(self):
+        return self.__bool__()
+
     def stringify(self):
         if not self.params:
             return str(self.value)
