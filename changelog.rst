@@ -3,7 +3,7 @@ Changelog
 
 .. currentmodule:: marnadi
 
-Release 0.4.3
+Release 0.5.0
 -------------
 
 - Fix: fixed compatibility with the Python built-in `wsgiref` module
