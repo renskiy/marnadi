@@ -3,6 +3,11 @@ Changelog
 
 .. currentmodule:: marnadi
 
+Next Release
+------------
+
+- Enhancement: http.Error stores default status as class attribute
+
 Release 0.5.0
 -------------
 
