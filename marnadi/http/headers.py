@@ -106,12 +106,13 @@ class ResponseHeaders(HeadersMixin, collections.MutableMapping):
     def __setitem__(self, header, value):
         self._headers[header.title()] = [value]
 
-    def append(self, header, value):
+    def append(self, header_item):
+        header, value = header_item
         self._headers[header.title()].append(value)
 
-    def extend(self, *headers):
+    def extend(self, headers):
         for header in headers:
-            self.append(*header)
+            self.append(header)
 
     def setdefault(self, header, default=None):
         return self._headers.setdefault(header.title(), [default])

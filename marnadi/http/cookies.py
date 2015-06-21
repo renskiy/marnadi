@@ -113,7 +113,7 @@ class CookieJar(collections.MutableMapping):
             cookie_params.append("Expires=%s" % expires)
         secure and cookie_params.append("Secure")
         http_only and cookie_params.append("HttpOnly")
-        self.response.headers.append('Set-Cookie', '; '.join(cookie_params))
+        self.response.headers.append(('Set-Cookie', '; '.join(cookie_params)))
 
 
 class Cookies(CachedDescriptor):

@@ -27,5 +27,5 @@ class Error(Exception):
         yield to_bytes(self.data)
 
     def update_headers(self, headers):
-        self.headers.extend(*headers)
+        self.headers.extend(headers)
         self.headers['Content-Length'] = len(self.data)
