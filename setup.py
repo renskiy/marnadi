@@ -5,7 +5,7 @@ with open('README.rst') as description:
 
 setup(
     name='Marnadi',
-    version='0.4.2',
+    version='0.5.0',
     author='Rinat Khabibiev',
     author_email='srenskiy@gmail.com',
     packages=[
