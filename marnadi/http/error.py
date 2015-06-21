@@ -6,17 +6,14 @@ class Error(Exception):
 
     __slots__ = 'status', 'data', '__weakref__'
 
+    default_status = '500 Internal Server Error'
+
     headers = Headers(
         ('Content-Type', Header('text/plain', charset='utf-8')),
     )
 
-    def __init__(
-        self,
-        status='500 Internal Server Error',
-        data=None,
-        headers=(),
-    ):
-        self.status = status
+    def __init__(self, status=None, data=None, headers=()):
+        self.status = status or self.default_status
         self.data = to_bytes(data or status)
         self.update_headers(headers)
 
