@@ -21,7 +21,7 @@ class Error(Exception):
         return 1
 
     def __iter__(self):
-        yield to_bytes(self.data)
+        yield self.data
 
     def update_headers(self, headers):
         self.headers.extend(headers)
