@@ -7,7 +7,6 @@ except ImportError:
     import urlparse as parse
 
 from marnadi import http
-from marnadi.errors import HttpError
 from marnadi.route import Routes
 from marnadi.utils import cached_property
 
@@ -116,7 +115,7 @@ class Request(collections.Mapping):
         (
             'application/x-www-form-urlencoded',
             'marnadi.http.data.decoders' +
-            '.application.x_www_form_urlencoded.decoder',
+            '.application.x_www_form_urlencoded.Decoder',
         ),
     )
 
@@ -143,7 +142,7 @@ class App(object):
             request = self.make_request_object(environ)
             handler = self.get_handler(request.path)
             response = handler(self, request)
-        except HttpError as error:
+        except http.Error as error:
             response = error
         start_response(
             response.status,
@@ -182,7 +181,7 @@ class App(object):
         Note:
             If you wish for example automatically redirect all requests
             without trailing slash in URL to URL with persisting one you may
-            override this method by raising `HttpError` with 301 status and
+            override this method by raising `http.Error` with 301 status and
             necessary 'Location' header when needed.
         """
         routes = routes or self.routes
@@ -203,6 +202,6 @@ class App(object):
                         routes=route.routes,
                         params=dict(params, **route_params),
                     )
-                except HttpError:
+                except http.Error:
                     pass  # wrong way raises "404 Not Found" at the end
-        raise HttpError('404 Not Found')  # matching route not found
+        raise http.Error('404 Not Found')  # matching route not found

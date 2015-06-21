@@ -117,6 +117,7 @@ class ResponseTestCase(unittest.TestCase):
             expected_headers=(
                 ('Content-Type', 'text/plain; charset=utf-8'),
                 ('Allow', 'OPTIONS'),
+                ('Content-Length', '19'),
             ),
         )
 
@@ -136,6 +137,7 @@ class ResponseTestCase(unittest.TestCase):
             expected_headers=(
                 ('Content-Type', 'text/plain; charset=utf-8'),
                 ('Allow', 'OPTIONS'),
+                ('Content-Length', '22'),
             ),
         )
 
@@ -161,10 +163,34 @@ class ResponseTestCase(unittest.TestCase):
             ),
         )
 
+    def test_post_broken_application_json(self):
+        routes = (
+            Route('/', type('', (Response, ), dict(
+                post=lambda this: this.request.data,
+            ))),
+        )
+        environ = Request({
+            'REQUEST_METHOD': 'POST',
+            'PATH_INFO': '/',
+            'wsgi.input': io.BytesIO(b'"hello'),
+            'CONTENT_LENGTH': '6',
+            'CONTENT_TYPE': 'application/json',
+        })
+        self._handle_request(
+            routes=routes,
+            environ=environ,
+            expected_status='400 Bad Request',
+            expected_result=b'400 Bad Request',
+            expected_headers=(
+                ('Content-Type', 'text/plain; charset=utf-8'),
+                ('Content-Length', '15'),
+            ),
+        )
+
     def test_post_application_x_www_form_urlencoded(self):
         routes = (
             Route('/', type('', (Response, ), dict(
-                post=lambda this: str(this.request.data),
+                post=lambda this: this.request.data['hello'],
             ))),
         )
         environ = Request({
@@ -177,9 +203,9 @@ class ResponseTestCase(unittest.TestCase):
         self._handle_request(
             routes=routes,
             environ=environ,
-            expected_result=b"{'hello': 'world'}",
+            expected_result=b"world",
             expected_headers=(
-                ('Content-Length', '18'),
+                ('Content-Length', '5'),
             ),
         )
 
@@ -208,7 +234,7 @@ class ResponseTestCase(unittest.TestCase):
     def test_post_text_plain(self):
         self.test_post('text/plain')
 
-    def test_post_broken_encoding(self):
+    def test_post_broken_unicode(self):
         routes = (
             Route('/', type('', (Response, ), dict(
                 post=lambda this: this.request.data,
@@ -223,8 +249,10 @@ class ResponseTestCase(unittest.TestCase):
         self._handle_request(
             routes=routes,
             environ=environ,
-            expected_result=b'',
+            expected_status='400 Bad Request',
+            expected_result=b'400 Bad Request',
             expected_headers=(
-                ('Content-Length', '0'),
+                ('Content-Type', 'text/plain; charset=utf-8'),
+                ('Content-Length', '15'),
             ),
         )

@@ -3,7 +3,6 @@ import itertools
 import logging
 
 from marnadi import http
-from marnadi.errors import HttpError
 from marnadi.utils import to_bytes, cached_property, coroutine, metaclass
 
 try:
@@ -38,13 +37,13 @@ class Response(object):
 
     def __call__(self, **kwargs):
         if self.request.method not in self.supported_http_methods:
-            raise HttpError(
+            raise http.Error(
                 '501 Not Implemented',
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
             )
         callback = getattr(self, self.request.method.lower())
         if callback is None:
-            raise HttpError(
+            raise http.Error(
                 '405 Method Not Allowed',
                 headers=(('Allow', ', '.join(self.allowed_http_methods)), )
             )
@@ -91,7 +90,7 @@ class Response(object):
                 response.iterator
             )
             return response
-        except HttpError:
+        except http.Error:
             raise
         except Exception as error:
             cls.logger.exception(error)

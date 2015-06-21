@@ -4,8 +4,7 @@ try:
 except ImportError:
     import mock
 
-from marnadi import Response, Route
-from marnadi.errors import HttpError
+from marnadi import Response, Route, http
 from marnadi.utils import Lazy
 from marnadi.wsgi import App
 
@@ -66,7 +65,7 @@ class AppTestCase(unittest.TestCase):
         self.assertDictEqual(expected_kwargs or {}, partial.keywords)
 
     def test_get_handler__empty_route_handler_error(self):
-        with self.assertRaises(HttpError) as context:
+        with self.assertRaises(http.Error) as context:
             self._test_get_handler(
                 routes=(
                     Route('/'),
@@ -121,7 +120,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__unexpected_error(self):
-        with self.assertRaises(HttpError) as context:
+        with self.assertRaises(http.Error) as context:
             self._test_get_handler(
                 routes=(
                     Route('/foo', self.unexpected_handler),
@@ -131,7 +130,7 @@ class AppTestCase(unittest.TestCase):
         self.assertEqual('404 Not Found', context.exception.status)
 
     def test_get_handler__unexpected_error2(self):
-        with self.assertRaises(HttpError) as context:
+        with self.assertRaises(http.Error) as context:
             self._test_get_handler(
                 routes=(
                     Route('/', self.unexpected_handler),
@@ -587,7 +586,7 @@ class AppTestCase(unittest.TestCase):
         )
 
     def test_get_handler__nested2_expected_unexpected_half_error(self):
-        with self.assertRaises(HttpError) as context:
+        with self.assertRaises(http.Error) as context:
             self._test_get_handler(
                 routes=(
                     Route('/foo', routes=(
@@ -602,7 +601,7 @@ class AppTestCase(unittest.TestCase):
         self.assertEqual('404 Not Found', context.exception.status)
 
     def test_get_handler__nested2_unexpected_expected_half_error(self):
-        with self.assertRaises(HttpError) as context:
+        with self.assertRaises(http.Error) as context:
             self._test_get_handler(
                 routes=(
                     Route('/foo', routes=(

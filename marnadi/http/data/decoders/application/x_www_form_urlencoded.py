@@ -3,11 +3,15 @@ try:
 except ImportError:
     import urlparse as parse
 
+from marnadi.http.data.decoders import Decoder as BaseDecoder
 
-def decoder(request):
-    return dict(parse.parse_qsl(
-        request.input.read(request.content_length).decode(
-            encoding=request.content_type.get('charset', 'utf-8')
-        ),
-        keep_blank_values=True,
-    ))
+
+class Decoder(BaseDecoder):
+
+    __slots__ = ()
+
+    def __call__(self, request):
+        return dict(parse.parse_qsl(
+            super(Decoder, self).__call__(request),
+            keep_blank_values=True,
+        ))
