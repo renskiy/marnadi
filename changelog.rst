@@ -11,6 +11,7 @@ Release 0.4.3
 - Fix: fixed len(Header)
 - Fix #16: http.Error supplies 'Content-Length' header
 - Enhancement: moved HttpError to http.Error
+- Enhancement: added tests of http.Data
 
 Release 0.4.2
 -------------
