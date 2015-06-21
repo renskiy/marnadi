@@ -14,15 +14,18 @@ class Error(Exception):
         self,
         status='500 Internal Server Error',
         data=None,
-        headers=None,
+        headers=(),
     ):
         self.status = status
-        self.data = data or status
-        if headers:
-            self.headers.extend(*headers)
+        self.data = to_bytes(data or status)
+        self.update_headers(headers)
 
     def __len__(self):
         return 1
 
     def __iter__(self):
         yield to_bytes(self.data)
+
+    def update_headers(self, headers):
+        self.headers.extend(*headers)
+        self.headers['Content-Length'] = len(self.data)
