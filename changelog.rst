@@ -3,10 +3,11 @@ Changelog
 
 .. currentmodule:: marnadi
 
-Next Release
-------------
+Release 0.5.1
+-------------
 
 - Enhancement: http.Error stores default status as class attribute
+- Enhancement: returned support of Python 3.2 and 3.3
 
 Release 0.5.0
 -------------

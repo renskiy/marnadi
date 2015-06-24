@@ -5,7 +5,7 @@ with open('README.rst') as description:
 
 setup(
     name='Marnadi',
-    version='0.5.0',
+    version='0.5.1',
     author='Rinat Khabibiev',
     author_email='srenskiy@gmail.com',
     packages=[
@@ -31,6 +31,8 @@ setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
