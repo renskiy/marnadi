@@ -27,10 +27,10 @@ class Route(object):
         if self.pattern:
             match = self.pattern.match(path)
             if match:
-                params = {
-                    param: self.callbacks.get(param, lambda x: x)(value)
+                params = dict(
+                    (param, self.callbacks.get(param, lambda x: x)(value))
                     for param, value in match.groupdict().items()
-                }
+                )
                 return path[match.end(0):], dict(self.params, **params)
         elif path.startswith(self.path):
             return path[len(self.path):], self.params

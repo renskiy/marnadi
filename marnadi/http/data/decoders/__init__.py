@@ -29,6 +29,6 @@ class Decoder(object):
     @staticmethod
     def decode(data, encoding):
         try:
-            return data.decode(encoding=encoding)
+            return data.decode(encoding)
         except UnicodeDecodeError:
             raise Error('400 Bad Request')

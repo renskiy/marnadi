@@ -18,9 +18,9 @@ class Response(object):
 
     status = '200 OK'
 
-    supported_http_methods = {
-        'OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE',
-    }
+    supported_http_methods = set(
+        ('OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE')
+    )
 
     if hasattr(collections.Iterator, '__slots__'):
         __slots__ = 'app', 'request', '__weakref__'

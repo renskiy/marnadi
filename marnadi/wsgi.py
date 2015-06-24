@@ -80,8 +80,8 @@ class Request(collections.Mapping):
 
     @cached_property
     def headers(self):
-        return {
-            name.title().replace('_', '-'): value
+        return (
+            (name.title().replace('_', '-'), value)
             for name, value in
             itertools.chain(
                 (
@@ -95,7 +95,7 @@ class Request(collections.Mapping):
                     if env_key.startswith('HTTP_')
                 ),
             )
-        }
+        )
 
     @cached_property
     def query(self):

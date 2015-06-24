@@ -1,5 +1,8 @@
 import types
-import unittest
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
 
 from marnadi.utils import Lazy
 

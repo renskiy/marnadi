@@ -12,13 +12,13 @@ class Data(CachedDescriptor, collections.Mapping):
 
     def __init__(self, *content_decoders, **kw_content_decoders):
         super(Data, self).__init__()
-        self._content_decoders = {
-            content_type: Lazy(content_decoder)
+        self._content_decoders = dict(
+            (content_type, Lazy(content_decoder))
             for content_type, content_decoder in itertools.chain(
                 content_decoders,
                 kw_content_decoders.items(),
             )
-        }
+        )
 
     def __getitem__(self, content_type):
         return self._content_decoders[content_type]

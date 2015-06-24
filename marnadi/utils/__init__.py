@@ -4,6 +4,10 @@ try:
     unicode_str = unicode
 except NameError:
     unicode_str = str
+try:
+    memoryview
+except NameError:
+    memoryview = bytes
 
 
 def metaclass(mcs):
@@ -44,7 +48,7 @@ def to_bytes(obj, encoding='utf-8', error_callback=None):
         try:
             return obj.__bytes__()
         except AttributeError:
-            return unicode_str(obj).encode(encoding=encoding)
+            return unicode_str(obj).encode(encoding)
     except Exception as error:
         if error_callback is not None:
             error_callback(error)
