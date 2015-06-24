@@ -75,7 +75,7 @@ class LazyMeta(type):
 @metaclass(LazyMeta)
 class Lazy(object):
 
-    __slots__ = '__path', '__weakref__'
+    __slots__ = '__path', '__weakref__', '__class__'
 
     def __init__(self, path):
         super(Lazy, self).__init__()
@@ -110,10 +110,6 @@ class Lazy(object):
 
     def __nonzero__(self):
         return self.__bool__()
-
-    @property
-    def __class__(self):
-        return self.__obj.__class__
 
     @cached_property
     def __obj(self):
