@@ -3,6 +3,11 @@ Changelog
 
 .. currentmodule:: marnadi
 
+Release 0.5.2
+-------------
+
+- Enhancement: added support of Python 2.6
+
 Release 0.5.1
 -------------
 
