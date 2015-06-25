@@ -3,6 +3,11 @@ Changelog
 
 .. currentmodule:: marnadi
 
+Next Release
+------------
+
+- Enhancement: added import_module function
+
 Release 0.5.2
 -------------
 
