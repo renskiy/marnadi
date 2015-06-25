@@ -1,5 +1,4 @@
-import importlib
-json = importlib.import_module('json')  # import built-in module 'json'
+json = __import__('json')  # import built-in module 'json'
 
 from marnadi.http import Error
 from marnadi.http.data.decoders import Decoder as BaseDecoder

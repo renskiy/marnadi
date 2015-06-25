@@ -1,4 +1,3 @@
-import importlib
 import weakref
 
 from marnadi.utils import metaclass
@@ -113,13 +112,11 @@ class Lazy(object):
 
     @cached_property
     def __obj(self):
-        if self.__path is None:
-            return
-        try:
-            module_name, obj_name = self.__path.rsplit('.', 1)
-        except ValueError:
-            module_name, obj_name = self.__path, None
-        module = importlib.import_module(module_name)
-        if obj_name is not None:
-            return getattr(module, obj_name)
-        return module
+        package, _, attribute = self.__path.rpartition('.')
+        if not package:
+            package, attribute = attribute, package
+        module = package.rpartition('.')[2]
+        imported = __import__(package, fromlist=(module, ))
+        if attribute:
+            return getattr(imported, attribute)
+        return imported
