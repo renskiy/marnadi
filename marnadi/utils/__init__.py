@@ -63,4 +63,9 @@ def coroutine(fn):
         return co
     return _fn
 
+
+def import_module(path):
+    module = path.rpartition('.')[2]
+    return __import__(path, fromlist=(module, ))
+
 from .lazy import Lazy, CachedDescriptor, cached_property

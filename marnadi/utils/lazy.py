@@ -1,6 +1,6 @@
 import weakref
 
-from marnadi.utils import metaclass
+from marnadi.utils import metaclass, import_module
 
 
 class CachedDescriptor(object):
@@ -112,11 +112,10 @@ class Lazy(object):
 
     @cached_property
     def __obj(self):
-        package, _, attribute = self.__path.rpartition('.')
-        if not package:
-            package, attribute = attribute, package
-        module = package.rpartition('.')[2]
-        imported = __import__(package, fromlist=(module, ))
+        path, _, attribute = self.__path.rpartition('.')
+        if not path:
+            path, attribute = attribute, path
+        module = import_module(path)
         if attribute:
-            return getattr(imported, attribute)
-        return imported
+            return getattr(module, attribute)
+        return module
