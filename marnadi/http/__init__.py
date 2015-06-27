@@ -38,6 +38,7 @@ class Method(object):
                 try:
                     func = self.__func__
                 except AttributeError:
+                    # Python 2.6
                     func = super(type(self), self).__get__(
                         instance, instance_class).im_func
                 return functools.partial(func, instance_class.__response__)
