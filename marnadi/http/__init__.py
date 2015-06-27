@@ -33,13 +33,13 @@ class Method(object):
 
         class classmethod(classmethod):
 
-            def __get__(self, instance, instance_class):
+            def __get__(self, instance, instance_class=None):
                 assert isinstance(instance_class, Method.FunctionHandler)
                 try:
                     func = self.__func__
                 except AttributeError:
-                    # http://stackoverflow.com/a/9527450/3018084
-                    func = super(type(self), self).__get__(True).im_func
+                    func = super(type(self), self).__get__(
+                        instance, instance_class).im_func
                 return functools.partial(func, instance_class.__response__)
 
     def __init__(self, func=None, name=None):
