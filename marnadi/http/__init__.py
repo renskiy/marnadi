@@ -35,12 +35,9 @@ class Method(object):
 
             def __get__(self, instance, instance_class=None):
                 assert isinstance(instance_class, Method.FunctionHandler)
-                try:
-                    func = self.__func__
-                except AttributeError:
-                    # Python 2.6
-                    func = super(type(self), self).__get__(
-                        instance, instance_class).im_func
+                func = getattr(self, '__func__', None)
+                # Python 2.6 compatibility
+                func = func or super(type(self), self).__get__(1).im_func
                 return functools.partial(func, instance_class.__response__)
 
     def __init__(self, func=None, name=None):
