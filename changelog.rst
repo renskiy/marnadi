@@ -3,9 +3,10 @@ Changelog
 
 .. currentmodule:: marnadi
 
-Next Release
-------------
+Release 0.5.3
+-------------
 
+- Fix: fixed request headers
 - Enhancement: added import_module function
 
 Release 0.5.2
