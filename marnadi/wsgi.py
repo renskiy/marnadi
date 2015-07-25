@@ -80,7 +80,7 @@ class Request(collections.Mapping):
 
     @cached_property
     def headers(self):
-        return (
+        return dict(
             (name.title().replace('_', '-'), value)
             for name, value in
             itertools.chain(
